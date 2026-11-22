@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Törnplanung: die Etappenkette des Törns</title>
+<meta name="author" content="Sepp">
+<meta name="description" content="Törnplanung: schlägt die Etappenkette eines Törns vor, speichert sie und teilt sie mit der Crew. Teil der Segler-Suite &quot;Sail-Suite&quot;. © 2026 by Sepp.">
+<meta name="application-name" content="Sail-Suite">
+<meta name="app-version" content="5.1.11">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Törnplanung">
+<meta name="theme-color" content="#0B1E2D">
+
+<link rel="apple-touch-icon" href="/icon-voyageplan-180.png">
+<link rel="icon" href="/icon-voyageplan-180.png">
+</head>
+<body class="voyageplan">
+
+<header>
+  <div class="menu-wrap">
+    <button type="button" id="btn-menu" class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-panel" data-i18n-aria-label="aria.menue" aria-label="Menü" data-icon="hamburger"></button>
+    <div class="menu-panel" id="menu-panel" hidden>
+
+      <details class="menu-gruppe" name="voyageplan-menue">
+        <summary><span data-i18n="menu.gruppe.einstellungen">Einstellungen</span></summary>
+        <div class="menu-gruppe-inhalt">
+          <span class="menu-label" data-i18n="theme.title">Ansicht</span>
+          <div class="menu-choice-group" id="menu-theme-options" role="group">
+            <button type="button" class="menu-choice-btn" data-theme-choice="tag" data-icon="sonne"><span data-i18n="theme.day">Tag</span></button>
+            <button type="button" class="menu-choice-btn" data-theme-choice="nacht" data-icon="mond"><span data-i18n="theme.night">Nacht</span></button>
+            <button type="button" class="menu-choice-btn" data-theme-choice="auto" data-icon="auto"><span data-i18n="theme.auto">Auto</span></button>
+          </div>
+          <span class="menu-label" data-i18n="sprache.title">Sprache / Language</span>
+          <div class="menu-choice-group" id="menu-lang-options" role="group">
+            <button type="button" class="menu-choice-btn" data-lang="auto" data-icon="globus">Auto</button>
+            <button type="button" class="menu-choice-btn" data-lang="de">DE Deutsch</button>
+            <button type="button" class="menu-choice-btn" data-lang="en">EN English</button>
+          </div>
+          <label class="menu-remember">
+            <input type="checkbox" id="in-menu-merken">
+            <span data-i18n="menu.merken">Auswahl merken</span>
+          </label>
+
+          <label class="menu-remember">
+            <input type="checkbox" id="in-menu-seite-links">
+            <span data-i18n="menu.seiteLinks">Seitenleiste links</span>
+          </label>
+          <label class="menu-remember">
+            <input type="checkbox" id="in-menu-seezeichen" checked>
+            <span data-i18n="menu.seezeichen">Seezeichen auf der Karte</span>
+          </label>
+        </div>
+      </details>
+      <details class="menu-gruppe" name="voyageplan-menue">
+        <summary><span data-i18n="menu.gruppe.hilfeInfo">Hilfe und Info</span></summary>
+        <div class="menu-gruppe-inhalt" id="menu-hilfe">
+          <button type="button" class="menu-link" id="btn-tour" data-icon="kompass"><span data-i18n="menu.tour">Einführung</span></button>
+          <a href="/Handbuch-voyageplan.pdf" target="_blank" rel="noopener" class="menu-link" id="btn-handbuch"
+             data-icon="buch" data-i18n-href="header.handbuchHref"><span data-i18n="header.handbuch">Handbuch</span></a>
+          <button type="button" class="menu-link" id="btn-kompendium" data-icon="buch"><span data-i18n="menu.kompendium">Kompendium</span></button>
+          <button type="button" class="menu-link" id="btn-technik" data-icon="zahnrad"><span data-i18n="menu.technik">Technik an Bord</span></button>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+    <path class="logo-ring" stroke-width="1.4" d="M2.5 25.5L10.5 20.5L20.5 24.5L29.5 18"/>
+    <circle class="logo-punkt" cx="2.5" cy="25.5" r="1.3"/>
+    <circle class="logo-punkt" cx="10.5" cy="20.5" r="1.5"/>
+    <circle class="logo-punkt" cx="20.5" cy="24.5" r="1.5"/>
+    <circle class="logo-punkt" cx="29.5" cy="18" r="1.3"/>
+    <g class="logo-teil" stroke-width="1.8">
+      <path d="M16 6.5L10.5 20.5"/>
+      <path d="M16 6.5L20.5 24.5"/>
+    </g>
+    <path class="logo-ring" stroke-width="1.5" d="M14.2 5.9a2.5 2.5 0 0 1 3.6 0"/>
+  </svg>
+  <div>
+    <h1 data-i18n="header.title">Törnplanung</h1>
+    <a href="/" class="header-back" data-icon="zurueck"><span data-i18n="menu.suite">Alle Apps</span></a>
+  </div>
+  <div class="user-wrap">
+    <button type="button" id="btn-user" class="user-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="user-panel" data-i18n-aria-label="aria.konto" aria-label="Konto" data-icon="person"><span class="user-dot"></span></button>
+    <div class="user-panel" id="user-panel" hidden>
+      <span class="user-name" id="user-name" hidden></span>
+      <button type="button" class="menu-link" id="btn-profil" data-icon="person"><span data-i18n="menu.profil">Profil</span></button>
+      <button type="button" class="menu-link" id="btn-passwort" data-icon="schloss" hidden><span data-i18n="menu.passwort">Passwort ändern</span></button>
+      <a class="menu-link" id="btn-betrieb" href="/betrieb/" data-icon="zahnrad" hidden><span data-i18n="menu.betrieb">Betrieb</span></a>
+
+      <button type="button" class="menu-link" id="btn-logout" data-icon="tuer"><span data-i18n="menu.logout">Abmelden</span></button>
+      <button type="button" class="menu-link" id="btn-logout-alle" data-icon="tuer"><span data-i18n="menu.logoutAlle">Auf allen Geräten abmelden</span></button>
+    </div>
+  </div>
+</header>
+
+<main class="vp">
+
+  <section class="vp-hinweis-block" id="vp-kein-toern" hidden>
+    <h2 data-i18n="kein.titel">Kein Törn aktiv</h2>
+    <p data-i18n="kein.text">Setze in TörnBuch einen Törn als aktiv, dann erscheint er hier.</p>
+    <a class="btn primary" href="/voyagebook/" data-i18n="kein.oeffneVoyagebook">TörnBuch öffnen</a>
+  </section>
+
+  <p class="vp-hinweis" id="vp-laedt" data-i18n="kopf.laedt">Törn wird geladen …</p>
+
+  <section class="vp-plan" id="vp-plan" hidden data-ansicht="vorgaben">
+
+    <div class="vp-links" id="vp-links">
+
+      <div class="vp-kartenfeld" id="vp-kartenfeld">
+        <div id="vp-karte" class="vp-karte"></div>
+        <div class="vp-legende vp-legende-karte" id="vp-legende-karte" aria-hidden="true"></div>
+        <p class="vp-karten-tipp" id="vp-karten-tipp" hidden>
+          <span class="vp-tipp-punkt" aria-hidden="true"></span><span data-i18n="ansicht.tippKurz">Liegeplatz antippen = Wunschziel</span>
+        </p>
+        <div class="vp-karten-werkzeuge" id="vp-karten-werkzeuge">
+          <button type="button" class="btn" id="btn-neue-etappe" data-i18n="karte.neueEtappe">+ Neue Etappe</button>
+          <button type="button" class="btn" id="btn-neuer-hafentag" data-i18n="karte.neuerHafentag">+ Hafentag</button>
+          <button type="button" class="btn" id="btn-punkt-zurueck" hidden data-i18n="karte.punktZurueck">Punkt zurück</button>
+          <button type="button" class="btn" id="btn-zeichnen-abbrechen" hidden data-i18n="karte.abbrechen">Abbrechen</button>
+        </div>
+      </div>
+
+      <div class="vp-legende vp-legende-zeile" id="vp-legende-zeile" aria-hidden="true"></div>
+
+      <div class="vp-griff-zeile" id="vp-griff-zeile" role="separator" aria-orientation="horizontal"
+           aria-label="Kartenhöhe anpassen" data-i18n-aria-label="karte.griffHoehe" tabindex="0"
+           aria-valuemin="220" aria-valuemax="1200" aria-valuenow="400">
+        <span class="vp-griff-pille" aria-hidden="true"></span>
+      </div>
+
+      <section class="vp-toernplan" id="vp-automatik" aria-labelledby="vp-toernplan-titel">
+        <div class="vp-toernplan-kopf">
+          <h3 id="vp-toernplan-titel" data-i18n="woche.titel">Törnplan</h3>
+          <p class="vp-pille vp-ziel-tipp" id="vp-ziel-tipp" hidden>
+            <span class="vp-tipp-punkt" aria-hidden="true"></span><span data-i18n="ansicht.tippLang">Liegeplatz auf der Karte antippen, um ihn als Wunschziel hinzuzufügen</span>
+          </p>
+
+          <div class="vp-woche-umschalter" id="vp-woche-umschalter" role="tablist" aria-label="Törnplan" data-i18n-aria-label="woche.titel">
+            <button type="button" id="tab-woche-auto" role="tab"
+                    aria-controls="panel-woche-auto" aria-selected="true"
+                    data-i18n="woche.tabAuto">Vorgeschlagen</button>
+            <button type="button" id="tab-woche-hand" role="tab"
+                    aria-controls="panel-woche-hand" aria-selected="false"
+                    data-i18n="woche.tabHand">Von Hand</button>
+            <button type="button" id="tab-woche-optionen" role="tab"
+                    aria-controls="panel-woche-optionen" aria-selected="false"
+                    data-i18n="woche.tabOptionen">Vergleichen</button>
+          </div>
+
+          <dl class="vp-toernplan-kennzahlen" id="vp-toernplan-kennzahlen" hidden></dl>
+        </div>
+
+        <p class="vp-status" id="vp-plan-status" role="status" aria-live="polite"></p>
+
+        <p class="vp-leer" id="vp-toernplan-leer" hidden>
+          <span class="vp-nur-breit" data-i18n="ansicht.leerBreit">Noch kein Plan. Vorgaben rechts prüfen, dann „Plan vorschlagen“. Etappen lassen sich auch von Hand auf der Karte zeichnen.</span>
+          <span class="vp-nur-schmal" data-i18n="ansicht.leerSchmal">Noch kein Plan. Vorgaben oben prüfen, dann „Plan vorschlagen“. Etappen lassen sich auch von Hand auf der Karte zeichnen.</span>
+        </p>
+
+        <section class="vp-rollierend" id="vp-rollierend" hidden>
+          <h4 data-i18n="rollierend.titel">Plan gegen Wirklichkeit</h4>
+          <ul class="vp-rollierend-liste" id="vp-rollierend-liste"></ul>
+          <div class="vp-aktionen">
+            <button type="button" class="btn primary" id="btn-rollierend-neu-rechnen" data-i18n="rollierend.neuRechnen">Neu rechnen ab hier</button>
+          </div>
+          <p class="vp-status" id="vp-rollierend-status" role="status" aria-live="polite"></p>
+        </section>
+
+        <p class="vp-hinweis" id="vp-zeichnen-hinweis" hidden data-i18n="karte.hinweisZeichnen">Auf die Karte klicken, um Wegpunkte zu setzen: mindestens zwei.</p>
+        <div class="vp-etappen-formular" id="vp-etappen-formular" hidden>
+          <h4 id="vp-formular-titel" data-i18n="formular.titel">Etappe</h4>
+          <p class="vp-hinweis" id="vp-formular-wegpunkte"></p>
+          <div class="vp-feldpaar">
+            <label id="vp-formular-von">
+              <span data-i18n="formular.von">Von</span>
+              <input type="text" id="in-etappe-von" maxlength="100">
+            </label>
+            <label>
+              <span id="vp-formular-nach-label" data-i18n="formular.nach">Nach</span>
+              <input type="text" id="in-etappe-nach" maxlength="100">
+            </label>
+          </div>
+          <label>
+            <span data-i18n="formular.datum">Datum</span>
+            <input type="date" id="in-etappe-datum">
+          </label>
+
+          <div id="vp-formular-fahrt">
+            <label>
+              <span data-i18n="formular.ablegen">Ablegen um</span>
+              <input type="time" id="in-etappe-ablegen">
+            </label>
+            <div class="vp-feldpaar">
+              <label>
+                <span data-i18n="formular.ankunftDatum">Ankunft am</span>
+                <input type="date" id="in-etappe-ankunft-datum" aria-describedby="vp-formular-ankunft-hinweis">
+              </label>
+              <label>
+                <span data-i18n="formular.ankunftZeit">Ankunft um</span>
+                <input type="time" id="in-etappe-ankunft-zeit">
+              </label>
+            </div>
+            <p class="vp-hinweis" id="vp-formular-ankunft-hinweis" data-i18n="formular.ankunftHinweis">Leer heißt: am selben Tag. Ein späterer Tag ist eine Nachtfahrt oder ein Schlag über mehrere Tage.</p>
+          </div>
+          <label>
+            <span data-i18n="formular.notiz">Notiz</span>
+            <input type="text" id="in-etappe-notiz" maxlength="500">
+          </label>
+          <label class="vp-checkbox">
+            <input type="checkbox" id="in-etappe-fixiert">
+            <span data-i18n="formular.fixiert">Fest einplanen: die Automatik plant den Rest darum herum</span>
+          </label>
+          <p class="vp-status" id="vp-formular-fehler" role="alert"></p>
+          <div class="vp-modal-aktionen">
+            <button type="button" class="btn primary" id="btn-etappe-uebernehmen" data-primaer data-i18n="formular.speichern">Etappe übernehmen</button>
+            <button type="button" class="btn" id="btn-etappe-verwerfen" data-i18n="formular.abbrechen">Verwerfen</button>
+          </div>
+        </div>
+
+        <div id="panel-woche-auto" role="tabpanel" aria-labelledby="tab-woche-auto">
+
+          <div class="vp-lade-anzeige" id="vp-lade-anzeige" hidden>
+            <div class="lade-anzeige">
+              <svg class="lade-ring" viewBox="0 0 96 96" aria-hidden="true">
+                <circle class="lade-ring-spur" cx="48" cy="48" r="42"/>
+                <circle class="lade-ring-bogen" cx="48" cy="48" r="42"/>
+              </svg>
+              <svg class="lade-boot" viewBox="0 0 48 48" aria-hidden="true">
+                <path class="lade-boot-rumpf" d="M6 34 Q24 40.5 42 34 L37.5 29.5 Q24 32.5 10.5 29.5 Z"/>
+                <line class="lade-boot-mast" x1="24" y1="30" x2="24" y2="6"/>
+                <path class="lade-boot-grossegel" d="M24.5 8 L24.5 28 L40 29 Z"/>
+                <path class="lade-boot-fock" d="M23.5 15 L23.5 28 L11 27 Z"/>
+              </svg>
+            </div>
+            <div class="vp-lade-mitte">
+              <p class="vp-lade-stand" id="vp-lade-stand" aria-hidden="true"></p>
+              <div class="vp-fortschritt" id="vp-fortschritt" aria-hidden="true"><span id="vp-fortschritt-balken"></span></div>
+              <p class="vp-lade-anzeige-text" data-i18n="automatik.ladezeit">Die Dauer hängt von der Größe des Reviers ab. Der Stand steht darunter. Bildschirm anlassen: Die Rechnung läuft nur, solange diese Seite offen ist.</p>
+            </div>
+            <button type="button" class="btn vp-lade-abbrechen" id="btn-plan-abbrechen-2" data-i18n="automatik.abbrechen">Abbrechen</button>
+          </div>
+          <p class="vp-status" id="vp-automatik-status" role="status" aria-live="polite"></p>
+
+          <div class="vp-fixierungen" id="vp-fixierungen" hidden>
+            <h4 data-i18n="fixierung.titel">Festgelegt</h4>
+            <ul class="vp-fixierungen-liste" id="vp-fixierungen-liste"></ul>
+          </div>
+
+          <p class="vp-hinweis vp-optionen-hinweis" id="vp-optionen-hinweis" hidden></p>
+          <div class="vp-wochentabelle" id="vp-woche-automatisch"></div>
+
+          <button type="button" class="btn" id="btn-vorschlag-in-handplan" hidden data-i18n="handplan.inHandplan">In die Etappen von Hand übernehmen</button>
+        </div>
+
+        <div id="panel-woche-hand" role="tabpanel" aria-labelledby="tab-woche-hand" hidden>
+
+          <div class="vp-ab-tag" id="vp-ab-tag">
+            <div class="vp-ab-tag-zeile">
+              <label>
+                <span data-i18n="abTag.label">Ab Tag neu planen</span>
+                <input type="date" id="in-ab-tag" aria-describedby="vp-ab-tag-hinweis">
+              </label>
+              <button type="button" class="btn" id="btn-ab-tag-rechnen" data-i18n="abTag.knopf">Ab hier automatisch planen</button>
+              <button type="button" class="btn" id="btn-woche-berechnen" data-i18n="woche.berechnen">Törnplan berechnen</button>
+            </div>
+            <p class="vp-hinweis" id="vp-ab-tag-hinweis" data-i18n="abTag.hinweis">Die Etappen davor bleiben. Ab diesem Tag plant die Automatik vom letzten Liegeplatz aus neu und ersetzt die Etappen von Hand; fest eingeplante bleiben fest. Schon besuchte Wunschziele vorher aus der Wunschliste nehmen.</p>
+            <p class="vp-status" id="vp-ab-tag-status" role="status" aria-live="polite"></p>
+          </div>
+          <p class="vp-status" id="vp-woche-status" role="status" aria-live="polite"></p>
+          <div class="vp-wochentabelle" id="vp-wochentabelle"></div>
+
+          <h4 data-i18n="liste.titel">Etappen</h4>
+          <p class="vp-hinweis" id="vp-liste-leer" data-i18n="liste.leer">Noch keine Etappe gesetzt.</p>
+          <ol class="vp-etappenliste" id="vp-etappenliste"></ol>
+        </div>
+
+        <div id="panel-woche-optionen" role="tabpanel" aria-labelledby="tab-woche-optionen" hidden>
+
+          <div class="vp-vergleich" id="vp-vergleich" hidden>
+            <h4 data-i18n="vergleich.titel">Vergleich</h4>
+            <div id="vp-vergleich-tabelle"></div>
+
+            <p class="vp-vergleich-empfehlung" id="vp-vergleich-empfehlung" hidden></p>
+            <p class="vp-vergleich-entscheidungspunkt" id="vp-vergleich-entscheidungspunkt"></p>
+            <div class="vp-aktionen">
+              <button type="button" class="btn ghost" id="btn-option-waehlen-1" aria-pressed="false" data-i18n="vergleich.waehlen1">Erste Option wählen</button>
+              <button type="button" class="btn ghost" id="btn-option-waehlen-2" aria-pressed="false" data-i18n="vergleich.waehlen2">Zweite Option wählen</button>
+            </div>
+          </div>
+
+          <div class="vp-optionen-raster" id="vp-optionen-raster" hidden>
+            <section class="vp-option-karte" aria-labelledby="vp-option-titel-1">
+              <div class="vp-option-kopf">
+                <h4 id="vp-option-titel-1"></h4>
+                <button type="button" class="btn ghost" id="btn-option-karte-1" aria-pressed="true"><span data-i18n="vergleich.aufKarte">Auf der Karte zeigen</span></button>
+              </div>
+              <div id="vp-option-tage-1"></div>
+            </section>
+            <section class="vp-option-karte" aria-labelledby="vp-option-titel-2">
+              <div class="vp-option-kopf">
+                <h4 id="vp-option-titel-2"></h4>
+                <button type="button" class="btn ghost" id="btn-option-karte-2" aria-pressed="false"><span data-i18n="vergleich.aufKarte">Auf der Karte zeigen</span></button>
+              </div>
+              <div id="vp-option-tage-2"></div>
+            </section>
+          </div>
+          <details class="vp-option2-details" id="vp-option2-details" open>
+            <summary data-i18n="vergleich.zweiteImEinzelnen">Zweite Option im Einzelnen: Begründung und Tage ändern</summary>
+            <div class="vp-wochentabelle vp-wochentabelle-zweite" id="vp-woche-automatisch-2" hidden></div>
+          </details>
+        </div>
+
+        <div class="vp-briefing-aktionen" id="vp-briefing-aktionen" hidden>
+          <h4 id="brief-titel" class="vp-woche-label"></h4>
+          <div class="vp-briefing-knoepfe">
+            <button type="button" class="btn" id="btn-pdf" data-icon="drucker">PDF</button>
+            <button type="button" class="btn" id="btn-vorlesen"></button>
+            <span class="menu-wrap">
+              <button type="button" class="btn" id="btn-teilen-crew" data-icon="teilen"
+                      aria-haspopup="true" aria-expanded="false" aria-controls="teilen-panel" hidden>
+                <span data-i18n="briefing.teilenCrew">Für Crew teilen</span>
+              </button>
+              <div class="menu-panel" id="teilen-panel" hidden>
+                <span class="menu-label" data-i18n="briefing.teilenCrewLabel">Mit der Törn-Crew teilen</span>
+                <select id="teilen-toern-auswahl" class="menu-choice-btn"></select>
+                <button type="button" class="menu-choice-btn" id="btn-teilen-bestaetigen" data-i18n="briefing.teilenBestaetigen">Teilen</button>
+                <span id="teilen-status" class="menu-label" role="status" aria-live="polite"></span>
+              </div>
+            </span>
+          </div>
+          <p class="vp-briefing-fehler" id="brief-audio-fehler" hidden></p>
+        </div>
+      </section>
+    </div>
+
+    <div class="vp-griff-spalte" id="vp-griff-spalte" role="separator" aria-orientation="vertical"
+         aria-label="Breite der Seitenleiste anpassen" data-i18n-aria-label="ansicht.griffSeite" tabindex="0"
+         aria-valuemin="380" aria-valuemax="720" aria-valuenow="460">
+      <span class="vp-griff-pille" aria-hidden="true"></span>
+    </div>
+
+    <aside class="vp-seite" id="vp-seite" aria-labelledby="vp-toern-name">
+      <div class="vp-seite-kopf">
+        <div class="vp-seite-titel">
+          <h2 id="vp-toern-name"></h2>
+          <p class="vp-seite-info" id="vp-toern-info"></p>
+        </div>
+        <p class="vp-status vp-nur-lesen" id="vp-nur-lesen-hinweis" hidden data-i18n="plan.keineRolle">Nur der Besitzer des Törns kann den Plan hier ändern. Du siehst ihn schreibgeschützt.</p>
+
+        <p class="vp-machbarkeit" id="vp-machbarkeit" role="status" aria-live="polite"></p>
+        <div class="vp-ansicht-reiter" role="tablist" aria-label="Törnplanung" data-i18n-aria-label="header.title">
+          <button type="button" role="tab" id="tab-ansicht-vorgaben" aria-controls="vp-ansicht-vorgaben" aria-selected="true">
+            <span class="vp-nr" aria-hidden="true">1</span><span data-i18n="ansicht.vorgaben">Vorgaben</span>
+          </button>
+          <button type="button" role="tab" id="tab-ansicht-plan" aria-controls="vp-ansicht-plan" aria-selected="false">
+            <span class="vp-nr" aria-hidden="true">2</span><span data-i18n="ansicht.plan">Plan</span><span class="vp-reiter-unter" id="vp-reiter-plan-unter"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="vp-seite-inhalt" id="vp-seite-inhalt">
+
+        <div id="vp-ansicht-vorgaben" role="tabpanel" aria-labelledby="tab-ansicht-vorgaben" class="vp-vorgaben">
+
+          <section class="vp-abschnitt" id="vp-abschnitt-rahmen" data-abschnitt="rahmen">
+            <h3 class="vp-abschnitt-kopf">
+              <button type="button" class="vp-abschnitt-knopf" id="btn-abschnitt-rahmen" aria-expanded="false" aria-controls="vp-abschnitt-rahmen-inhalt">
+                <span class="vp-nr" aria-hidden="true">1</span>
+                <span class="vp-abschnitt-text">
+                  <span class="vp-abschnitt-titel" data-i18n="raender.titel">Start und Rückgabe</span>
+                  <span class="vp-abschnitt-summe" id="vp-summe-rahmen"></span>
+                </span>
+                <span class="vp-pfeil" aria-hidden="true"></span>
+              </button>
+            </h3>
+            <div class="vp-abschnitt-inhalt vp-raender" id="vp-abschnitt-rahmen-inhalt" hidden>
+
+              <div class="vp-punkt">
+                <span class="vp-punkt-titel" id="vp-start-titel" data-i18n="raender.uebernahme">Übernahme</span>
+                <div class="vp-punkt-zeile">
+                  <button type="button" class="vp-hafen-knopf" id="btn-start-waehlen" aria-describedby="vp-start-titel">
+                    <span class="vp-anker" data-icon="anker" aria-hidden="true"></span>
+                    <span class="vp-punkt-wert" id="vp-start-wert" data-i18n="raender.punktLeer">Noch nicht gewählt</span>
+                    <span class="vp-hafen-aendern" data-i18n="raender.aendern">ändern</span>
+                  </button>
+                  <input type="date" id="in-plan-von" aria-label="Übernahme am" data-i18n-aria-label="raender.vonLabel">
+                  <input type="time" id="in-uebernahme-zeit" aria-label="Übernahme um" data-i18n-aria-label="raender.uebernahmeZeit">
+                </div>
+              </div>
+              <div class="vp-punkt">
+                <span class="vp-punkt-titel" id="vp-rueckgabe-titel" data-i18n="raender.rueckgabe">Rückgabe</span>
+                <div class="vp-punkt-zeile">
+                  <button type="button" class="vp-hafen-knopf" id="btn-rueckgabe-waehlen" aria-describedby="vp-rueckgabe-titel">
+                    <span class="vp-anker" data-icon="anker" aria-hidden="true"></span>
+                    <span class="vp-punkt-wert" id="vp-rueckgabe-wert" data-i18n="raender.punktLeer">Noch nicht gewählt</span>
+                    <span class="vp-hafen-aendern" data-i18n="raender.aendern">ändern</span>
+                  </button>
+                  <input type="date" id="in-plan-bis" aria-label="Rückgabe am" data-i18n-aria-label="raender.bisLabel" aria-describedby="vp-rueckgabe-hinweis">
+                  <input type="time" id="in-rueckgabe-zeit" aria-label="Rückgabe um" data-i18n-aria-label="raender.rueckgabeZeit" aria-describedby="vp-rueckgabe-hinweis">
+                </div>
+              </div>
+              <p class="vp-rueckgabe-hinweis" id="vp-rueckgabe-hinweis"></p>
+
+              <div class="vp-rahmen-abweichung" id="vp-rahmen-abweichung" hidden>
+                <p data-i18n="raender.abweichung">Eigener Rahmen: weicht vom Törn ab. Der Plan wird trotzdem bei diesem Törn gespeichert.</p>
+                <div class="vp-punkt-aktionen">
+                  <button type="button" class="btn" id="btn-rahmen-uebernehmen" data-i18n="raender.inDenToern">In den Törn übernehmen</button>
+                  <button type="button" class="btn ghost" id="btn-rahmen-verwerfen" data-i18n="raender.wieToernKnopf">Wie im Törn</button>
+                </div>
+              </div>
+
+              <p class="vp-status" id="vp-raender-status" role="status" aria-live="polite"></p>
+              <div class="vp-weiter">
+                <button type="button" class="btn ghost" data-oeffne="ziele" data-i18n="ansicht.weiterZiele">Weiter: Wunschziele</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="vp-abschnitt" id="vp-abschnitt-ziele" data-abschnitt="ziele">
+            <h3 class="vp-abschnitt-kopf">
+              <button type="button" class="vp-abschnitt-knopf" id="btn-abschnitt-ziele" aria-expanded="false" aria-controls="vp-abschnitt-ziele-inhalt">
+                <span class="vp-nr" aria-hidden="true">2</span>
+                <span class="vp-abschnitt-text">
+                  <span class="vp-abschnitt-titel" data-i18n="ansicht.wunschziele">Wunschziele</span>
+                  <span class="vp-abschnitt-summe" id="vp-summe-ziele"></span>
+                </span>
+                <span class="vp-pfeil" aria-hidden="true"></span>
+              </button>
+            </h3>
+            <div class="vp-abschnitt-inhalt" id="vp-abschnitt-ziele-inhalt" hidden data-option="1">
+              <div class="vp-optionen-leiste">
+                <button type="button" class="vp-pille-knopf" id="btn-option-1" aria-pressed="true" hidden></button>
+                <button type="button" class="vp-pille-knopf" id="btn-option-2" aria-pressed="false" hidden></button>
+                <span id="vp-zweite-option-umschalten-wrap">
+                  <button type="button" class="vp-pille-knopf vp-pille-neu" id="btn-zweite-option-umschalten" data-i18n="wunschliste.zweiteOptionHinzufuegen">+ Zweite Option zum Vergleich</button>
+                </span>
+                <button type="button" class="vp-pille-knopf vp-pille-weg" id="btn-zweite-option-entfernen" hidden data-i18n="wunschliste.zweiteOptionEntfernen">− Option 2 entfernen</button>
+              </div>
+
+              <section class="vp-wunschliste" id="vp-wunschliste" aria-label="Option 1" data-i18n-aria-label="ansicht.option1">
+                <label class="vp-suche">
+                  <span class="vp-sr-only" data-i18n="wunschliste.ortHinzufuegen">Wunschziel hinzufügen</span>
+                  <span class="vp-suche-lupe" data-icon="lupe" aria-hidden="true"></span>
+                  <input type="text" id="in-wunschliste-ort" maxlength="100" placeholder="Hafen oder Bucht suchen …" data-i18n-placeholder="ansicht.suchePlatzhalter">
+                </label>
+                <ul class="vp-chipliste" id="vp-chipliste"></ul>
+                <p class="vp-leer vp-ziele-leer" id="vp-ziele-leer" data-i18n="ansicht.zieleLeer">Noch keine Wunschziele. Oben suchen oder auf der Karte antippen.</p>
+
+                <button type="button" class="vp-link-knopf vp-karte-waehlen" id="btn-wunschziel-karte" data-i18n="wunschliste.karteWaehlen">Aus der Liegeplatzliste wählen …</button>
+                <p class="vp-hinweis" data-i18n="wunschliste.hinweisReihenfolge">Die Reihenfolge hier hat keine Bedeutung. Welche Route daraus wird, entscheidet die App.</p>
+                <div class="vp-feldpaar">
+                  <label>
+                    <span data-i18n="wunschliste.endzielLabel">Endziel (optional)</span>
+                    <input type="text" id="in-wunschliste-endziel" maxlength="100" placeholder="Rundtörn" data-i18n-placeholder="ansicht.endzielPlatzhalter">
+                  </label>
+                  <label>
+                    <span data-i18n="wunschliste.tagesmeilenLabel">Tagesmeilen, höchstens</span>
+                    <input type="number" id="in-wunschliste-tagesmeilen" min="1" step="1" inputmode="numeric" placeholder="keine Grenze" data-i18n-placeholder="ansicht.keineGrenze">
+                  </label>
+                </div>
+                <div class="vp-chip vp-chip-endziel" id="chip-endziel" hidden>
+                  <span id="chip-endziel-name"></span>
+                  <button type="button" id="btn-endziel-entfernen" data-i18n-aria-label="wunschliste.endzielEntfernen" aria-label="Endziel entfernen">×</button>
+                </div>
+              </section>
+
+              <section class="vp-wunschliste vp-wunschliste-zweite" id="vp-wunschliste-2" hidden>
+                <label>
+                  <span data-i18n="wunschliste.optionsnameLabel">Name der zweiten Option</span>
+                  <input type="text" id="in-options-name-2" class="vp-options-name" maxlength="40" data-i18n-placeholder="wunschliste.optionsnamePlatzhalter2" placeholder="Option 2">
+                </label>
+                <label class="vp-suche">
+                  <span class="vp-sr-only" data-i18n="wunschliste.ortHinzufuegen">Wunschziel hinzufügen</span>
+                  <span class="vp-suche-lupe" data-icon="lupe" aria-hidden="true"></span>
+                  <input type="text" id="in-wunschliste-ort-2" maxlength="100" placeholder="Hafen oder Bucht suchen …" data-i18n-placeholder="ansicht.suchePlatzhalter">
+                </label>
+                <ul class="vp-chipliste" id="vp-chipliste-2"></ul>
+                <p class="vp-leer vp-ziele-leer" id="vp-ziele-leer-2" data-i18n="ansicht.zieleLeer">Noch keine Wunschziele. Oben suchen oder auf der Karte antippen.</p>
+                <button type="button" class="vp-link-knopf vp-karte-waehlen" id="btn-wunschziel-karte-2" data-i18n="wunschliste.karteWaehlen">Aus der Liegeplatzliste wählen …</button>
+                <div class="vp-feldpaar">
+                  <label>
+                    <span data-i18n="wunschliste.endzielLabel">Endziel (optional)</span>
+                    <input type="text" id="in-wunschliste-endziel-2" maxlength="100" placeholder="Rundtörn" data-i18n-placeholder="ansicht.endzielPlatzhalter">
+                  </label>
+                  <label>
+                    <span data-i18n="wunschliste.tagesmeilenLabel">Tagesmeilen, höchstens</span>
+                    <input type="number" id="in-wunschliste-tagesmeilen-2" min="1" step="1" inputmode="numeric" placeholder="keine Grenze" data-i18n-placeholder="ansicht.keineGrenze">
+                  </label>
+                </div>
+                <div class="vp-chip vp-chip-endziel" id="chip-endziel-2" hidden>
+                  <span id="chip-endziel-name-2"></span>
+                  <button type="button" id="btn-endziel-entfernen-2" data-i18n-aria-label="wunschliste.endzielEntfernen" aria-label="Endziel entfernen">×</button>
+                </div>
+                <p class="vp-machbarkeit" id="vp-machbarkeit-2" role="status" aria-live="polite"></p>
+              </section>
+
+              <div class="vp-weiter">
+                <button type="button" class="btn ghost" data-oeffne="regeln" data-i18n="ansicht.weiterRegeln">Weiter: Regeln</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="vp-abschnitt" id="vp-abschnitt-regeln" data-abschnitt="regeln">
+            <h3 class="vp-abschnitt-kopf">
+              <button type="button" class="vp-abschnitt-knopf" id="btn-abschnitt-regeln" aria-expanded="false" aria-controls="vp-abschnitt-regeln-inhalt">
+                <span class="vp-nr" aria-hidden="true">3</span>
+                <span class="vp-abschnitt-text">
+                  <span class="vp-abschnitt-titel" data-i18n="schritt.regeln">Regeln</span>
+                  <span class="vp-abschnitt-summe" id="vp-summe-regeln"></span>
+                </span>
+                <span class="vp-pfeil" aria-hidden="true"></span>
+              </button>
+            </h3>
+            <div class="vp-abschnitt-inhalt" id="vp-abschnitt-regeln-inhalt" hidden>
+              <section class="vp-planung" id="vp-planung" aria-label="Regeln" data-i18n-aria-label="schritt.regeln">
+
+                <div class="vp-segment" role="group" aria-label="Art der Planung" data-i18n-aria-label="planung.art" id="vp-art-segment">
+                  <button type="button" data-art="woche" aria-pressed="true" data-i18n="ansicht.artWoche">Törn: Tagesetappen</button>
+                  <button type="button" data-art="ueberstellung" aria-pressed="false" data-i18n="ansicht.artUeberstellung">Überstellung: A nach B</button>
+                </div>
+                <select id="in-planungsart" class="vp-sr-only" tabindex="-1" aria-hidden="true">
+                  <option value="woche" data-i18n="planung.artWoche">Törn: Tagesetappen mit Tageslimit</option>
+                  <option value="ueberstellung" data-i18n="planung.artUeberstellung">Überstellung: so schnell wie möglich von A nach B</option>
+                </select>
+                <div class="vp-planung-raster" id="vp-ueberstellung-felder" hidden>
+                  <label>
+                    <span data-i18n="planung.uebFahrt">Durchschnittsfahrt, kn</span>
+                    <input type="number" id="in-ueb-fahrt" min="1" max="30" step="0.5" inputmode="decimal">
+                  </label>
+                  <label>
+                    <span data-i18n="planung.uebTank">Tanken alle … sm unter Motor</span>
+                    <input type="number" id="in-ueb-tank" min="10" max="5000" step="10" inputmode="numeric" aria-describedby="vp-ueb-tank-herkunft">
+                    <small class="vp-hinweis" id="vp-ueb-tank-herkunft"></small>
+                  </label>
+                  <label>
+                    <span data-i18n="planung.uebNaechte">Nächte im Hafen, höchstens (leer: beliebig)</span>
+                    <input type="number" id="in-ueb-naechte" min="0" max="60" step="1" inputmode="numeric">
+                  </label>
+                </div>
+                <p class="vp-hinweis" id="vp-ueberstellung-hinweis" data-i18n="planung.uebHinweis" hidden>Die Überstellung fährt durch, auch über mehrere Nächte. Gehalten wird zum Tanken (in Marina oder Hafen), über Nacht, wenn die Tankstelle beim Einlaufen geschlossen ist, und für die Ruhetage unten. Auf den Tank gehen die Meilen unter Motor: Wo die Windvorhersage Segelwind mit mindestens 50° zum Kurs meldet, zählt die Strecke als gesegelt, jenseits der Vorhersage als Motor. Ein Schlag darf die Reichweite um bis zu 10 % überschreiten, wenn das einen Halt spart. Die Zeiten sind eine Schätzung mit der Durchschnittsfahrt; den Wind je Schlag prüft die Tagesplanung.</p>
+
+                <div class="vp-gruppe">
+                  <h4 data-i18n="ansicht.gruppeTag">Tagesrahmen</h4>
+                  <div class="vp-zahl">
+                    <label class="vp-zahl-text" for="in-max-stunden"><span data-i18n="planung.maxStunden">Stunden unterwegs je Tag</span><span class="vp-zahl-hinweis" data-i18n="ansicht.hoechstens">höchstens</span></label>
+                    <span class="vp-stepper"><button type="button" data-schritt="-1" aria-label="weniger" data-i18n-aria-label="ansicht.weniger">−</button><input type="number" id="in-max-stunden" min="1" max="24" step="1" inputmode="numeric"><span class="vp-einheit">h</span><button type="button" data-schritt="1" aria-label="mehr" data-i18n-aria-label="ansicht.mehr">+</button></span>
+                  </div>
+                  <div class="vp-zahl">
+                    <label class="vp-zahl-text" for="in-regelmass"><span data-i18n="planung.regelmass">Regelmaß</span><span class="vp-zahl-hinweis" data-i18n="ansicht.regelmassHinweis">was ein gewöhnlicher Fahrtag sein soll</span></label>
+                    <span class="vp-stepper"><button type="button" data-schritt="-1" aria-label="weniger" data-i18n-aria-label="ansicht.weniger">−</button><input type="number" id="in-regelmass" min="1" max="500" step="1" inputmode="numeric"><span class="vp-einheit">sm</span><button type="button" data-schritt="1" aria-label="mehr" data-i18n-aria-label="ansicht.mehr">+</button></span>
+                  </div>
+                </div>
+
+                <div class="vp-gruppe">
+                  <h4 data-i18n="ansicht.gruppeNacht">Nacht und Dunkelheit</h4>
+                  <div class="vp-zahl">
+                    <label class="vp-zahl-text" for="in-nachtfahrt-budget"><span data-i18n="planung.nachtfahrtBudget">Nachtfahrten im Törn</span><span class="vp-zahl-hinweis" data-i18n="ansicht.hoechstens">höchstens</span></label>
+                    <span class="vp-stepper"><button type="button" data-schritt="-1" aria-label="weniger" data-i18n-aria-label="ansicht.weniger">−</button><input type="number" id="in-nachtfahrt-budget" min="0" max="5" step="1" inputmode="numeric"><button type="button" data-schritt="1" aria-label="mehr" data-i18n-aria-label="ansicht.mehr">+</button></span>
+                  </div>
+                  <fieldset class="vp-stufen" id="fs-ablegen-dunkel">
+                    <legend data-i18n="planung.ablegenDunkel">Ablegen bei Dunkelheit</legend>
+                  </fieldset>
+                  <fieldset class="vp-stufen" id="fs-anlegen-dunkel">
+                    <legend data-i18n="planung.anlegenDunkel">Anlegen bei Dunkelheit</legend>
+                  </fieldset>
+                </div>
+
+                <div class="vp-gruppe">
+                  <h4 data-i18n="ansicht.gruppePuffer">Puffer</h4>
+                  <div class="vp-zahl">
+                    <label class="vp-zahl-text" for="in-reserve-tage"><span data-i18n="planung.reserveTage">Reservetage</span><span class="vp-zahl-hinweis" data-i18n="ansicht.reserveHinweis">bleiben am Ende frei</span></label>
+                    <span class="vp-stepper"><button type="button" data-schritt="-1" aria-label="weniger" data-i18n-aria-label="ansicht.weniger">−</button><input type="number" id="in-reserve-tage" min="0" max="7" step="1" inputmode="numeric"><button type="button" data-schritt="1" aria-label="mehr" data-i18n-aria-label="ansicht.mehr">+</button></span>
+                  </div>
+                  <div class="vp-zahl">
+                    <label class="vp-zahl-text" for="in-freie-ruhetage"><span data-i18n="planung.freieRuhetage">Ruhetage</span><span class="vp-zahl-hinweis" data-i18n="ansicht.ruhetageHinweis">frei platzierbar: die Automatik sucht den günstigsten Tag</span></label>
+                    <span class="vp-stepper"><button type="button" data-schritt="-1" aria-label="weniger" data-i18n-aria-label="ansicht.weniger">−</button><input type="number" id="in-freie-ruhetage" min="0" max="6" step="1" inputmode="numeric"><button type="button" data-schritt="1" aria-label="mehr" data-i18n-aria-label="ansicht.mehr">+</button></span>
+                  </div>
+                </div>
+
+                <details class="vp-fein" id="vp-fein">
+                  <summary>
+                    <span data-i18n="planung.fein">Feineinstellungen</span>
+                    <span class="vp-fein-kurz" data-i18n="ansicht.feinKurz">Fahrstil, Wetter, Liegeplätze</span>
+                  </summary>
+
+                  <div class="vp-gruppe">
+                    <h4 data-i18n="ansicht.gruppeFahrstil">Fahrstil</h4>
+                    <fieldset class="vp-stufen" id="fs-lange-tage">
+                      <legend data-i18n="planung.langeTage">Lange Tage</legend>
+                    </fieldset>
+                    <fieldset class="vp-stufen" id="fs-kreuzen">
+                      <legend data-i18n="planung.kreuzen">Kreuzen</legend>
+                    </fieldset>
+                    <fieldset class="vp-stufen" id="fs-motoren">
+                      <legend data-i18n="planung.motoren">Motoren</legend>
+                    </fieldset>
+                    <fieldset class="vp-stufen" id="fs-grenzuebertritt">
+                      <legend data-i18n="planung.grenzuebertritt">Grenzübertritt</legend>
+                    </fieldset>
+                    <label class="vp-schalter">
+                      <span class="vp-checkbox-text">
+                        <span data-i18n="planung.langeTageAmStueck">Höchstens ein langer Tag am Stück</span>
+                        <span class="vp-checkbox-hinweis" id="in-lange-tage-am-stueck-hinweis" data-i18n="planung.langeTageAmStueckHinweis">Nach einem Tag über dem Regelmaß folgt möglichst ein kürzerer.</span>
+                      </span>
+                      <input type="checkbox" role="switch" id="in-lange-tage-am-stueck" aria-describedby="in-lange-tage-am-stueck-hinweis">
+                    </label>
+                  </div>
+
+                  <div class="vp-gruppe">
+                    <h4 data-i18n="ansicht.gruppeWetter">Wetter-Grenzwerte</h4>
+                    <div class="vp-zahl">
+                      <label class="vp-zahl-text" for="in-grenz-mean"><span data-i18n="planung.grenzMean">Mittelwind</span></label>
+                      <span class="vp-stepper"><button type="button" data-schritt="-1" aria-label="weniger" data-i18n-aria-label="ansicht.weniger">−</button><input type="number" id="in-grenz-mean" min="5" max="60" step="1" inputmode="numeric"><span class="vp-einheit">kn</span><button type="button" data-schritt="1" aria-label="mehr" data-i18n-aria-label="ansicht.mehr">+</button></span>
+                    </div>
+                    <div class="vp-zahl">
+                      <label class="vp-zahl-text" for="in-grenz-gust"><span data-i18n="planung.grenzGust">Böen</span></label>
+                      <span class="vp-stepper"><button type="button" data-schritt="-1" aria-label="weniger" data-i18n-aria-label="ansicht.weniger">−</button><input type="number" id="in-grenz-gust" min="5" max="80" step="1" inputmode="numeric"><span class="vp-einheit">kn</span><button type="button" data-schritt="1" aria-label="mehr" data-i18n-aria-label="ansicht.mehr">+</button></span>
+                    </div>
+                    <div class="vp-zahl">
+                      <label class="vp-zahl-text" for="in-grenz-wave"><span data-i18n="planung.grenzWave">Welle</span></label>
+                      <span class="vp-stepper"><button type="button" data-schritt="-1" aria-label="weniger" data-i18n-aria-label="ansicht.weniger">−</button><input type="number" id="in-grenz-wave" min="0.5" max="8" step="0.5" inputmode="decimal"><span class="vp-einheit">m</span><button type="button" data-schritt="1" aria-label="mehr" data-i18n-aria-label="ansicht.mehr">+</button></span>
+                    </div>
+                  </div>
+
+                  <div class="vp-gruppe">
+                    <h4 data-i18n="ansicht.gruppeLiegeplaetze">Liegeplätze</h4>
+                    <label class="vp-schalter">
+                      <span class="vp-checkbox-text">
+                        <span data-i18n="planung.ankerbuchten">Ankerbuchten als Übernachtung zulassen</span>
+                        <span class="vp-checkbox-hinweis" id="in-ankerbuchten-hinweis" data-i18n="planung.ankerbuchtenHinweis">Aus: nur Häfen und Marinas. Das Netz wird kleiner und die Rechnung schneller, für Crews, die Strom, Wasser und Landgang brauchen.</span>
+                      </span>
+                      <input type="checkbox" role="switch" id="in-ankerbuchten" aria-describedby="in-ankerbuchten-hinweis">
+                    </label>
+                    <label class="vp-schalter">
+                      <span class="vp-checkbox-text">
+                        <span data-i18n="planung.buchtenBevorzugt">Buchten bevorzugen</span>
+                        <span class="vp-checkbox-hinweis" id="in-buchten-bevorzugt-hinweis" data-i18n="planung.buchtenBevorzugtHinweis">Bei sonst gleich guten Plänen gewinnt der mit mehr Nächten vor Anker statt in Hafen oder Marina.</span>
+                      </span>
+                      <input type="checkbox" role="switch" id="in-buchten-bevorzugt" aria-describedby="in-buchten-bevorzugt-hinweis">
+                    </label>
+                  </div>
+                </details>
+
+                <p class="vp-hinweis" id="vp-reserve-hinweis"></p>
+                <p class="vp-status" id="vp-planung-status" role="status" aria-live="polite"></p>
+              </section>
+            </div>
+          </section>
+        </div>
+
+        <div id="vp-ansicht-plan" role="tabpanel" aria-labelledby="tab-ansicht-plan" class="vp-planansicht" hidden>
+          <div class="vp-plan-rechnet" id="vp-plan-rechnet" hidden>
+            <p class="vp-plan-rechnet-stand" id="vp-plan-rechnet-stand"></p>
+            <p class="vp-hinweis">
+              <span class="vp-nur-breit" data-i18n="ansicht.rechnetBreit">Der Stand der Rechnung steht unter der Karte, dort erscheint auch der Plan.</span>
+              <span class="vp-nur-schmal" data-i18n="ansicht.rechnetSchmal">Der Stand der Rechnung steht weiter unten, dort erscheint auch der Plan.</span>
+            </p>
+          </div>
+          <div class="vp-plan-leer" id="vp-plan-leer" hidden>
+            <h3 data-i18n="ansicht.keinPlanTitel">Noch kein Plan</h3>
+            <p data-i18n="ansicht.keinPlanText">Vorgaben prüfen, dann „Plan vorschlagen“. Etappen lassen sich auch von Hand auf der Karte zeichnen.</p>
+          </div>
+          <p class="vp-plan-ohne-tag" id="vp-plan-ohne-tag" hidden data-i18n="ansicht.ohneTag">Einen Tag in der Tabelle oder auf der Karte wählen.</p>
+
+          <article class="vp-tag" id="vp-tag" hidden aria-labelledby="vp-tag-route">
+            <div class="vp-tag-kopf">
+              <span class="vp-tag-wann" id="vp-tag-wann"></span>
+              <span class="vp-tag-blaettern">
+                <button type="button" id="btn-tag-zurueck" aria-label="Vorheriger Tag" data-i18n-aria-label="ansicht.tagZurueck">‹</button>
+                <button type="button" id="btn-tag-weiter" aria-label="Nächster Tag" data-i18n-aria-label="ansicht.tagWeiter">›</button>
+              </span>
+            </div>
+            <h3 class="vp-tag-route" id="vp-tag-route"></h3>
+            <span class="vp-tag-lage" id="vp-tag-lage"></span>
+            <dl class="vp-tag-fakten" id="vp-tag-fakten"></dl>
+            <div class="vp-tag-warum" id="vp-tag-warum-block" hidden>
+              <h4 data-i18n="ansicht.warum">Warum dieser Tag</h4>
+              <div id="vp-tag-warum"></div>
+            </div>
+            <div class="vp-tag-aktionen" id="vp-tag-aktionen">
+              <a class="btn vp-tag-tagesplanung" id="vp-tag-tagesplanung" hidden data-i18n="ansicht.inTagesplanung">In der Tagesplanung öffnen</a>
+              <div class="vp-tag-eingriff" id="vp-tag-eingriff" hidden>
+                <button type="button" class="btn ghost" id="btn-tag-fest" data-i18n="ansicht.festEinplanen">Fest einplanen</button>
+                <button type="button" class="btn ghost" id="btn-tag-tauschen" aria-expanded="false" aria-controls="vp-tag-tauschen" data-i18n="ansicht.tauschen">Liegeplatz tauschen</button>
+              </div>
+              <div class="vp-tag-tauschen" id="vp-tag-tauschen" hidden></div>
+            </div>
+            <button type="button" class="vp-link-knopf" id="btn-tag-handplan" hidden data-i18n="handplan.inHandplan">In die Etappen von Hand übernehmen</button>
+          </article>
+        </div>
+
+        <p class="vp-seite-recht" data-i18n-html="footer.legalLinks">Rechtliches: <a href="/#impressum">Impressum</a> · <a href="/#datenschutz">Datenschutzerklärung</a></p>
+      </div>
+
+      <div class="vp-seite-fuss" id="vp-seite-fuss">
+        <div class="vp-fuss-vorgaben" id="vp-fuss-vorgaben">
+          <button type="button" class="btn primary vp-fuss-haupt" id="btn-plan-vorschlagen" data-i18n="automatik.vorschlagen">Plan vorschlagen</button>
+          <button type="button" class="btn" id="btn-zum-plan" hidden data-i18n="ansicht.zumPlan">Zum Plan</button>
+        </div>
+        <div class="vp-fuss-plan" id="vp-fuss-plan" hidden>
+          <button type="button" class="btn primary vp-fuss-haupt" id="btn-plan-speichern" data-i18n="plan.speichern">Plan speichern</button>
+          <button type="button" class="btn" id="btn-neu-vorschlagen" data-i18n="ansicht.neuVorschlagen">Neu vorschlagen</button>
+          <button type="button" class="btn vp-symbol-knopf" id="btn-plan-gpx-export" data-icon="export" disabled aria-label="Als GPX exportieren" data-i18n-aria-label="plan.gpxExport" title="Als GPX exportieren" data-i18n-title="plan.gpxExport"></button>
+          <button type="button" class="btn vp-symbol-knopf" id="btn-share" data-icon="teilen" hidden aria-label="Teilen" data-i18n-aria-label="briefing.teilen" title="Teilen" data-i18n-title="briefing.teilen"></button>
+        </div>
+      </div>
+    </aside>
+
+  </section>
+
+</main>
+
+<footer class="suite-footer">
+
+  <p class="suite-copyright" data-i18n-html="footer.copyright">© 2026 Sail-Suite · Alle Rechte vorbehalten.<br>Entwickelt von Sepp · Österreich</p>
+  <p class="suite-version"></p>
+
+  <span data-i18n-html="footer.credits">Daten © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-Mitwirkende · <a href="https://www.openseamap.org/" target="_blank" rel="noopener">OpenSeaMap</a> · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> (CC&nbsp;BY&nbsp;4.0) · <a href="https://emodnet.ec.europa.eu/en/bathymetry" target="_blank" rel="noopener">EMODnet Bathymetry</a></span>
+  <details class="footer-box">
+    <summary data-i18n="footer.sourcesSummary">Datenquellen &amp; Lizenzen</summary>
+    <div class="footer-text" data-i18n-html="footer.sourcesBody"></div>
+  </details>
+  <details class="footer-box">
+    <summary data-i18n="footer.disclaimerSummary">Hinweise &amp; Haftungsausschluss</summary>
+    <div class="footer-text" data-i18n-html="footer.disclaimerBody"></div>
+  </details>
+  <p class="footer-legal" data-i18n-html="footer.legalLinks">Rechtliches: <a href="/#impressum">Impressum</a> · <a href="/#datenschutz">Datenschutzerklärung</a> · <a href="/#urheberrecht">Urheberrecht &amp; Lizenzierung</a></p>
+</footer>
+
+<div class="kp-view" id="kp-view" hidden tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="kp-titel">
+  <header class="kp-kopf">
+    <h2 id="kp-titel" data-i18n="kompendium.titel">Nautisches Kompendium</h2>
+    <button type="button" class="kp-x" id="btn-kompendium-zu" data-i18n-aria-label="kompendium.schliessen"
+            aria-label="Kompendium schließen">×</button>
+  </header>
+  <div class="kp-rumpf">
+    <nav class="kp-nav" id="kp-nav" data-i18n-aria-label="kompendium.navigation" aria-label="Abschnitte des Kompendiums"></nav>
+    <div class="kp-inhalt" id="kp-inhalt"></div>
+  </div>
+</div>
+<script type="module" src="/src/apps/voyageplan/main.ts"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+
+
+
+.leaflet-container.sk-karte {
+  background-color: #E6EBEE;
+  background-image: repeating-linear-gradient(45deg, rgba(15, 40, 57, .10) 0 1px, transparent 1px 9px);
+}
+[data-theme="nacht"] .leaflet-container.sk-karte {
+  background-color: #000;
+  background-image: repeating-linear-gradient(45deg, rgba(196, 68, 44, .22) 0 1px, transparent 1px 9px);
+}
+
+
+
+.tb-kn-icon { pointer-events: none; overflow: visible; }
+.tb-kn {
+  
+  --kn-text: #0F2839; --kn-halo: #F7FAFB; --kn-insel: #44606E; --kn-akzent: #D9861C; --kn-glyph: #0F2839; --kn-berg: #B86F12;
+  --kn-anker: #1F6FB2;
+  position: absolute; left: 0; top: 0; width: 0; height: 0; color: var(--kn-text);
+  font-family: inherit; line-height: 1.25; white-space: nowrap;
+}
+[data-theme="nacht"] .tb-kn { --kn-text: #E0563B; --kn-halo: #050000; --kn-insel: #C96B52; --kn-akzent: #FF5C3C; --kn-glyph: #050000; --kn-berg: #FF8A48; --kn-anker: #E0563B; }
+.tb-kn svg { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); }
+.tb-kn span {
+  position: absolute; top: 0; left: calc(var(--sym, 0px) / 2 + 3px); transform: translateY(-50%);
+  font-size: 12px; font-weight: 600;
+  text-shadow: 0 0 2px var(--kn-halo), 0 0 2px var(--kn-halo), 0 0 3px var(--kn-halo), 1px 1px 0 var(--kn-halo), -1px -1px 0 var(--kn-halo), 1px -1px 0 var(--kn-halo), -1px 1px 0 var(--kn-halo);
+}
+.tb-kn.links span { left: auto; right: calc(var(--sym, 0px) / 2 + 3px); }
+.tb-kn.stadt { --sym: 10px; } .tb-kn.stadt span { font-size: 17px; font-weight: 700; }
+.tb-kn.ort { --sym: 8px; } .tb-kn.ort span { font-size: 14px; font-weight: 700; }
+.tb-kn.dorf { --sym: 6px; } .tb-kn.dorf span { font-size: 12px; font-weight: 600; }
+.tb-kn.hafen, .tb-kn.marina { --sym: 18px; }
+.tb-kn.windrad { --sym: 16px; }
+.tb-kn.anker { --sym: 17px; } .tb-kn.anker span { font-size: 12px; font-weight: 700; color: var(--kn-anker); }
+.tb-kn.hafen span, .tb-kn.marina span { font-size: 13px; font-weight: 700; }
+.tb-kn.gipfel { --sym: 12px; } .tb-kn.gipfel span { font-size: 12px; font-weight: 600; }
+.tb-kn.gipfel small { font-size: 12px; font-weight: 400; }
+
+.tb-kn.kap span { left: 0; transform: translate(-50%, -50%); font-size: 12px; font-weight: 600; font-style: italic; }
+.tb-kn.flugplatz { --sym: 16px; } .tb-kn.flugplatz span { font-size: 12px; font-weight: 700; }
+.tb-kn.flugplatz small { display: block; font-size: 11px; font-weight: 600; }
+
+.tb-kn-icon.metar, .tb-kn-icon.metar .tb-kn, .tb-kn-icon.metar .tb-kn * { pointer-events: auto; cursor: pointer; }
+.tb-kn.flugplatz.metar svg { color: var(--kn-akzent); }
+.tb-kn.flugplatz.metar svg circle { fill: var(--kn-akzent); stroke: var(--kn-akzent); }
+.tb-kn.flugplatz.metar svg path { fill: var(--kn-halo); }
+.tb-kn.flugplatz.metar small {
+  display: table; margin-top: 1px; padding: 0 4px; border-radius: 3px; text-shadow: none;
+  background: var(--kn-akzent); color: var(--kn-halo); font-weight: 700;
+}
+
+.tb-kn .tb-kn-tipp { position: absolute; left: -22px; top: -22px; width: 44px; height: 44px; border-radius: 50%; }
+.tb-kn.insel span, .tb-kn.inselchen span {
+  left: 0; transform: translate(-50%, -50%); color: var(--kn-insel);
+  text-transform: uppercase; letter-spacing: .25em; font-weight: 700;
+}
+.tb-kn.insel span { font-size: 14px; } .tb-kn.inselchen span { font-size: 11px; }
+

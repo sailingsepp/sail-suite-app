@@ -1,0 +1,92 @@
+
+
+
+.tk-view {
+  position: fixed; inset: 0; z-index: 1950;
+  height: 100vh; height: 100dvh;
+  display: flex; flex-direction: column;
+  background: var(--bg); color: var(--text);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+}
+.tk-view[hidden] { display: none; }
+
+#tk-panel [hidden] { display: none !important; }
+html.tk-offen, html.tk-offen body { overflow: hidden; }
+.tk-kopf {
+  flex: none; display: flex; align-items: center; gap: 12px;
+  padding: 8px 12px 8px 16px; border-bottom: 1px solid var(--line);
+  width: 100%; max-width: 1200px; margin: 0 auto; box-sizing: border-box;
+}
+.tk-kopf h2 { flex: 1; margin: 0; font-size: 17px; min-width: 0; }
+.tk-view .tk-x {
+  width: 44px; height: 44px; flex: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid var(--line); color: var(--text);
+  font-size: 22px; line-height: 1; cursor: pointer;
+}
+.tk-view button:focus-visible, .tk-view input:focus-visible, .tk-view select:focus-visible {
+  outline: 2px solid var(--teal); outline-offset: 2px;
+}
+.tk-rumpf {
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
+}
+.tk-spalten {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start;
+  max-width: 1200px; margin: 0 auto;
+}
+@media (min-width: 900px) { .tk-spalten { grid-template-columns: minmax(0, 3fr) minmax(280px, 2fr); } }
+.tk-spalte { display: grid; gap: 16px; min-width: 0; }
+.tk-karte { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; min-width: 0; }
+.tk-karte h3 { margin: 0; font-size: 15px; color: var(--akzent); }
+.tk-hinweis { color: var(--muted); font-size: 13.5px; line-height: 1.5; margin: 6px 0; }
+.tk-status { min-height: 18px; font-size: 13.5px; color: var(--akzent); margin: 8px 0; }
+.tk-aktionen { display: flex; gap: 8px; flex-wrap: wrap; }
+.tk-view .btn { white-space: normal; }
+
+
+.tk-suchzeile { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.tk-suchzeile input[type="search"] {
+  flex: 1 1 220px; min-width: 0; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--text); font-size: 15px;
+}
+.tk-suchzeile input[type="search"]::placeholder { color: var(--muted); }
+.tk-suchzeile select, .tk-neu select, .tk-neu input[type="text"] {
+  min-width: 0; max-width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--text); font-size: 14px;
+}
+.tk-suchzeile select { flex: 0 1 220px; }
+.tk-neu input[type="text"]::placeholder { color: var(--muted); }
+.tk-treffer { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.tk-treffer-knopf {
+  display: grid; gap: 4px; width: 100%; text-align: left; padding: 10px 12px; cursor: pointer;
+  background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 10px;
+  font-family: inherit; font-size: 14px; line-height: 1.45;
+}
+.tk-treffer-knopf:hover { border-color: var(--akzent); }
+.tk-treffer-knopf:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.tk-treffer-kopf { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.tk-treffer-kopf strong { color: var(--akzent); }
+.tk-teil { margin-left: 8px; font-size: 12px; border: 1px solid var(--line); border-radius: 99px; padding: 0 6px; }
+.tk-auszug { overflow-wrap: anywhere; }
+.tk-auszug mark { background: color-mix(in srgb, var(--amber) 35%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
+.tk-liste { list-style: none; margin: 10px 0; padding: 0; display: grid; gap: 8px; }
+.tk-handbuch {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 10px 0; border-bottom: 1px solid var(--line);
+}
+.tk-handbuch-text { display: grid; gap: 2px; min-width: 0; flex: 1 1 200px; overflow-wrap: anywhere; }
+.tk-handbuch-text span { font-size: 13px; color: var(--muted); }
+.tk-handbuch-knoepfe { display: flex; gap: 6px; flex-wrap: wrap; }
+.tk-warnung { color: var(--amber) !important; }
+.tk-neu { display: grid; gap: 10px; margin-top: 10px; }
+.tk-neu label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.tk-dateiname { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.tk-status-fehler { color: var(--red); }
+
+.tk-ansicht .handbuch-modal-kopf { flex-wrap: wrap; }
+.tk-ansicht-titel { min-width: 0; flex: 1 1 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tk-seitenzahl { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.tk-ansicht .tk-zurueck, .tk-ansicht .tk-weiter { font-size: 22px; line-height: 1; }
+.tk-ansicht button:disabled { opacity: .35; cursor: default; }

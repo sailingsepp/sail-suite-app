@@ -1,0 +1,15 @@
+Copyright (c) 2026 Sepp, Austria. All rights reserved.
+
+The source code in this repository is published for reading and review only.
+No licence is granted to use, copy, modify, merge, publish, distribute,
+sublicense or sell any part of it, in whole or in part, without the prior
+written permission of the copyright holder.
+
+Third-party components keep their own licences:
+
+- Inter typeface (src/assets/fonts/): SIL Open Font License 1.1, see
+  src/assets/fonts/OFL.txt.
+- npm dependencies listed in package.json: the licence stated in each package.
+- Data from third parties (OpenStreetMap, Open-Meteo, EMODnet, Marine Regions,
+  TICON-4 and the other sources listed in README.md) stays under the licence of
+  its provider.

@@ -1,0 +1,15 @@
+export const BEAUFORT_FOTOS: readonly string[] = [
+  new URL('../assets/beaufort/bft0.webp', import.meta.url).href,
+  new URL('../assets/beaufort/bft1.webp', import.meta.url).href,
+  new URL('../assets/beaufort/bft2.webp', import.meta.url).href,
+  new URL('../assets/beaufort/bft3.webp', import.meta.url).href,
+  new URL('../assets/beaufort/bft4.webp', import.meta.url).href,
+  new URL('../assets/beaufort/bft5.webp', import.meta.url).href,
+  new URL('../assets/beaufort/bft6.webp', import.meta.url).href,
+  new URL('../assets/beaufort/bft7.webp', import.meta.url).href,
+  new URL('../assets/beaufort/bft8.webp', import.meta.url).href,
+  new URL('../assets/beaufort/bft9.webp', import.meta.url).href,
+  new URL('../assets/beaufort/bft10.webp', import.meta.url).href,
+  new URL('../assets/beaufort/bft11.webp', import.meta.url).href,
+  new URL('../assets/beaufort/bft12.webp', import.meta.url).href,
+];

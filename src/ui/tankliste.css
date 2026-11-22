@@ -1,0 +1,49 @@
+
+.tank-liste { display: grid; gap: 8px; margin: 4px 0 8px; container-type: inline-size; }
+.tank-titel { font-size: 13px; color: var(--muted); }
+.tank-zeilen { display: grid; gap: 8px; }
+.tank-zeile {
+  display: grid; grid-template-columns: minmax(0, 9.5em) minmax(0, 6em) minmax(0, 1fr) minmax(0, 7em) 44px; gap: 8px; align-items: end;
+  padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2);
+}
+
+@container (max-width: 560px) {
+  .tank-zeile { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) 44px; }
+  .tank-zeile .tank-ort { grid-column: 1 / 2; grid-row: 2; }
+  .tank-zeile .tank-stand { grid-column: 2 / 4; grid-row: 2; }
+  .tank-zeile .tank-weg { grid-column: 3; grid-row: 1; }
+}
+
+@media (max-width: 520px) {
+  .tank-zeile { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) 44px; }
+  .tank-zeile .tank-ort { grid-column: 1 / 2; grid-row: 2; }
+  .tank-zeile .tank-stand { grid-column: 2 / 4; grid-row: 2; }
+  .tank-zeile .tank-weg { grid-column: 3; grid-row: 1; }
+}
+.tank-zeile label { display: flex; flex-direction: column; gap: 3px; margin: 0; font-size: 12px; color: var(--muted); min-width: 0; }
+.tank-zeile input {
+  width: 100%; box-sizing: border-box; margin: 0; padding: 8px; border-radius: 6px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; font-size: 16px;
+}
+.tank-zeile input[aria-invalid="true"] { border-color: var(--red); }
+.tank-weg, .tank-neu {
+  font: inherit; cursor: pointer; border-radius: 6px; border: 1px solid var(--line);
+  background: transparent; color: var(--text); min-height: 44px;
+}
+.tank-weg { width: 44px; font-size: 16px; color: var(--muted); }
+.tank-neu { padding: 6px 12px; font-size: 14px; font-weight: 600; }
+.tank-weg:focus-visible, .tank-neu:focus-visible { outline: 2px solid var(--akzent); outline-offset: 2px; }
+.tank-fuss { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.tank-summe { font-size: 14px; color: var(--text); font-weight: 600; }
+.tank-gesperrt .tank-zeile { grid-template-columns: minmax(0, 9.5em) minmax(0, 6em) minmax(0, 1fr) minmax(0, 7em); }
+@media (max-width: 520px) {
+  .tank-gesperrt .tank-zeile { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+  .tank-gesperrt .tank-zeile .tank-stand { grid-column: 2; }
+}
+
+@container (max-width: 560px) {
+  .tank-gesperrt .tank-zeile { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+  .tank-gesperrt .tank-zeile .tank-stand { grid-column: 2; }
+}
+
+.tank-verbrauch { grid-column: 1 / -1; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }

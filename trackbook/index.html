@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TörnNavLog: Logbuch und Backup-Navigation</title>
+<meta name="author" content="Sepp">
+<meta name="description" content="TörnNavLog: zeichnet Position, Fahrt und Kurs auf und macht daraus ein Logbuch. Teil der Segler-Suite &quot;Sail-Suite&quot;. © 2026 by Sepp.">
+<meta name="application-name" content="Sail-Suite">
+<meta name="app-version" content="6.2.0">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TörnNavLog">
+<meta name="theme-color" content="#0B1E2D">
+
+<link rel="apple-touch-icon" href="/icon-trackbook-180.png">
+<link rel="icon" href="/icon-trackbook-180.png">
+</head>
+<body class="trackbook">
+
+<header>
+  <div class="menu-wrap">
+    <button type="button" id="btn-menu" class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-panel" data-i18n-aria-label="aria.menue" aria-label="Menü" data-icon="hamburger"></button>
+
+    <div class="menu-panel" id="menu-panel" hidden>
+
+      <div class="menu-titel"><span data-i18n="header.title">TörnNavLog</span> <span class="menu-titel-version"></span></div>
+      <button type="button" class="menu-link" id="btn-funkspruch" data-icon="warnung"><span data-i18n="menu.funkspruch">Funkspruch</span></button>
+      <button type="button" class="menu-link" id="btn-ankerwache" data-icon="anker"><span data-i18n="menu.ankerwache">Ankerwache</span></button>
+      <details class="menu-gruppe" name="tb-menue">
+        <summary><span data-i18n="menu.gruppe.toern">Törn und Logbuch</span></summary>
+        <div class="menu-gruppe-inhalt">
+          <button type="button" class="menu-link" id="btn-toern" data-icon="anker"><span data-i18n="toern.oeffnen">Törn</span></button>
+          <button type="button" class="menu-link" id="btn-statistik" data-icon="dokument"><span data-i18n="menu.statistik">Bericht des Navigators</span></button>
+          <button type="button" class="menu-link" id="btn-coastguard" data-icon="rettungsring"><span data-i18n="menu.coastguard">Kontrollansicht</span></button>
+          <button type="button" class="menu-link" id="btn-export" data-icon="export"><span data-i18n="menu.export">Als GPX sichern</span></button>
+          <button type="button" class="menu-link" id="btn-spurimport" data-icon="import"><span data-i18n="menu.spurimport">Spur vom Plotter</span></button>
+          <button type="button" class="menu-link" id="btn-stimme-test" data-icon="lautsprecher"><span data-i18n="menu.stimmeTest">Sprachausgabe testen</span></button>
+        </div>
+      </details>
+      <details class="menu-gruppe" name="tb-menue">
+        <summary><span data-i18n="menu.gruppe.wetter">Revier</span></summary>
+        <div class="menu-gruppe-inhalt">
+          <button type="button" class="menu-link" id="btn-gezeiten" data-icon="gezeit"><span data-i18n="menu.gezeiten">Gezeiten</span></button>
+          <button type="button" class="menu-link" id="btn-vorladen" data-icon="vorladen"><span data-i18n="menu.vorladen">Revier vorladen</span></button>
+          <button type="button" class="menu-link" id="btn-karten" data-icon="karten"><span data-i18n="menu.karten">Karten und Seezeichen</span></button>
+        </div>
+      </details>
+      <details class="menu-gruppe" name="tb-menue">
+        <summary><span data-i18n="menu.gruppe.hilfeInfo">Hilfe und Info</span></summary>
+        <div class="menu-gruppe-inhalt" id="menu-hilfe">
+          <button type="button" class="menu-link" id="btn-tour" data-icon="kompass"><span data-i18n="menu.tour">Einführung</span></button>
+          <a href="/Handbuch-trackbook.pdf" target="_blank" rel="noopener" class="menu-link" id="btn-handbuch"
+             data-icon="buch" data-i18n-href="header.handbuchHref"><span data-i18n="header.handbuch">Handbuch</span></a>
+          <button type="button" class="menu-link" id="btn-kompendium" data-icon="buch"><span data-i18n="menu.kompendium">Kompendium</span></button>
+          <button type="button" class="menu-link" id="btn-technik" data-icon="zahnrad"><span data-i18n="menu.technik">Technik an Bord</span></button>
+        </div>
+      </details>
+      <details class="menu-gruppe" name="tb-menue">
+        <summary><span data-i18n="menu.gruppe.einstellungen">Einstellungen</span></summary>
+        <div class="menu-gruppe-inhalt">
+
+          <label class="menu-remember">
+            <input type="checkbox" id="in-motorklang">
+            <span data-i18n="menu.motorklang">Motor am Klang erkennen (Mikrofon)</span>
+          </label>
+          <span class="menu-label tb-motorklang-status" id="tb-motorklang-status" role="status" aria-live="polite" hidden></span>
+
+          <label class="menu-remember">
+            <input type="checkbox" id="in-laufband">
+            <span data-i18n="menu.laufband">Wetterstationsticker</span>
+          </label>
+          <span class="menu-label" data-i18n="theme.title">Ansicht</span>
+          <div class="menu-choice-group" id="menu-theme-options" role="group">
+            <button type="button" class="menu-choice-btn" data-theme-choice="tag" data-icon="sonne"><span data-i18n="theme.day">Tag</span></button>
+            <button type="button" class="menu-choice-btn" data-theme-choice="nacht" data-icon="mond"><span data-i18n="theme.night">Nacht</span></button>
+            <button type="button" class="menu-choice-btn" data-theme-choice="auto" data-icon="auto"><span data-i18n="theme.auto">Auto</span></button>
+          </div>
+          <span class="menu-label" data-i18n="sprache.title">Sprache / Language</span>
+          <div class="menu-choice-group" id="menu-lang-options" role="group">
+            <button type="button" class="menu-choice-btn" data-lang="auto" data-icon="globus">Auto</button>
+            <button type="button" class="menu-choice-btn" data-lang="de">DE Deutsch</button>
+            <button type="button" class="menu-choice-btn" data-lang="en">EN English</button>
+          </div>
+          <label class="menu-remember">
+            <input type="checkbox" id="in-menu-merken">
+            <span data-i18n="menu.merken">Auswahl merken</span>
+          </label>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+    <path class="logo-punkt" d="M6.5 3.3L6.88 6.58L8.34 5.66L7.42 7.12L10.7 7.5L7.42 7.88L8.34 9.34L6.88 8.42L6.5 11.7L6.12 8.42L4.66 9.34L5.58 7.88L2.3 7.5L5.58 7.12L4.66 5.66L6.12 6.58Z"/>
+    <path class="logo-teil" stroke-width="1.8" d="M5.5 28C8.2 26.8 8 23.6 10.3 22.4S11.8 20.4 12.4 18.9"/>
+    <path class="logo-teil" stroke-width="1.6" d="M17.6 13.4L11.4 16.4L14.6 19.6Z"/>
+    <path class="logo-ring" stroke-width="1.5" stroke-dasharray="1.4 2" d="M18.9 12.2L25.8 6.2"/>
+    <circle class="logo-ring" cx="27.9" cy="4.6" r="2.3" stroke-width="1.4"/>
+    <circle class="logo-punkt" cx="27.9" cy="4.6" r="0.85"/>
+
+    <circle class="logo-teil" cx="25.6" cy="25.6" r="2.6" stroke-width="1.3"/>
+    <circle class="logo-teil" cx="25.6" cy="25.6" r="0.95" stroke-width="1.1"/>
+    <path class="logo-teil" stroke-width="1.1" d="M26.55 25.6L29.5 25.6M26.27 26.27L28.36 28.36M25.6 26.55L25.6 29.5M24.93 26.27L22.84 28.36M24.65 25.6L21.7 25.6M24.93 24.93L22.84 22.84M25.6 24.65L25.6 21.7M26.27 24.93L28.36 22.84"/>
+  </svg>
+  <div>
+    <h1 data-i18n="header.title">TörnNavLog</h1>
+    <a href="/" class="header-back" data-icon="zurueck"><span data-i18n="menu.suite">Alle Apps</span></a>
+  </div>
+
+  <div class="tb-modus" role="group" data-i18n-aria-label="nav.modusGruppe" aria-label="Ansicht">
+    <button type="button" class="tb-modus-btn" id="btn-modus-log" aria-pressed="true" data-i18n="nav.modusLog">Log</button>
+    <button type="button" class="tb-modus-btn" id="btn-modus-nav" aria-pressed="false" data-i18n="nav.modusNav">Navigation</button>
+  </div>
+
+  <div class="gps-status-wrap">
+    <p class="gps-status" id="gps-status" role="status" aria-live="polite"></p>
+    <p class="gps-genauigkeit" id="gps-genauigkeit" hidden></p>
+  </div>
+
+  <div class="user-wrap">
+    <button type="button" id="btn-user" class="user-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="user-panel" data-i18n-aria-label="aria.konto" aria-label="Konto" data-icon="person"><span class="user-dot"></span></button>
+    <div class="user-panel" id="user-panel" hidden>
+      <span class="user-name" id="user-name" hidden></span>
+      <button type="button" class="menu-link" id="btn-profil" data-icon="person"><span data-i18n="menu.profil">Profil</span></button>
+      <button type="button" class="menu-link" id="btn-passwort" data-icon="schloss" hidden><span data-i18n="menu.passwort">Passwort ändern</span></button>
+      <a class="menu-link" id="btn-betrieb" href="/betrieb/" data-icon="zahnrad" hidden><span data-i18n="menu.betrieb">Betrieb</span></a>
+
+      <a class="menu-link" id="btn-motorprobe" href="/trackbook/motorprobe.html" data-icon="propeller" data-nur-betreiber hidden><span data-i18n="menu.motorprobe">Motorprobe (Test)</span></a>
+      <button type="button" class="menu-link" id="btn-logout" data-icon="tuer"><span data-i18n="menu.logout">Abmelden</span></button>
+      <button type="button" class="menu-link" id="btn-logout-alle" data-icon="tuer"><span data-i18n="menu.logoutAlle">Auf allen Geräten abmelden</span></button>
+    </div>
+  </div>
+</header>
+
+<main class="tb">
+
+  <p class="tb-netz" id="tb-netz" hidden></p>
+  <p class="tb-vorladen" id="tb-vorladen" hidden></p>
+  <p class="tb-vorladen" id="tb-update" hidden><span data-i18n="update.text">Eine neue Version von TörnNavLog ist geladen. Die Aufzeichnung bleibt erhalten.</span><button type="button" class="btn" id="btn-update" data-i18n="update.knopf">Jetzt übernehmen</button></p>
+
+  <button type="button" class="btn tb-wach" id="btn-wach" hidden data-icon="warnung">
+ <span data-i18n="btn.wach">Der Bildschirm wird nicht wachgehalten: hier tippen</span>
+ </button>
+  <p class="tb-fehler" id="tb-fehler" hidden></p>
+
+  <p class="tb-fehler" id="tb-zweiter-tab" hidden data-i18n="tab.zweiter">TörnNavLog zeichnet in einem anderen Tab auf. Dieser Tab übernimmt, sobald der andere geschlossen ist.</p>
+
+  <div class="tb-toern-zeile" id="tb-toern-zeile" hidden>
+    <span class="tb-toern-zeile-name" id="tb-toern-zeile-name"></span>
+    <span class="tb-toern-zeile-abzeichen" data-i18n="toern.aktivAbzeichen">aktiv</span>
+  </div>
+
+  <div class="tb-werte">
+    <div class="tb-wert">
+ <span class="tb-wert-k" data-i18n="kachel.sog">Fahrt über Grund</span>
+ <span class="tb-wert-v" id="w-sog">–<i>kn</i></span>
+ </div>
+    <div class="tb-wert">
+ <span class="tb-wert-k" data-i18n="kachel.cog">Kurs über Grund</span>
+ <span class="tb-wert-v" id="w-cog">–<i>°</i></span>
+ </div>
+    <div class="tb-wert">
+ <span class="tb-wert-k" data-i18n="kachel.strecke">Strecke über Grund</span>
+ <span class="tb-wert-v" id="w-strecke">–<i>sm</i></span>
+ </div>
+    <div class="tb-wert">
+ <span class="tb-wert-k" data-i18n="kachel.dauer">Seit dem Ablegen</span>
+ <span class="tb-wert-v" id="w-dauer">–</span>
+ <span class="tb-wert-neben" id="w-fahrzeit"></span>
+ </div>
+  </div>
+
+  <p class="tb-position" id="tb-position">–</p>
+
+  <p class="tb-position tb-sonne" id="tb-sonne" hidden aria-live="off"></p>
+
+  <p class="tb-position tb-sonne tb-mond" id="tb-mond" hidden aria-live="off"></p>
+
+  <section class="tb-nav-kopf" id="tb-nav-kopf" hidden data-i18n-aria-label="nav.kopfTitel" aria-label="Navigation">
+    <div class="tb-nav-kacheln" id="tb-nav-kacheln"></div>
+
+    <div class="tb-nav-kompassreihe" id="tb-nav-kompassreihe">
+      <div class="tb-nav-platz" id="tb-nav-platz-4"></div>
+      <div class="tb-nav-kompass" id="tb-nav-kompass"></div>
+      <div class="tb-nav-platz" id="tb-nav-platz-5"></div>
+    </div>
+    <p class="tb-nav-ruht" id="tb-nav-ruht" hidden></p>
+    <div class="tb-nav-wp" id="tb-nav-wp" hidden>
+      <span class="tb-nav-wp-name" id="tb-nav-wp-name"></span>
+      <span class="tb-nav-xte-titel" data-i18n="nav.kursabweichung">Kursabweichung</span>
+      <div class="tb-nav-xte" aria-hidden="true"><span class="tb-nav-xte-bb" data-i18n="nav.bb">Bb</span><span class="tb-nav-xte-bahn"><span class="tb-nav-xte-korridor" id="tb-nav-xte-korridor"></span><span class="tb-nav-xte-linie"></span><span class="tb-nav-xte-mitte"></span><span class="tb-nav-xte-punkt" id="tb-nav-xte-punkt"></span></span><span class="tb-nav-xte-stb" data-i18n="nav.stb">Stb</span></div>
+      <span class="tb-nav-xte-werte"><span class="tb-nav-xte-text" id="tb-nav-xte-text"></span><span class="tb-nav-xte-steuer" id="tb-nav-xte-steuer"></span></span>
+    </div>
+    <div class="tb-nav-liste" id="tb-nav-liste"></div>
+  </section>
+
+  <button type="button" class="tb-laufband" id="tb-laufband" hidden aria-pressed="false">
+    <span class="tb-laufband-fest" id="tb-laufband-fest" aria-hidden="true" hidden></span>
+    <span class="tb-laufband-spur" aria-hidden="true"><span class="tb-laufband-text" id="tb-laufband-text"></span><span class="tb-laufband-text" id="tb-laufband-kopie"></span></span>
+    <span class="sr-only" id="tb-laufband-sr"></span>
+  </button>
+
+  <div class="tb-karte-wrap">
+    <div id="tb-karte"></div>
+
+    <button type="button" class="tb-lage" id="tb-lage" hidden>
+      <span class="tb-lage-icon" id="tb-lage-icon"></span><span id="tb-lage-text" role="status" aria-live="polite"></span>
+    </button>
+    <button type="button" class="btn tb-zentrieren" id="btn-zentrieren" hidden
+            data-icon="zentrieren" data-i18n-title="btn.zentrierenTitel" data-i18n-aria-label="aria.zentrieren" aria-label="Zentrieren"></button>
+
+    <button type="button" class="btn tb-ausrichtung" id="btn-ausrichtung" aria-pressed="false">
+      <svg class="tb-nordnadel" id="tb-nordnadel" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+        <path d="M10 2.5l3.2 7.5h-6.4z" fill="currentColor"/>
+        <path d="M10 17.5l3.2-7.5h-6.4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+      </svg>
+      <span id="tb-ausrichtung-text" aria-hidden="true">N</span>
+    </button>
+
+    <button type="button" class="tb-nav-griff tb-nav-griff-karte" id="btn-nav-griff-auf">
+      <span class="tb-nav-griff-strich" aria-hidden="true"></span>
+      <span data-i18n="nav.hochziehen">Hochziehen für Navigation</span>
+    </button>
+    <button type="button" class="btn tb-nav-auf" id="btn-nav-auf" data-icon="navigation" data-i18n-aria-label="nav.modusNav" aria-label="Navigation"><span data-i18n="nav.modusNavKurz">Nav</span></button>
+    <button type="button" class="btn tb-nav-auf tb-log-auf" id="btn-log-auf" data-icon="buch"><span data-i18n="nav.modusLog">Log</span></button>
+    <button type="button" class="tb-mob tb-mob-log" id="btn-mob-log" data-i18n-aria-label="nav.mobTitel" aria-label="Mann über Bord">MOB</button>
+
+    <div class="tb-nav-werkzeuge" id="tb-nav-werkzeuge" role="toolbar" data-i18n-aria-label="nav.werkzeuge" aria-label="Werkzeuge"></div>
+    <p class="tb-nav-offline" id="tb-nav-offline" hidden></p>
+    <button type="button" class="tb-mob tb-mob-nav" id="btn-mob" data-i18n-aria-label="nav.mobTitel" aria-label="Mann über Bord">MOB</button>
+    <button type="button" class="tb-nav-mitte" id="btn-nav-zentrieren" hidden data-icon="zentrieren" data-i18n-aria-label="nav.zentrieren" aria-label="Boot zentrieren"></button>
+    <p class="tb-nav-hinweis" id="tb-nav-hinweis" hidden role="status"></p>
+    <div class="tb-nav-mob-leiste" id="tb-nav-mob-leiste" hidden role="alert">
+      <div>
+        <p class="tb-nav-mob-kopf" id="tb-nav-mob-kopf"></p>
+        <p class="tb-nav-mob-wert" id="tb-nav-mob-wert"></p>
+        <p class="tb-nav-mob-fuss" data-i18n="nav.mobGespeichert">Position und Zeit im Log gespeichert</p>
+      </div>
+      <button type="button" class="tb-nav-mob-aus" id="btn-mob-aus" data-i18n="nav.mobBeenden">Beenden</button>
+    </div>
+    <p class="tb-nav-toast" id="tb-nav-toast" hidden role="status"></p>
+    <section class="tb-nav-panel" id="tb-nav-panel" hidden aria-labelledby="tb-nav-panel-titel">
+      <header class="tb-nav-panel-kopf">
+        <h2 id="tb-nav-panel-titel"></h2>
+        <button type="button" class="tb-nav-panel-zu" id="btn-nav-panel-zu" data-i18n-aria-label="nav.schliessen" aria-label="Schließen">✕</button>
+      </header>
+      <div class="tb-nav-panel-inhalt" id="tb-nav-panel-inhalt"></div>
+    </section>
+
+    <div class="tb-anker-aktionen" id="tb-anker-aktionen" hidden>
+      <p class="tb-hinweis" id="tb-anker-radius-zeile"></p>
+      <div class="tb-zeile">
+        <button type="button" class="btn primary tb-gross" id="btn-anker-aktivieren" data-i18n="ankerwache.aktivieren">Ankerwache aktivieren</button>
+        <button type="button" class="btn tb-gross" id="btn-anker-abbrechen" data-i18n="ankerwache.zeichnenAbbrechen">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tb-nav-leiste" id="tb-nav-leiste" hidden>
+    <p class="tb-nav-leiste-status"><span class="tb-nav-leiste-zustand" id="tb-nav-leiste-zustand"></span><span class="tb-nav-leiste-summe" id="tb-nav-leiste-summe"></span></p>
+    <div class="tb-nav-leiste-knoepfe" role="group" data-i18n-aria-label="btn.transportGruppe" aria-label="Aufzeichnung">
+      <button type="button" class="tb-nav-l t-start" id="btn-nl-start" data-ziel="btn-start"><span class="tb-nav-l-sym" data-icon="start"></span><span class="tb-nav-l-txt" data-i18n="btn.start">Start</span></button>
+      <button type="button" class="tb-nav-l t-anker" id="btn-nl-anker" data-ziel="btn-pause-anker"><span class="tb-nav-l-sym" data-icon="ankerPause"></span><span class="tb-nav-l-txt" data-i18n="btn.pauseAnker">Anker</span></button>
+      <button type="button" class="tb-nav-l t-stop" id="btn-nl-stop" data-ziel="btn-stop"><span class="tb-nav-l-sym" data-icon="stop"></span><span class="tb-nav-l-txt" data-i18n="btn.stop">Stopp</span></button>
+      <button type="button" class="tb-nav-l t-eintrag" id="btn-nl-eintrag" data-ziel="btn-eintrag"><span class="tb-nav-l-sym" data-icon="stift"></span><span class="tb-nav-l-txt" data-i18n="btn.eintrag">Eintrag</span></button>
+    </div>
+  </div>
+
+  <p class="tb-spurlegende" id="tb-spurlegende" hidden>
+    <span><i class="tb-sl tb-sl-segel"></i><span data-i18n="karte.segel">unter Segeln</span></span>
+    <span><i class="tb-sl tb-sl-motor"></i><span data-i18n="karte.motor">unter Maschine</span></span>
+    <span><i class="tb-sl tb-sl-offen"></i><span data-i18n="karte.offen">ohne Angabe</span></span>
+    <span><i class="tb-sl tb-sl-luecke"></i><span data-i18n="karte.luecke">Aufzeichnungslücke</span></span>
+    <span><i class="tb-sl tb-sl-route"></i><span data-i18n="karte.route">Route</span></span>
+    <span><i class="tb-sl tb-sl-kurs"></i><span data-i18n="karte.kurslinie">Kurslinie voraus</span></span>
+  </p>
+  <div class="tb-gz-streifen" id="tb-gz-streifen" hidden role="button" tabindex="0"
+       data-i18n-aria-label="gezeiten.streifenOeffnen" aria-label="Gezeitenfenster öffnen">
+    <div id="tb-gz-streifen-inhalt"></div>
+  </div>
+
+  <div class="tb-knoepfe">
+
+    <div class="tb-transport" role="group" data-i18n-aria-label="btn.transportGruppe">
+      <button type="button" class="btn tb-transport-btn t-start" id="btn-start">
+        <span class="tb-transport-sym" aria-hidden="true" data-icon="start"></span>
+        <span class="tb-transport-txt" data-i18n="btn.start">Start</span>
+      </button>
+      <button type="button" class="btn tb-transport-btn t-pause" id="btn-pause" disabled>
+        <span class="tb-transport-sym" aria-hidden="true" data-icon="pause"></span>
+        <span class="tb-transport-txt" data-i18n="btn.pause">Pause</span>
+      </button>
+      <button type="button" class="btn tb-transport-btn t-anker" id="btn-pause-anker" disabled aria-pressed="false">
+        <span class="tb-transport-sym" aria-hidden="true" data-icon="ankerPause"></span>
+        <span class="tb-transport-txt" data-i18n="btn.pauseAnker">Anker</span>
+      </button>
+      <button type="button" class="btn tb-transport-btn t-stop" id="btn-stop" disabled>
+        <span class="tb-transport-sym" aria-hidden="true" data-icon="stop"></span>
+        <span class="tb-transport-txt" data-i18n="btn.stop">Stopp</span>
+      </button>
+    </div>
+
+    <div class="tb-ankerwache-status" id="tb-ankerwache-status" hidden>
+      <span id="tb-ankerwache-status-text"></span>
+      <button type="button" class="btn tb-anker-weiterleitung-toggle" id="btn-anker-weiterleitung-toggle"></button>
+      <p class="tb-hinweis" id="tb-anker-weiterleitung-ergebnis" hidden></p>
+    </div>
+    <div class="tb-zeile">
+      <button type="button" class="btn tb-gross tb-akzent-rand" id="btn-eintrag" disabled data-icon="stift"><span data-i18n="btn.eintrag">Eintrag</span></button>
+      <button type="button" class="btn tb-gross tb-akzent-rand" id="btn-foto" disabled data-icon="kamera"><span data-i18n="btn.foto">Foto</span></button>
+      <button type="button" class="btn tb-gross tb-akzent-rand" id="btn-antrieb" disabled data-icon="segel"><span data-i18n="btn.segel">Unter Segeln</span></button>
+    </div>
+
+    <div class="tb-zeile tb-zeile-abstand">
+      <button type="button" class="btn tb-gross tb-akzent-rand" id="btn-ais-zeile" disabled data-icon="schiff"
+              data-i18n="menu.ais">Schiffe in meiner Nähe</button>
+      <button type="button" class="btn tb-gross tb-akzent-rand" id="btn-wetter-zeile" disabled data-icon="wind"
+              data-i18n="menu.wetter">Wind &amp; See beobachtet</button>
+      <button type="button" class="btn tb-gross tb-akzent-rand" id="btn-wachwechsel" disabled data-icon="schloss"
+              data-i18n="menu.datensicherung">Wachwechsel</button>
+    </div>
+
+    <input type="file" id="in-foto" accept="image/*" capture="environment" hidden>
+    <p class="tb-hinweis" id="tb-foto-meldung" hidden></p>
+  </div>
+
+  <p class="tb-ais-zustand" id="tb-ais-zustand" hidden></p>
+
+  <p class="tb-luecken" id="tb-luecken" hidden></p>
+  <p class="tb-pausen" id="tb-pausen" hidden></p>
+
+  <section class="tb-warnblock" id="tb-warnblock" hidden></section>
+
+  <section class="tb-zielwetter" id="tb-zielwetter" hidden aria-live="off"></section>
+
+  <section class="tb-wetterkopf" id="tb-wetterkopf" hidden>
+    <h2 data-i18n="wetter.kopfTitel">Wetterlage am Ablegeort</h2>
+    <div class="tb-wetterkopf-text" id="tb-wetterkopf-text"></div>
+    <p class="tb-hinweis" id="tb-wetterkopf-stand"></p>
+  </section>
+
+  <section class="tb-genauigkeit" id="tb-genauigkeit" hidden>
+    <h2 data-i18n="wetter.genauigkeitTitel">Stabilität der Vorhersage</h2>
+    <p id="tb-genauigkeit-zeile"></p>
+  </section>
+
+  <section class="tb-log">
+    <h2 data-i18n="log.titel">Logbuch</h2>
+
+    <p class="tb-log-zone" id="tb-log-zone"></p>
+    <ul id="tb-eintraege"><li class="tb-leer" data-i18n="log.leer">Noch keine Einträge.</li></ul>
+  </section>
+
+  <section class="tb-speicher">
+    <h2 data-i18n="speicher.titel">Speicher</h2>
+    <p id="tb-speicher-zeile">–</p>
+    <p id="tb-speicher-lage" hidden></p>
+    <p class="tb-hinweis" id="tb-speicher-hinweis" hidden data-i18n="speicher.homescreen">Zum Home-Bildschirm hinzufügen und von dort starten: nur dann sichert der Browser die Aufzeichnung dauerhaft.</p>
+  </section>
+
+  <footer class="tb-footer suite-footer">
+
+    <p class="suite-copyright" data-i18n-html="footer.copyright">© 2026 Sail-Suite · Alle Rechte vorbehalten.<br>Entwickelt von Sepp · Österreich</p>
+    <p class="suite-version"></p>
+
+    <span data-i18n-html="footer.credits">Daten © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-Mitwirkende · <a href="https://www.openseamap.org/" target="_blank" rel="noopener">OpenSeaMap</a> · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> (CC&nbsp;BY&nbsp;4.0) · <a href="https://emodnet.ec.europa.eu/en/bathymetry" target="_blank" rel="noopener">EMODnet Bathymetry</a> · <a href="https://doi.org/10.5067/MEaSUREs/SRTM/SRTMGL1.003" target="_blank" rel="noopener">NASA SRTM</a> · <a href="https://marineregions.org/" target="_blank" rel="noopener">Marine Regions</a> · <a href="https://view.eumetsat.int/" target="_blank" rel="noopener">EUMETSAT</a> · <a href="https://aviationweather.gov/" target="_blank" rel="noopener">NOAA Aviation Weather Center</a> · <a href="https://meteo.hr/" target="_blank" rel="noopener">DHMZ</a> · <a href="https://www.emy.gr/en/marine" target="_blank" rel="noopener">HNMS</a> · <a href="https://www.meteoam.it/" target="_blank" rel="noopener">Servizio Meteo AM</a> · <a href="https://www.mgm.gov.tr/" target="_blank" rel="noopener">MGM</a> · <a href="https://www.aemet.es/" target="_blank" rel="noopener">© AEMET</a> · <a href="https://www.dom.org.cy/FORECAST/index.html" target="_blank" rel="noopener">Cyprus Dept. of Meteorology</a> · <a href="https://doi.org/10.17882/109129" target="_blank" rel="noopener">TICON-4</a> (CC&nbsp;BY/BY-NC)</span>
+    <details class="footer-box">
+      <summary data-i18n="footer.sourcesSummary">Datenquellen &amp; Lizenzen</summary>
+      <div class="footer-text" data-i18n-html="footer.sourcesBody"></div>
+    </details>
+    <details class="footer-box">
+      <summary data-i18n="footer.disclaimerSummary">Hinweise &amp; Haftungsausschluss</summary>
+      <div class="footer-text" data-i18n-html="footer.disclaimerBody"></div>
+    </details>
+    <p class="footer-legal" data-i18n-html="footer.legalLinks">Rechtliches: <a href="/#impressum">Impressum</a> · <a href="/#datenschutz">Datenschutzerklärung</a> · <a href="/#urheberrecht">Urheberrecht &amp; Lizenzierung</a></p>
+  </footer>
+</main>
+
+<div class="tb-modal tb-nav-wahl" id="tb-nav-wahl" hidden tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="tb-nav-wahl-titel">
+  <div class="tb-modal-inhalt">
+    <h2 id="tb-nav-wahl-titel" data-i18n="nav.wahlTitel">Wert für diese Kachel</h2>
+    <div class="tb-nav-wahl-liste" id="tb-nav-wahl-liste"></div>
+    <button type="button" class="btn tb-gross" id="btn-nav-wahl-zu" data-i18n="nav.schliessen">Schließen</button>
+  </div>
+</div>
+
+<div class="kp-view" id="kp-view" hidden tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="kp-titel">
+  <header class="kp-kopf">
+    <h2 id="kp-titel" data-i18n="kompendium.titel">Nautisches Kompendium</h2>
+    <button type="button" class="kp-x" id="btn-kompendium-zu" data-i18n-aria-label="kompendium.schliessen"
+            aria-label="Kompendium schließen">×</button>
+  </header>
+  <div class="kp-rumpf">
+    <nav class="kp-nav" id="kp-nav" data-i18n-aria-label="kompendium.navigation" aria-label="Abschnitte des Kompendiums"></nav>
+    <div class="kp-inhalt" id="kp-inhalt"></div>
+  </div>
+</div>
+
+<div class="tb-modal" id="tb-toern-modal" hidden tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="tb-toern-titel">
+  <div class="tb-modal-inhalt tb-toern">
+    <h2 id="tb-toern-titel" data-i18n="toern.titel">Törn</h2>
+
+    <section id="tb-toern-keiner">
+      <p class="tb-hinweis" id="tb-toern-keiner-text" data-i18n-html="toern.keinAktiver">Gerade ist kein Törn aktiv. In <a href="/voyagebook/">TörnBuch</a> einen Törn aktivieren: TörnNavLog übernimmt ihn dann von selbst.</p>
+
+      <button type="button" class="btn tb-gross" id="btn-toern-letzter" hidden></button>
+      <div class="tb-zeile tb-zeile-abstand">
+        <button type="button" class="btn tb-gross primary" id="btn-toern-weg" data-i18n="toern.fertig">Fertig</button>
+      </div>
+    </section>
+
+    <section id="tb-toern-details" hidden>
+      <h3 id="t-detail-name"></h3>
+      <p class="tb-hinweis" id="t-detail-info"></p>
+      <p class="tb-hinweis" id="t-detail-beendet" hidden data-i18n="toern.beendetHinweis">Törn beendet. Jetzt Motorstunden bei Törnende und getankten Diesel eintragen: auch später noch hier oder im TörnBuch möglich.</p>
+      <div class="tb-zeile">
+        <button type="button" class="btn primary" id="btn-toern-fertig" data-i18n="toern.fertig">Fertig</button>
+      </div>
+
+      <h3 data-i18n="toern.motorstundenTitel">Motorstunden</h3>
+      <div class="tb-feldpaar">
+        <div><label for="t-motorstunden" data-i18n="toern.motorstunden">Motorstunden bei Törnbeginn</label><input id="t-motorstunden" type="text" inputmode="decimal"></div>
+        <div><label id="t-motorstunden-jetzt-label" for="t-motorstunden-jetzt" data-i18n="toern.motorstundenJetzt">Motorstunden jetzt</label><input id="t-motorstunden-jetzt" type="text" inputmode="decimal"></div>
+      </div>
+      <p class="tb-quelle" id="t-motorstunden-fehler" hidden data-i18n="toern.motorstundenFehler">Der Zähler kann nicht rückwärts laufen: Der Stand muss über dem zuletzt eingetragenen liegen. Nicht übernommen.</p>
+
+      <div id="t-tankliste"></div>
+      <p class="tb-quelle" id="t-diesel-fehler" hidden data-i18n="toern.dieselFehler">Jeder Tankvorgang braucht eine Literzahl ab 0. Tankvorgänge nicht übernommen.</p>
+      <button type="button" class="btn" id="btn-motorstunden-speichern" data-i18n="toern.motorstundenSpeichern">Speichern</button>
+      <p class="tb-hinweis" id="t-motor-status" role="status" aria-live="polite"></p>
+
+      <h3 data-i18n="toern.crew">Crew</h3>
+      <p class="tb-hinweis" data-i18n="toern.crewHinweisServer">Aus TörnBuch übernommen. Wer hier mit eigenem Konto steht, kann per Wachwechsel die laufende Fahrt übernehmen.</p>
+      <ul id="t-crew-anzeige" class="tb-crew-anzeige"></ul>
+
+      <h3 data-i18n="unterschrift.titel">Unterschrift</h3>
+      <p class="tb-hinweis" data-i18n="unterschrift.hinweis">Mit dem Finger oder einem Stift unterschreiben. Sie erscheint im TörnBuch auf den PDF-Blättern über der Linie.</p>
+      <div class="tb-zeile">
+        <button type="button" class="btn" id="btn-sig-skipper">
+          <span data-i18n="unterschrift.skipper">Schiffsführerin / Schiffsführer</span><br><small id="sig-skipper-stand"></small>
+        </button>
+        <button type="button" class="btn" id="btn-sig-bewerber">
+          <span data-i18n="unterschrift.bewerber">Bewerberin / Bewerber</span><br><small id="sig-bewerber-stand"></small>
+        </button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="tb-modal" id="tb-sig-modal" hidden tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="tb-sig-titel">
+  <div class="tb-modal-inhalt">
+    <h2 id="tb-sig-titel" data-i18n="unterschrift.titel">Unterschrift</h2>
+    <p class="tb-hinweis" data-i18n="unterschrift.hinweis">Mit dem Finger oder einem Stift unterschreiben. Sie erscheint im TörnBuch auf den PDF-Blättern über der Linie.</p>
+    <canvas id="tb-sig-flaeche" class="tb-sig"></canvas>
+    <div class="tb-zeile">
+      <button type="button" class="btn primary tb-gross" id="btn-sig-ok" data-i18n="unterschrift.uebernehmen">Übernehmen</button>
+      <button type="button" class="btn tb-gross" id="btn-sig-leeren" data-i18n="unterschrift.leeren">Nochmal</button>
+      <button type="button" class="btn tb-gross" id="btn-sig-weg" data-i18n="unterschrift.abbrechen">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="tb-modal" id="tb-funkspruch-auswahl-modal" hidden tabindex="-1" role="dialog" aria-modal="true"
+     aria-labelledby="tb-funkspruch-auswahl-titel">
+  <div class="tb-modal-inhalt tb-modal-mit-x">
+    <button type="button" class="tb-modal-x" id="tb-funkspruch-auswahl-zu" data-i18n-aria-label="funkspruch.schliessen"
+            aria-label="Schließen">×</button>
+    <h2 id="tb-funkspruch-auswahl-titel" data-i18n="funkspruch.titel">Funkspruch</h2>
+    <p class="tb-hinweis" data-i18n="funkspruch.auswahlHinweis">Welche Meldung? Die Vorlage erscheint auf Englisch: international gültige Funksprache.</p>
+    <p class="tb-hinweis" id="tb-funkspruch-auswahl-status" role="status" aria-live="polite"></p>
+    <ul class="tb-funkspruch-liste" id="tb-funkspruch-liste"></ul>
+  </div>
+</div>
+
+<div class="tb-modal tb-modal-funkspruch" id="tb-funkspruch-text-modal" hidden tabindex="-1" role="dialog"
+     aria-modal="true" aria-labelledby="tb-funkspruch-text-titel">
+  <div class="tb-modal-inhalt tb-modal-mit-x">
+    <button type="button" class="tb-modal-x" id="btn-funkspruch-text-zu" data-i18n-aria-label="funkspruch.schliessen"
+            aria-label="Schließen">×</button>
+    <h2 id="tb-funkspruch-text-titel"></h2>
+    <div class="tb-funkspruch-text" id="tb-funkspruch-text"></div>
+    <p class="tb-hinweis" id="tb-funkspruch-hinweis"></p>
+    <div class="tb-zeile tb-zeile-abstand">
+      <button type="button" class="btn tb-gross" id="btn-funkspruch-zurueck" data-i18n="funkspruch.zurueck">Andere Meldung wählen</button>
+    </div>
+  </div>
+</div>
+
+<div class="tb-modal tb-modal-lang" id="tb-seewetter-modal" hidden tabindex="-1" role="dialog"
+     aria-modal="true" aria-labelledby="tb-seewetter-titel">
+  <div class="tb-modal-inhalt tb-modal-mit-x">
+    <button type="button" class="tb-modal-x" id="btn-seewetter-zu" data-i18n-aria-label="seewetter.schliessen"
+            aria-label="Schließen">×</button>
+
+    <h2 id="tb-seewetter-titel">Seewetterbericht</h2>
+    <div class="tb-seewetter-inhalt" id="tb-seewetter-inhalt" aria-live="polite"></div>
+    <button type="button" class="btn tb-gross" id="btn-seewetter-erneut" hidden data-i18n="seewetter.erneut">Erneut versuchen</button>
+  </div>
+</div>
+
+<div class="tb-modal tb-modal-lang" id="tb-gezeiten-modal" hidden tabindex="-1" role="dialog"
+     aria-modal="true" aria-labelledby="tb-gezeiten-titel">
+  <div class="tb-modal-inhalt tb-modal-mit-x">
+    <button type="button" class="tb-modal-x" id="btn-gezeiten-zu" data-i18n-aria-label="gezeiten.schliessen"
+            aria-label="Schließen">×</button>
+    <h2 id="tb-gezeiten-titel" data-i18n="gezeiten.titel">Gezeiten</h2>
+    <label class="tb-gz-wahl"><span data-i18n="gezeiten.pegel">Pegel</span>
+      <select id="tb-gz-pegel"></select></label>
+    <p class="tb-hinweis" id="tb-gz-position" aria-live="polite"></p>
+    <div id="tb-gz-inhalt" aria-live="polite"></div>
+    <button type="button" class="btn tb-gross" id="btn-gz-wetter" data-i18n="gezeiten.wetterKnopf">Wetteranteil laden (Copernicus-Modell)</button>
+    <p class="tb-hinweis" id="tb-gz-status" aria-live="polite"></p>
+  </div>
+</div>
+
+<div class="tb-modal" id="tb-statistik" hidden tabindex="-1" role="dialog" aria-modal="true"
+     aria-labelledby="tb-statistik-titel">
+  <div class="tb-modal-inhalt tb-toern tb-modal-mit-x">
+    <button type="button" class="tb-modal-x" id="btn-statistik-zu" data-i18n-aria-label="statistik.zu"
+            aria-label="Schließen">×</button>
+    <h2 id="tb-statistik-titel" data-i18n="statistik.titel">Bericht aus dem Büro des Navigators</h2>
+    <div id="tb-statistik-inhalt"></div>
+    <p class="tb-hinweis" data-i18n="statistik.hinweis">„Heute" beginnt mit der Morgendämmerung, nicht um Mitternacht. Eine laufende Nachtfahrt zählt noch zum Tag, an dem sie begann. Durchschnitte laufen über die reine Fahrzeit, ohne Liegezeiten.</p>
+  </div>
+</div>
+
+<div class="tb-modal" id="tb-ais-modal" hidden tabindex="-1" role="dialog" aria-modal="true"
+     aria-labelledby="tb-ais-titel">
+  <div class="tb-modal-inhalt tb-toern">
+    <h2 id="tb-ais-titel" data-i18n="ais.titel">Schiffe in meiner Nähe</h2>
+    <label class="tb-ais-schalter">
+      <input type="checkbox" id="in-ais-an">
+      <span data-i18n="ais.schalter">AIS-Schiffe anzeigen und überwachen</span>
+    </label>
+    <p class="tb-hinweis" data-i18n="ais.hinweis">Laut AIS, empfangen von Landstationen (aisstream.io). Boote ohne AIS sind nicht dabei, und die Abdeckung hat Lücken: Was hier fehlt, kann trotzdem da sein.</p>
+    <div id="tb-ais-liste" class="tb-ais-liste" aria-live="polite"></div>
+    <p class="tb-hinweis" id="tb-ais-status" role="status" aria-live="polite"></p>
+    <div class="tb-zeile tb-zeile-abstand">
+      <button type="button" class="btn tb-gross" id="btn-ais-vorschlag" data-i18n="ais.vorschlag">Die nächsten drei ins Logbuch</button>
+      <button type="button" class="btn tb-gross" id="btn-ais-weg" data-i18n="ais.schliessen">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<div class="tb-modal tb-modal-warnung" id="tb-ais-warnung" hidden tabindex="-1" role="alertdialog"
+     aria-modal="true" aria-labelledby="tb-ais-warnung-titel" aria-describedby="tb-ais-warnung-text">
+  <div class="tb-modal-inhalt">
+    <h2 id="tb-ais-warnung-titel" data-i18n="ais.warnungTitel">⚠ Annäherung</h2>
+    <p class="tb-ais-warnung-text" id="tb-ais-warnung-text"></p>
+    <p class="tb-hinweis" data-i18n="ais.warnungHinweis">Laut AIS und bei gleichbleibendem Kurs. Diese App ersetzt weder Plotter noch Ausguck. Die Warnung fürs Ruder kommt vom Plotter.</p>
+    <div class="tb-zeile tb-zeile-abstand">
+      <button type="button" class="btn primary tb-gross" id="btn-ais-warnung-weg" data-i18n="ais.warnungWeg">Verstanden</button>
+      <button type="button" class="btn tb-gross" id="btn-ais-warnung-log" data-i18n="ais.warnungLog">Verstanden und ins Logbuch</button>
+    </div>
+  </div>
+</div>
+
+<div class="tb-modal tb-modal-warnung" id="tb-seegrenze-warnung" hidden tabindex="-1" role="alertdialog"
+     aria-modal="true" aria-labelledby="tb-seegrenze-warnung-titel" aria-describedby="tb-seegrenze-warnung-text">
+  <div class="tb-modal-inhalt">
+    <h2 id="tb-seegrenze-warnung-titel" data-i18n="seegrenze.warnungTitel">⚠ Seegrenze voraus</h2>
+    <p class="tb-ais-warnung-text" id="tb-seegrenze-warnung-text"></p>
+    <p class="tb-hinweis" data-i18n="seegrenze.warnungHinweis">Vorhersage nach aktuellem Kurs und aktueller Fahrt, keine amtliche Grenzfestlegung (Marine Regions/VLIZ, wissenschaftliche Arbeitsgrundlage). Bitte gegen die amtliche Seekarte prüfen, besonders in umstrittenen Gewässern wie der Ägäis.</p>
+    <div class="tb-zeile tb-zeile-abstand">
+      <button type="button" class="btn primary tb-gross" id="btn-seegrenze-warnung-weg" data-i18n="seegrenze.warnungWeg">Verstanden</button>
+    </div>
+  </div>
+</div>
+
+<div class="tb-modal tb-modal-warnung" id="tb-blitz-warnung" hidden tabindex="-1" role="alertdialog"
+     aria-modal="true" aria-labelledby="tb-blitz-warnung-titel" aria-describedby="tb-blitz-warnung-text">
+  <div class="tb-modal-inhalt">
+    <h2 id="tb-blitz-warnung-titel" data-i18n="blitz.warnungTitel">⚡ Blitze in der Nähe</h2>
+    <p class="tb-ais-warnung-text" id="tb-blitz-warnung-text"></p>
+    <p class="tb-hinweis" data-i18n="blitz.warnungHinweis">Beobachtung des Wettersatelliten, beim Abruf rund 15 Minuten alt. Einzelne Blitze können fehlen oder falsch gemeldet sein.</p>
+    <div class="tb-zeile tb-zeile-abstand">
+      <button type="button" class="btn primary tb-gross" id="btn-blitz-warnung-weg" data-i18n="blitz.warnungWeg">Verstanden</button>
+    </div>
+  </div>
+</div>
+
+<div class="tb-modal" id="tb-motor-modal" hidden tabindex="-1" role="dialog" aria-modal="true"
+     aria-labelledby="tb-motor-titel">
+  <div class="tb-modal-inhalt">
+    <h2 id="tb-motor-titel">Motor hörbar. Unter Maschine eintragen?</h2>
+    <p class="tb-hinweis" id="tb-motor-grund"></p>
+    <p class="tb-hinweis" data-i18n="motorwache.hinweis">Erkannt am Motorgeräusch über das Mikrofon, geprüft an Fahrt und Kurs. Eingetragen wird nur, was du bestätigst, mit Uhrzeit und Position, ab denen es erkannt wurde.</p>
+    <div class="tb-zeile tb-zeile-abstand">
+      <button type="button" class="btn primary tb-gross" id="btn-motor-ja">Ja, eintragen</button>
+      <button type="button" class="btn tb-gross" id="btn-motor-nein" data-i18n="motorwache.nein">Nein</button>
+    </div>
+  </div>
+</div>
+
+<div class="tb-modal" id="tb-angelegt-modal" hidden tabindex="-1" role="dialog" aria-modal="true"
+     aria-labelledby="tb-angelegt-titel">
+  <div class="tb-modal-inhalt">
+    <h2 id="tb-angelegt-titel" data-i18n="angelegt.titel">Angelegt?</h2>
+    <p class="tb-hinweis" data-i18n="angelegt.text">Seit einer halben Stunde keine Fahrt.</p>
+    <div class="tb-zeile tb-zeile-abstand">
+      <button type="button" class="btn primary tb-gross" id="btn-angelegt-ja" data-i18n="angelegt.ja">Ja, liegt</button>
+      <button type="button" class="btn tb-gross" id="btn-angelegt-nein" data-i18n="angelegt.nein">Nein, auf See</button>
+    </div>
+  </div>
+</div>
+
+<div class="tb-modal" id="tb-anker-setup-modal" hidden tabindex="-1" role="dialog" aria-modal="true"
+     aria-labelledby="tb-anker-setup-titel">
+  <div class="tb-modal-inhalt">
+    <h2 id="tb-anker-setup-titel" data-i18n="ankerwache.setupTitel">Ankerwache einrichten</h2>
+    <p class="tb-hinweis tb-anker-nur-neu" data-i18n="ankerwache.setupHinweis">Wassertiefe und Kettenverhältnis sind freiwillig. Sie errechnen nur einen Vorschlag für den Radius. Der Radius unten gilt immer und lässt sich danach auch direkt auf der Karte ziehen.</p>
+    <div class="tb-feldpaar tb-anker-nur-neu">
+      <div><label data-i18n="ankerwache.tiefe">Wassertiefe (m)</label>
+        <input id="in-anker-tiefe" type="text" inputmode="decimal"></div>
+      <div><label data-i18n="ankerwache.verhaeltnis">Kettenverhältnis</label>
+        <select id="in-anker-verhaeltnis">
+          <option value="4" data-i18n="option.ankerVerhaeltnis.4">4:1 (RYA-Minimum)</option>
+          <option value="5" selected data-i18n="option.ankerVerhaeltnis.5">5:1 (ruhiges Wetter)</option>
+          <option value="7" data-i18n="option.ankerVerhaeltnis.7">7:1 (über Nacht)</option>
+          <option value="10" data-i18n="option.ankerVerhaeltnis.10">10:1 (Starkwind/schlechter Grund)</option>
+        </select></div>
+    </div>
+    <label class="tb-anker-nur-neu" data-i18n="ankerwache.laenge">Bootslänge (m, optional)</label>
+    <input class="tb-anker-nur-neu" id="in-anker-laenge" type="text" inputmode="decimal">
+    <button type="button" class="btn tb-anker-nur-neu" id="btn-anker-vorschlag" data-i18n="ankerwache.vorschlagBerechnen">Vorschlag berechnen</button>
+    <p class="tb-hinweis tb-anker-nur-neu" id="tb-anker-vorschlag-text"></p>
+    <label class="tb-anker-nur-neu" data-i18n="ankerwache.radius">Radius (m)</label>
+    <input class="tb-anker-nur-neu" id="in-anker-radius" type="text" inputmode="decimal">
+
+    <h3 data-i18n="ankerwache.kontaktTitel">Weiterleitung per E-Mail</h3>
+    <p class="tb-hinweis" data-i18n="ankerwache.kontaktHinweis">Freiwillig: für den Fall, dass niemand an Bord ist. Löst die Wache Alarm aus, geht zusätzlich eine E-Mail an diese Adresse. Lässt sich unten in der Statuszeile jederzeit mit einem Tipp wieder ausschalten. Die erste Mail landet leicht im Spam-Ordner: dort nachsehen und den Absender als sicher markieren.</p>
+    <label data-i18n="ankerwache.kontaktEmail">E-Mail-Adresse</label>
+    <input id="in-anker-kontakt-email" type="email" inputmode="email" maxlength="254" autocomplete="email">
+    <label class="tb-ais-schalter">
+      <input type="checkbox" id="in-anker-kontakt-aktiv" disabled>
+      <span data-i18n="ankerwache.kontaktAktiv">Weiterleitung per E-Mail aktivieren</span>
+    </label>
+    <p class="tb-hinweis" id="tb-anker-kontakt-status" role="status" hidden></p>
+
+    <button type="button" class="btn" id="btn-anker-kontakt-erneut" data-i18n="ankerwache.kontaktErneut" hidden>Bestätigungsmail erneut senden</button>
+
+    <button type="button" class="btn danger tb-gross tb-anker-nur-bearbeiten" id="btn-anker-beenden"
+            data-i18n="ankerwache.beenden" hidden>Ankerwache beenden</button>
+    <div class="tb-zeile tb-zeile-abstand">
+      <button type="button" class="btn primary tb-gross" id="btn-anker-weiter" data-i18n="ankerwache.weiter">Weiter zum Zeichnen</button>
+      <button type="button" class="btn tb-gross" id="btn-anker-setup-weg" data-i18n="ankerwache.setupAbbrechen">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="tb-modal tb-modal-warnung" id="tb-anker-alarm-modal" hidden tabindex="-1" role="alertdialog"
+     aria-modal="true" aria-labelledby="tb-anker-alarm-titel" aria-describedby="tb-anker-alarm-text">
+  <div class="tb-modal-inhalt">
+    <h2 id="tb-anker-alarm-titel" data-i18n="ankerwache.alarmTitel">⚓ Abtrieb</h2>
+    <p class="tb-ais-warnung-text" id="tb-anker-alarm-text"></p>
+    <p class="tb-hinweis" data-i18n="ankerwache.alarmHinweis">Position, Radius und Zeitpunkt stehen bereits im Logbuch.</p>
+    <div class="tb-zeile tb-zeile-abstand">
+      <button type="button" class="btn primary tb-gross" id="btn-anker-alarm-weg" data-i18n="ankerwache.alarmWeg">Verstanden</button>
+    </div>
+  </div>
+</div>
+
+<div class="tb-modal" id="tb-wetter-modal" hidden tabindex="-1" role="dialog" aria-modal="true"
+     aria-labelledby="tb-wetter-titel">
+  <div class="tb-modal-inhalt">
+    <h2 id="tb-wetter-titel" data-i18n="wetter.titel">Wind &amp; See beobachtet</h2>
+    <p class="tb-hinweis" data-i18n="wetter.hinweis">Was du an Bord siehst: Windmesser, Wellen, Böen. Das ist eine Beobachtung und steht im Logbuch auch so drin, getrennt von der Vorhersage. Leere Felder bleiben leer. Richtung: woher der WAHRE Wind kommt, rechtweisend 0–360°. Nicht der scheinbare Windwinkel vom Display und nicht, wohin er weht.</p>
+    <p class="tb-vorhersage" id="tb-wetter-vorhersage"></p>
+    <div class="tb-feldpaar">
+      <div><label data-i18n="wetter.wind">Wind (kn)</label>
+        <input id="in-wetter-wind" type="text" inputmode="decimal"></div>
+      <div><label data-i18n="wetter.aus">Wahrer Wind aus (°)</label>
+        <input id="in-wetter-aus" type="number" step="5" min="0" max="360" inputmode="numeric"></div>
+    </div>
+    <div class="tb-feldpaar">
+      <div><label data-i18n="wetter.boe">Böen (kn)</label>
+        <input id="in-wetter-boe" type="text" inputmode="decimal"></div>
+      <div><label data-i18n="wetter.welle">Welle (m)</label>
+        <input id="in-wetter-welle" type="text" inputmode="decimal"></div>
+    </div>
+    <div class="tb-zeile tb-zeile-abstand">
+      <button type="button" class="btn primary tb-gross" id="btn-wetter-ok" data-i18n="wetter.sichern">Eintragen</button>
+      <button type="button" class="btn tb-gross" id="btn-wetter-weg" data-i18n="wetter.abbrechen">Verwerfen</button>
+    </div>
+  </div>
+</div>
+
+<div class="tb-modal" id="tb-eintrag-modal" hidden tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="tb-eintrag-titel">
+  <div class="tb-modal-inhalt">
+    <h2 id="tb-eintrag-titel" data-i18n="eintrag.titel">Eintrag ins Logbuch</h2>
+    <p class="tb-hinweis" data-i18n="eintrag.hinweis">Zeit und Position sind bereits festgehalten. Der Text kann warten. Eine andere Uhrzeit setzt den Eintrag an die passende Stelle im Log.</p>
+
+    <label for="in-eintrag-zeit" data-i18n="bearbeiten.zeit">Uhrzeit</label>
+    <input type="time" id="in-eintrag-zeit">
+
+    <p class="tb-hinweis" id="tb-eintrag-tag" hidden></p>
+    <textarea id="in-eintrag" rows="4" data-i18n-placeholder="eintrag.platzhalter"></textarea>
+    <div class="tb-zeile">
+      <button type="button" class="btn primary tb-gross" id="btn-eintrag-ok" data-i18n="eintrag.sichern">Eintragen</button>
+      <button type="button" class="btn tb-gross" id="btn-eintrag-weg" data-i18n="eintrag.abbrechen">Verwerfen</button>
+    </div>
+  </div>
+</div>
+
+<div class="tb-modal" id="tb-antrieb-modal" hidden tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="tb-antrieb-titel">
+  <div class="tb-modal-inhalt">
+    <h2 id="tb-antrieb-titel">Ab wann unter Maschine?</h2>
+    <label for="in-antrieb-zeit" data-i18n="bearbeiten.zeit">Uhrzeit</label>
+    <input type="time" id="in-antrieb-zeit">
+    <p class="tb-hinweis tb-antrieb-fehler" id="tb-antrieb-fehler" role="alert" hidden></p>
+    <div class="tb-zeile tb-zeile-abstand">
+      <button type="button" class="btn primary tb-gross" id="btn-antrieb-ok">Unter Maschine eintragen</button>
+      <button type="button" class="btn tb-gross" id="btn-antrieb-weg" data-i18n="antrieb.abbrechen">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="tb-modal" id="tb-bearbeiten-modal" hidden tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="tb-bearbeiten-titel">
+  <div class="tb-modal-inhalt tb-toern">
+    <h2 id="tb-bearbeiten-titel" data-i18n="bearbeiten.titel">Eintrag bearbeiten</h2>
+    <p class="tb-hinweis" id="tb-bearbeiten-art"></p>
+    <div id="tb-bearbeiten-artwahl" hidden>
+      <label for="in-bearbeiten-art" data-i18n="bearbeiten.art">Art</label>
+      <select id="in-bearbeiten-art"></select>
+    </div>
+    <label for="in-bearbeiten-zeit" data-i18n="bearbeiten.zeit">Uhrzeit</label>
+    <input type="time" id="in-bearbeiten-zeit">
+    <label for="in-bearbeiten-text" data-i18n="bearbeiten.text">Text</label>
+    <textarea id="in-bearbeiten-text" rows="3"></textarea>
+    <div id="tb-bearbeiten-ort" hidden>
+      <button type="button" class="btn tb-gross" id="btn-bearbeiten-ort" data-i18n="bearbeiten.ortNeu">Ort neu bestimmen</button>
+      <pre class="tb-protokoll" id="tb-bearbeiten-protokoll" hidden></pre>
+    </div>
+    <div class="tb-zeile">
+      <button type="button" class="btn primary tb-gross" id="btn-bearbeiten-ok" data-i18n="bearbeiten.sichern">Speichern</button>
+      <button type="button" class="btn tb-gross" id="btn-bearbeiten-weg" data-i18n="bearbeiten.abbrechen">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="tb-rueckgaengig" id="tb-rueckgaengig" hidden role="status" aria-live="polite">
+  <span data-i18n="loeschen.erledigt">Eintrag gelöscht</span>
+  <button type="button" class="btn" id="btn-rueckgaengig" data-i18n="loeschen.rueckgaengig">Rückgängig</button>
+</div>
+
+<div class="tb-modal" id="tb-liegeart-modal" hidden tabindex="-1" role="dialog" aria-modal="true"
+     aria-labelledby="tb-liegeart-titel">
+  <div class="tb-modal-inhalt">
+    <h2 id="tb-liegeart-titel" data-i18n="liegeart.titel">Pause: Wie liegt das Schiff?</h2>
+    <p class="tb-hinweis" data-i18n="liegeart.hinweis">Steht so im Logbuch. Über Nacht schließt TörnNavLog den Tag zur Dämmerung von selbst ab.</p>
+    <p class="tb-hinweis" id="tb-liegeart-tankstelle" hidden></p>
+    <div class="tb-liegearten" id="tb-liegearten"></div>
+    <button type="button" class="btn tb-gross tb-akzent-rand" id="btn-liegeart-ankerwache" data-i18n="liegeart.mitAnkerwache">Ankern mit Ankerwache …</button>
+    <button type="button" class="btn tb-gross" id="btn-liegeart-weg" data-i18n="liegeart.abbrechen">Abbrechen: weiter aufzeichnen</button>
+  </div>
+</div>
+
+<div class="tb-modal" id="tb-tank-modal" hidden tabindex="-1" role="dialog" aria-modal="true"
+     aria-labelledby="tb-tank-titel">
+  <div class="tb-modal-inhalt">
+    <h2 id="tb-tank-titel" data-i18n="tank.titel">Getankt?</h2>
+    <p class="tb-hinweis" id="tb-tank-frage"></p>
+    <div class="tb-feldpaar">
+      <div><label for="in-tank-liter" data-i18n="tank.liter">Liter Diesel</label>
+        <input id="in-tank-liter" type="text" inputmode="decimal" autocomplete="off"></div>
+    </div>
+    <p class="tb-quelle" id="tb-tank-fehler" hidden data-i18n="tank.fehler">Bitte eine Literzahl über 0 eingeben.</p>
+    <button type="button" class="btn primary tb-gross" id="btn-tank-ok" data-i18n="tank.eintragen">Eintragen</button>
+    <button type="button" class="btn tb-gross" id="btn-tank-nein" data-i18n="tank.nein">Nicht getankt</button>
+    <p class="tb-quelle" data-i18n="tank.quelle">Tankstelle laut OpenStreetMap. Die Liter stehen danach als Tankvorgang im Törnfenster.</p>
+  </div>
+</div>
+
+<div class="tb-modal" id="tb-import-modal" hidden tabindex="-1" role="dialog" aria-modal="true"
+     aria-labelledby="tb-import-titel">
+  <div class="tb-modal-inhalt">
+    <h2 id="tb-import-titel" data-i18n="import.titel">Spur vom Plotter</h2>
+    <p class="tb-hinweis" data-i18n="import.hinweis">GPX aus Navionics, OpenCPN oder vom Plotter, oder eine NMEA-Mitschrift. Übernommen wird nur, was in einer Aufzeichnungslücke liegt.</p>
+    <p class="tb-warnung" id="tb-import-warnung" hidden></p>
+    <div id="tb-import-bericht"></div>
+    <div class="tb-zeile">
+      <button type="button" class="btn primary tb-gross" id="btn-import-ok" data-i18n="import.uebernehmen">Übernehmen</button>
+      <button type="button" class="btn tb-gross" id="btn-import-weg" data-i18n="import.abbrechen">Verwerfen</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="in-spurimport" accept=".gpx,.nmea,.log,.txt,application/gpx+xml,text/xml,text/plain" hidden>
+
+<div class="tb-modal" id="tb-foto-modal" hidden tabindex="-1" role="dialog" aria-modal="true"
+     aria-labelledby="tb-foto-titel">
+  <div class="tb-modal-inhalt">
+    <h2 id="tb-foto-titel" data-i18n="foto.titel">Foto im Logbuch</h2>
+    <img class="tb-foto-vorschau" id="tb-foto-vorschau" alt="">
+    <p class="tb-hinweis" id="tb-foto-stand"></p>
+    <p class="tb-hinweis" data-i18n="foto.hinweis">Bild, Zeit und Position sind bereits gesichert. Ein Text ist freiwillig.</p>
+    <textarea id="in-foto-text" rows="3" data-i18n-placeholder="foto.platzhalter"></textarea>
+    <div class="tb-zeile">
+      <button type="button" class="btn primary tb-gross" id="btn-foto-ok" data-i18n="foto.sichern">Text eintragen</button>
+      <button type="button" class="btn tb-gross" id="btn-foto-weg" data-i18n="foto.ohneText">Ohne Text</button>
+    </div>
+  </div>
+</div>
+
+<div class="tb-modal tb-foto-gross" id="tb-foto-gross" hidden tabindex="-1" role="dialog" aria-modal="true" data-i18n-aria-label="foto.grossTitel" aria-label="Foto vergrößert ansehen">
+  <div class="tb-modal-inhalt">
+    <img id="tb-foto-gross-bild" alt="">
+    <p class="tb-hinweis" id="tb-foto-gross-text"></p>
+    <button type="button" class="btn tb-gross" id="btn-foto-gross-weg" data-i18n="foto.zu">Schließen</button>
+  </div>
+</div>
+
+<div class="tb-cg" id="tb-coastguard" hidden role="dialog" aria-modal="true"
+     lang="en" aria-labelledby="tb-cg-titel">
+  <div class="tb-cg-kopf">
+    <h2 id="tb-cg-titel" data-cg-label="titel">Coastguard view</h2>
+    <span class="tb-cg-stand" id="cg-stand"></span>
+  </div>
+
+  <dl class="tb-cg-werte">
+    <div>
+      <dt data-cg-label="schiff">Vessel</dt>
+      <dd id="cg-schiff">–</dd>
+    </div>
+    <div>
+      <dt data-cg-label="skipper">Master</dt>
+      <dd id="cg-skipper">–</dd>
+    </div>
+    <div class="weit">
+      <dt data-cg-label="crew">Crew aboard</dt>
+      <dd id="cg-crew" class="tb-cg-crew">–</dd>
+    </div>
+    <div>
+      <dt data-cg-label="abgelegt">Departed</dt>
+      <dd id="cg-abgelegt">–</dd>
+    </div>
+    <div>
+      <dt data-cg-label="ziel">Destination</dt>
+      <dd><input id="cg-ziel" type="text" autocomplete="off" disabled></dd>
+    </div>
+    <div class="weit">
+      <dt data-cg-label="position">Position (WGS 84)</dt>
+      <dd id="cg-position" class="mono">–</dd>
+    </div>
+    <div>
+      <dt data-cg-label="strecke">Distance over ground</dt>
+      <dd id="cg-strecke" class="mono">–</dd>
+    </div>
+    <div>
+      <dt data-cg-label="maschine">Under engine (recorded)</dt>
+      <dd id="cg-maschine" class="mono">–</dd>
+    </div>
+
+    <div class="weit">
+      <dt data-cg-label="motor">Engine hours (meter)</dt>
+      <dd class="mono">
+        <input id="cg-motorstunden" type="text" inputmode="decimal" disabled>
+        <span class="tb-cg-neben" id="cg-motorstunden-neben"></span>
+      </dd>
+    </div>
+  </dl>
+
+  <p class="tb-cg-hinweis" data-cg-label="hinweis"></p>
+
+  <div class="tb-cg-knoepfe">
+    <button type="button" class="btn tb-gross" id="btn-cg-sperre"></button>
+    <button type="button" class="btn tb-gross" id="btn-cg-weg" aria-live="polite">Leave</button>
+  </div>
+</div>
+
+<div class="tb-modal" id="tb-sync-modal" hidden tabindex="-1" role="dialog" aria-modal="true"
+     aria-labelledby="tb-sync-titel">
+  <div class="tb-modal-inhalt tb-toern">
+    <h2 id="tb-sync-titel" data-i18n="sync.titel">Wachwechsel</h2>
+    <p class="tb-hinweis" data-i18n="sync.hinweis">Eine Fahrt an ein Crewmitglied dieses Törns übergeben, ohne zweite Anmeldung. Crew, Unterschriften und Fotos bleiben auf dem Gerät.</p>
+
+    <p class="tb-sync-status" id="tb-sync-status"></p>
+
+    <h3 data-i18n="sync.sendenTitel">Fahrt senden an</h3>
+    <p class="tb-hinweis" id="tb-sync-senden-leer" data-i18n="sync.sendenLeer">Kein anderes Crewmitglied dieses Törns hat schon ein eigenes Konto.</p>
+    <div id="tb-sync-senden-liste"></div>
+
+    <h3 class="tb-zeile-abstand" data-i18n="sync.eingangTitel">Eingehende Übergaben</h3>
+    <p class="tb-hinweis" id="tb-sync-eingang-leer" data-i18n="sync.eingangLeer">Nichts unterwegs.</p>
+    <div id="tb-sync-eingang-liste"></div>
+
+    <div class="tb-zeile tb-zeile-abstand">
+      <button type="button" class="btn tb-gross" id="btn-sync-weg" data-i18n="sync.schliessen">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/src/apps/trackbook/main.ts"></script>
+</body>
+</html>

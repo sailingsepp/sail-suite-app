@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TörnBuch: Crew und Törns der Suite</title>
+<meta name="author" content="Sepp">
+<meta name="description" content="TörnBuch: legt Törns an, lädt die Crew per Link ein und führt die Crewliste automatisch aus den Profilen zusammen. Teil der Segler-Suite &quot;Sail-Suite&quot;. © 2026 by Sepp.">
+<meta name="application-name" content="Sail-Suite">
+<meta name="app-version" content="5.1.9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TörnBuch">
+<meta name="theme-color" content="#0B1E2D">
+
+<link rel="apple-touch-icon" href="/icon-voyagebook-180.png">
+<link rel="icon" href="/icon-voyagebook-180.png">
+</head>
+<body class="voyagebook">
+
+<header>
+  <div class="menu-wrap">
+    <button type="button" id="btn-menu" class="menu-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="menu-panel" data-i18n-aria-label="aria.menue" aria-label="Menü" data-icon="hamburger"></button>
+    <div class="menu-panel" id="menu-panel" hidden>
+
+      <details class="menu-gruppe" name="voyagebook-menue">
+        <summary><span data-i18n="menu.gruppe.einstellungen">Einstellungen</span></summary>
+        <div class="menu-gruppe-inhalt">
+          <span class="menu-label" data-i18n="theme.title">Ansicht</span>
+          <div class="menu-choice-group" id="menu-theme-options" role="group">
+            <button type="button" class="menu-choice-btn" data-theme-choice="tag" data-icon="sonne"><span data-i18n="theme.day">Tag</span></button>
+            <button type="button" class="menu-choice-btn" data-theme-choice="nacht" data-icon="mond"><span data-i18n="theme.night">Nacht</span></button>
+            <button type="button" class="menu-choice-btn" data-theme-choice="auto" data-icon="auto"><span data-i18n="theme.auto">Auto</span></button>
+          </div>
+          <span class="menu-label" data-i18n="sprache.title">Sprache / Language</span>
+          <div class="menu-choice-group" id="menu-lang-options" role="group">
+            <button type="button" class="menu-choice-btn" data-lang="auto" data-icon="globus">Auto</button>
+            <button type="button" class="menu-choice-btn" data-lang="de">DE Deutsch</button>
+            <button type="button" class="menu-choice-btn" data-lang="en">EN English</button>
+          </div>
+          <label class="menu-remember">
+            <input type="checkbox" id="in-menu-merken">
+            <span data-i18n="menu.merken">Auswahl merken</span>
+          </label>
+
+          <label class="menu-remember">
+            <input type="checkbox" id="in-menu-toernliste" checked>
+            <span data-i18n="menu.toernliste">Törnliste neben dem Törn</span>
+          </label>
+        </div>
+      </details>
+      <details class="menu-gruppe" name="voyagebook-menue">
+        <summary><span data-i18n="menu.gruppe.hilfeInfo">Hilfe und Info</span></summary>
+        <div class="menu-gruppe-inhalt" id="menu-hilfe">
+          <button type="button" class="menu-link" id="btn-tour" data-icon="kompass"><span data-i18n="menu.tour">Einführung</span></button>
+          <a href="/Handbuch-voyagebook.pdf" target="_blank" rel="noopener" class="menu-link" id="btn-handbuch"
+             data-icon="buch" data-i18n-href="header.handbuchHref"><span data-i18n="header.handbuch">Handbuch</span></a>
+          <button type="button" class="menu-link" id="btn-kompendium" data-icon="buch"><span data-i18n="menu.kompendium">Kompendium</span></button>
+          <button type="button" class="menu-link" id="btn-technik" data-icon="zahnrad"><span data-i18n="menu.technik">Technik an Bord</span></button>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+    <path class="logo-ring" stroke-width="1.6" d="M4 8c0-2.2 1.8-4 4-4h16v22H8c-2.2 0-4-1.8-4-4z"/>
+    <path class="logo-ring" stroke-width="1.6" d="M8 4a4 4 0 0 1 4 4v18"/>
+    <g class="logo-teil" stroke-width="1.5" stroke-linecap="round">
+      <path d="M15 11h9"/>
+      <path d="M15 16h9"/>
+      <path d="M15 21h6"/>
+    </g>
+  </svg>
+  <div>
+    <h1 data-i18n="header.title">TörnBuch</h1>
+    <a href="/" class="header-back" data-icon="zurueck"><span data-i18n="menu.suite">Alle Apps</span></a>
+  </div>
+
+  <div class="user-wrap">
+    <button type="button" id="btn-user" class="user-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="user-panel" data-i18n-aria-label="aria.konto" aria-label="Konto" data-icon="person"><span class="user-dot"></span></button>
+    <div class="user-panel" id="user-panel" hidden>
+      <span class="user-name" id="user-name" hidden></span>
+      <button type="button" class="menu-link" id="btn-profil" data-icon="person"><span data-i18n="menu.profil">Profil</span></button>
+      <button type="button" class="menu-link" id="btn-passwort" data-icon="schloss" hidden><span data-i18n="menu.passwort">Passwort ändern</span></button>
+      <a class="menu-link" id="btn-betrieb" href="/betrieb/" data-icon="zahnrad" hidden><span data-i18n="menu.betrieb">Betrieb</span></a>
+
+      <button type="button" class="menu-link" id="btn-logout" data-icon="tuer"><span data-i18n="menu.logout">Abmelden</span></button>
+      <button type="button" class="menu-link" id="btn-logout-alle" data-icon="tuer"><span data-i18n="menu.logoutAlle">Auf allen Geräten abmelden</span></button>
+    </div>
+  </div>
+</header>
+
+<main class="vb" id="vb-main" data-ansicht="liste">
+
+<aside class="vb-ansicht vb-liste" id="vb-liste-ansicht" aria-labelledby="vb-liste-titel">
+  <div class="vb-liste-kopf">
+    <h2 id="vb-liste-titel" data-i18n="liste.titel">Deine Törns</h2>
+    <button type="button" class="btn primary" id="btn-neuer-toern" data-i18n="liste.neu">+ Neuer Törn</button>
+  </div>
+  <p class="vb-hinweis" id="vb-liste-lädt" data-i18n="liste.laedt">Lädt …</p>
+  <p class="vb-hinweis" id="vb-liste-leer" hidden data-i18n="liste.leer">Noch keine Törns: leg deinen ersten an.</p>
+  <p class="vb-hinweis" id="vb-speicher-hinweis" hidden></p>
+  <p class="vb-hinweis" id="vb-liste-fehler" hidden data-i18n="liste.fehler">Törns ließen sich nicht laden. Bitte später erneut versuchen.</p>
+  <ul class="vb-toernliste" id="vb-toernliste"></ul>
+  <div class="vb-liste-fuss">
+    <span data-i18n-html="footer.legalLinks">Rechtliches: <a href="/#impressum">Impressum</a> · <a href="/#datenschutz">Datenschutzerklärung</a></span><br>
+    <span data-i18n="footer.sig">Sail-Suite · TörnBuch · © 2026 by Sepp</span>
+  </div>
+</aside>
+
+<section class="vb-ansicht vb-detail" id="vb-detail-ansicht" hidden>
+ <div class="vb-detail-innen">
+  <button type="button" class="vb-zurueck" id="btn-zurueck" data-icon="zurueck"><span data-i18n="detail.zurueck">Deine Törns</span></button>
+
+  <div class="vb-detail-kopf">
+    <div class="vb-detail-kopf-text">
+      <div class="vb-detail-titelzeile">
+        <h2 id="vb-detail-name"></h2>
+        <span class="vb-toern-aktiv-abzeichen" id="vb-detail-aktiv-abzeichen" hidden data-i18n="liste.aktiv">aktiv</span>
+      </div>
+      <p class="vb-detail-meta" id="vb-detail-info"></p>
+
+      <p class="vb-archiv-hinweis" id="vb-archiv-hinweis" hidden></p>
+    </div>
+    <div class="vb-kopf-aktionen">
+      <button type="button" class="vb-schalter-knopf" id="btn-toern-aktiv" role="switch" aria-checked="false">
+        <span data-i18n="detail.aktiverToern">Aktiver Törn</span><span class="vb-schalter" aria-hidden="true"></span>
+      </button>
+      <button type="button" class="btn" id="btn-toern-stream" data-icon="teilen" aria-haspopup="dialog"><span data-i18n="stream.knopf">Stream</span></button>
+      <div class="vb-mehr">
+        <button type="button" class="btn vb-mehr-knopf" id="btn-toern-mehr" aria-haspopup="true" aria-expanded="false" aria-controls="vb-mehr-panel" aria-label="Weitere Aktionen" data-i18n-aria-label="detail.mehr"><span aria-hidden="true">⋯</span></button>
+        <div class="vb-mehr-panel" id="vb-mehr-panel" hidden>
+          <button type="button" class="vb-mehr-eintrag" id="btn-crewliste-oeffnen"><span data-i18n="detail.crewlistePdf">Vollständige Crewliste (PDF)</span></button>
+          <div class="vb-mehr-trenner" data-nur-offen></div>
+          <button type="button" class="vb-mehr-eintrag" id="btn-toern-archivieren" data-nur-offen>
+            <span data-i18n="detail.archivieren">Törn archivieren</span>
+            <span class="vb-mehr-hinweis" data-i18n="detail.archivierenKurz">Bleibt lesbar, lässt sich nicht mehr bearbeiten.</span>
+          </button>
+          <button type="button" class="vb-mehr-eintrag vb-gefahr" id="btn-toern-loeschen" data-nur-offen>
+            <span data-i18n="detail.loeschen">Törn löschen</span>
+            <span class="vb-mehr-hinweis" data-i18n="detail.loeschenKurz">Entfernt Törn, Crewliste und Briefings endgültig.</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="vb-status" id="vb-detail-status" role="status" aria-live="polite"></p>
+
+  <div class="vb-reiter" role="tablist">
+    <button type="button" role="tab" data-reiter="uebersicht" aria-selected="true" aria-controls="vb-reiter-uebersicht" data-i18n="detail.reiterUebersicht">Übersicht</button>
+    <button type="button" role="tab" data-reiter="crew" aria-selected="false" aria-controls="vb-reiter-crew"><span data-i18n="detail.reiterCrew">Crew</span> · <span id="vb-crew-anzahl">0</span></button>
+    <button type="button" role="tab" data-reiter="statistik" aria-selected="false" aria-controls="vb-reiter-statistik" data-i18n="detail.reiterStatistik">Logbuch</button>
+    <button type="button" role="tab" data-reiter="kasse" aria-selected="false" aria-controls="vb-reiter-kasse" data-i18n="kasse.reiter">Bordkassa</button>
+    <button type="button" role="tab" data-reiter="technik" aria-selected="false" aria-controls="vb-reiter-technik" data-i18n="technik.reiter">Technik</button>
+  </div>
+
+  <div class="vb-spalten" id="vb-reiter-uebersicht" role="tabpanel">
+    <div class="vb-spalte">
+
+      <section class="vb-karte" id="vb-karte-toerndaten" aria-labelledby="vb-titel-toerndaten">
+        <div class="vb-karte-ansicht">
+          <div class="vb-karte-kopf">
+            <h3 id="vb-titel-toerndaten" data-i18n="detail.toerndaten">Törndaten</h3>
+            <button type="button" class="vb-bearbeiten-knopf" id="btn-toerndaten-bearbeiten" data-nur-offen data-icon="stift"><span data-i18n="detail.bearbeiten">Bearbeiten</span></button>
+          </div>
+          <div class="vb-fakten">
+            <button type="button" class="vb-fakt" data-fakt="toern"><span class="k" data-i18n="detail.revier">Revier</span><span class="v" id="vb-wert-revier"></span></button>
+            <button type="button" class="vb-fakt" data-fakt="toern"><span class="k" data-i18n="detail.zeitraum">Zeitraum</span><span class="v" id="vb-wert-zeitraum"></span></button>
+            <button type="button" class="vb-fakt" data-fakt="toern"><span class="k" data-i18n="detail.startpunkt">Startpunkt</span><span class="v" id="vb-wert-start"></span></button>
+            <button type="button" class="vb-fakt" data-fakt="toern"><span class="k" data-i18n="detail.endpunkt">Endpunkt</span><span class="v" id="vb-wert-ende"></span></button>
+            <button type="button" class="vb-fakt" data-fakt="toern"><span class="k" data-i18n="detail.nutzung">Yachtnutzung</span><span class="v" id="vb-wert-nutzung"></span></button>
+            <button type="button" class="vb-fakt" data-fakt="yacht"><span class="k" data-i18n="detail.schiff">Schiff</span><span class="v" id="vb-wert-schiff"></span></button>
+            <button type="button" class="vb-fakt" data-fakt="toern"><span class="k" data-i18n="detail.crewErfahrung">Crew-Erfahrung</span><span class="v" id="vb-wert-erfahrung"></span></button>
+            <button type="button" class="vb-fakt" data-fakt="rolle"><span class="k" data-i18n="detail.meineRolle">Meine Rolle</span><span class="v" id="vb-wert-rolle"></span></button>
+          </div>
+        </div>
+        <div class="vb-karte-form" id="vb-form-toern" hidden>
+          <div class="vb-form-kopf">
+            <h3 data-i18n="detail.toerndatenBearbeiten">Törndaten bearbeiten</h3>
+            <p class="vb-hinweis" data-i18n="neu.pflichtHinweis">Mit * markierte Angaben sind Pflicht.</p>
+          </div>
+          <div class="vb-form-raster" id="vb-form-toern-felder"></div>
+          <div class="vb-form-yacht">
+            <span class="vb-form-label" data-i18n="detail.yacht">Yacht</span>
+            <button type="button" class="vb-feld-knopf" id="btn-form-zur-yacht">
+              <span class="vb-feld-knopf-wert" id="vb-form-yacht-kurz"></span>
+              <span class="vb-feld-knopf-aktion" data-i18n="detail.yachtEigeneKarte">Eigene Karte unten</span>
+            </button>
+          </div>
+          <p class="vb-hinweis vb-form-voll" data-i18n="detail.rolleImReiter">Die eigene Rolle änderst du im Reiter „Crew“.</p>
+          <div class="vb-form-leiste" id="vb-form-toern-leiste"></div>
+        </div>
+      </section>
+
+      <section class="vb-karte" id="vb-karte-yacht" aria-labelledby="vb-titel-yacht">
+        <div class="vb-karte-ansicht">
+          <div class="vb-karte-kopf">
+            <h3 id="vb-titel-yacht" data-i18n="detail.yacht">Yacht</h3>
+            <button type="button" class="vb-bearbeiten-knopf" id="btn-yacht-bearbeiten" data-nur-offen data-icon="stift"><span data-i18n="detail.bearbeiten">Bearbeiten</span></button>
+          </div>
+          <div class="vb-yacht">
+            <button type="button" class="vb-yacht-foto" id="btn-yacht-foto" data-fakt="yacht">
+              <img id="vb-yacht-foto-bild" alt="" hidden>
+              <span class="vb-yacht-foto-leer" id="vb-yacht-foto-leer"><span data-icon="kamera" aria-hidden="true"></span><span data-i18n="neu.foto">Foto der Yacht</span></span>
+            </button>
+            <div class="vb-yacht-text">
+              <div>
+                <span class="vb-yacht-name" id="vb-yacht-name"></span>
+                <span class="vb-yacht-typ" id="vb-yacht-typ"></span>
+              </div>
+              <dl class="vb-yacht-werte" id="vb-yacht-werte"></dl>
+              <p class="vb-hinweis" id="vb-yacht-polare"></p>
+            </div>
+          </div>
+        </div>
+        <div class="vb-karte-form" id="vb-form-yacht" hidden>
+          <div class="vb-form-kopf">
+            <h3 data-i18n="detail.yachtBearbeiten">Yacht bearbeiten</h3>
+            <p class="vb-hinweis" data-i18n="detail.yachtOptional">Alle Angaben optional. Typ und Länge wählen die Polare, mit der Törnplanung und Tagesplanung die Fahrzeiten rechnen.</p>
+          </div>
+          <div class="vb-form-raster vb-form-raster-3" id="vb-form-yacht-felder"></div>
+          <div class="vb-form-leiste" id="vb-form-yacht-leiste"></div>
+        </div>
+      </section>
+
+      <div class="vb-paar">
+        <section class="vb-karte" aria-labelledby="vb-titel-crew-kurz">
+          <div class="vb-karte-kopf">
+            <h3 id="vb-titel-crew-kurz"><span data-i18n="detail.crewTitel">Crew</span> · <span id="vb-crew-anzahl-2">0</span></h3>
+            <button type="button" class="vb-bearbeiten-knopf" data-reiter="crew" data-icon="stift"><span data-i18n="detail.bearbeiten">Bearbeiten</span></button>
+          </div>
+          <ul class="vb-crew-kurz" id="vb-crewliste-kurz" aria-live="polite"></ul>
+          <div class="vb-aktionen" data-nur-offen>
+            <button type="button" class="btn primary" id="btn-crew-einladen-2" data-icon="brief"><span data-i18n="detail.crewEinladenNeu">Einladungslink erstellen</span></button>
+          </div>
+        </section>
+
+        <section class="vb-karte" id="vb-nachricht-block" hidden aria-labelledby="vb-titel-nachricht">
+          <div>
+            <h3 id="vb-titel-nachricht" data-i18n="nachricht.titel">Nachricht an die Crew</h3>
+            <p class="vb-hinweis" data-i18n="nachricht.hinweisKurz">Per E-Mail an alle mit hinterlegter Adresse.</p>
+          </div>
+          <textarea id="in-nachricht-text" rows="4" maxlength="4000" aria-labelledby="vb-titel-nachricht" data-i18n-placeholder="nachricht.platzhalter" placeholder="Nachricht an die Crew …"></textarea>
+          <div class="vb-aktionen">
+            <button type="button" class="btn" id="btn-nachricht-senden" data-i18n="nachricht.senden">Senden</button>
+          </div>
+          <p class="vb-status" id="vb-nachricht-status" role="status" aria-live="polite"></p>
+        </section>
+      </div>
+    </div>
+
+    <div class="vb-spalte">
+
+      <section class="vb-karte vb-karte-hinweis" id="vb-revier-karte" hidden aria-labelledby="vb-revier-titel">
+        <h3 id="vb-revier-titel" data-i18n="detail.revierHinweise">Zu beachten</h3>
+        <ul class="vb-revier-hinweise" id="vb-revier-hinweise"></ul>
+      </section>
+
+      <section class="vb-karte vb-apps" aria-labelledby="vb-titel-apps">
+        <h3 id="vb-titel-apps" data-i18n="detail.ausApps">Aus den anderen Apps</h3>
+        <a class="vb-app-zeile" href="/trackbook/">
+          <span class="vb-app-kopf"><span class="vb-app-name" data-i18n="app.trackbook">TörnNavLog</span><span class="vb-app-link" data-i18n="detail.oeffnen">Öffnen</span></span>
+          <span class="vb-app-text" id="vb-statistik-kurz" aria-live="polite"></span>
+        </a>
+        <button type="button" class="vb-app-zeile" data-reiter="statistik">
+          <span class="vb-app-kopf"><span class="vb-app-name" data-i18n="app.voyageplan">Törnplanung</span><span class="vb-app-link" data-i18n="detail.imLogbuch">Im Logbuch</span></span>
+          <span class="vb-app-text" id="vb-toernplan-kurz" aria-live="polite"></span>
+        </button>
+        <button type="button" class="vb-app-zeile" data-reiter="statistik">
+
+          <span class="vb-app-kopf"><span class="vb-app-name" id="vb-briefing-marke">CourseCast</span><span class="vb-app-link" data-i18n="detail.imLogbuch">Im Logbuch</span></span>
+          <span class="vb-app-text" id="vb-briefing-kurz" aria-live="polite"></span>
+        </button>
+      </section>
+    </div>
+  </div>
+
+  <div class="vb-spalten" id="vb-reiter-crew" role="tabpanel" hidden>
+    <div class="vb-spalte">
+      <section class="vb-karte" aria-labelledby="vb-titel-crew">
+        <div class="vb-karte-kopf">
+          <h3 id="vb-titel-crew"><span data-i18n="detail.crewTitel">Crew</span> · <span id="vb-crew-anzahl-3">0</span></h3>
+          <button type="button" class="btn ghost" id="btn-crewliste-oeffnen-2" data-i18n="crewliste.oeffnen">Vollständige Crewliste</button>
+        </div>
+        <p class="vb-hinweis" id="vb-crew-hinweis" data-i18n="detail.crewHinweisAntippen">Wer hier mit eigenem Konto steht, kann in TörnNavLog per Wachwechsel die laufende Fahrt übernehmen. Zum Bearbeiten eine Person antippen.</p>
+        <ul class="vb-crewliste" id="vb-crewliste" aria-live="polite"></ul>
+        <p class="vb-status" id="vb-crew-status" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+    <div class="vb-spalte" data-nur-offen>
+      <section class="vb-karte" aria-labelledby="vb-titel-einladen">
+        <h3 id="vb-titel-einladen" data-i18n="detail.crewEinladenTitel">Crew einladen</h3>
+        <p class="vb-hinweis" data-i18n="detail.crewEinladenHinweisKurz">Der Link gilt sieben Tage; Vor- und Nachname kommen aus dem Profil der eingeladenen Person.</p>
+        <div class="vb-aktionen">
+          <button type="button" class="btn primary" id="btn-crew-einladen" data-icon="brief"><span data-i18n="detail.crewEinladenNeu">Einladungslink erstellen</span></button>
+        </div>
+      </section>
+      <section class="vb-karte" id="vb-crew-handeintrag" aria-labelledby="vb-titel-handeintrag">
+        <h3 id="vb-titel-handeintrag" data-i18n="detail.handeintragTitel">Von Hand eintragen</h3>
+        <p class="vb-hinweis" data-i18n="detail.crewManuellHinweis">Für jemanden, der (noch) kein eigenes Konto hat.</p>
+        <div class="vb-crew-formular">
+          <input type="text" id="in-crew-vorname" autocomplete="given-name" aria-label="Vorname" data-i18n-aria-label="detail.crewVornamePlatzhalter" data-i18n-placeholder="detail.crewVornamePlatzhalter" placeholder="Vorname">
+          <input type="text" id="in-crew-nachname" autocomplete="family-name" aria-label="Nachname" data-i18n-aria-label="detail.crewNachnamePlatzhalter" data-i18n-placeholder="detail.crewNachnamePlatzhalter" placeholder="Nachname">
+          <select id="in-crew-funktion" aria-label="Rolle an Bord" data-i18n-aria-label="crewEdit.rolle"><option value="deckshand" data-i18n="funktion.deckshand">Deckshand</option></select>
+        </div>
+        <div class="vb-aktionen">
+          <button type="button" class="btn" id="btn-crew-dazu" data-i18n="detail.crewDazu">+ Hinzufügen</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="vb-spalten" id="vb-reiter-statistik" role="tabpanel" hidden>
+    <div class="vb-spalte">
+      <section class="vb-karte" aria-labelledby="vb-titel-toernplan">
+        <div class="vb-karte-kopf">
+          <h3 id="vb-titel-toernplan" data-i18n="detail.toernplanTitel">Törnplanung</h3>
+          <span class="vb-karte-kurz" id="vb-toernplan-zusammen" hidden></span>
+        </div>
+        <div class="vb-hinweis" id="vb-toernplan" aria-live="polite"></div>
+      </section>
+      <section class="vb-karte" aria-labelledby="vb-titel-statistik">
+        <h3 id="vb-titel-statistik" data-i18n="detail.statistikTitel">Statistik</h3>
+        <div class="vb-hinweis" id="vb-statistik" aria-live="polite"></div>
+      </section>
+
+      <section class="vb-karte" aria-labelledby="vb-titel-motor">
+        <h3 id="vb-titel-motor" data-i18n="motor.titel">Motor &amp; Diesel</h3>
+        <p class="vb-hinweis" id="vb-motor-keine" data-i18n="motor.keine" hidden>Auf diesem Gerät wurde für diesen Törn nichts mit TörnNavLog aufgezeichnet. Motorstunden und Diesel bitte auf dem Gerät eintragen, auf dem TörnNavLog lief.</p>
+        <div id="vb-motor-felder" class="vb-motor" hidden>
+          <p class="vb-hinweis" data-i18n="motor.hinweis">Abgelesen am Betriebsstundenzähler und vom Tankbeleg. Für die ganze Crew auf jedem Gerät sichtbar; die letzte Änderung gilt.</p>
+          <div class="vb-motor-felder">
+            <label><span data-i18n="motor.anfang">Motorstunden bei Übernahme</span>
+              <input type="text" inputmode="decimal" id="in-motor-anfang"></label>
+            <label><span data-i18n="motor.ende">Motorstunden bei Rückgabe</span>
+              <input type="text" inputmode="decimal" id="in-motor-ende"></label>
+          </div>
+
+          <div id="vb-tankliste"></div>
+          <p class="vb-hinweis" id="vb-motor-laufzeit" hidden></p>
+          <div class="vb-aktionen">
+            <button type="button" class="btn primary" id="btn-motor-speichern" data-nur-offen data-i18n="motor.speichern">Speichern</button>
+          </div>
+          <p class="vb-status" id="vb-motor-status" role="status" aria-live="polite"></p>
+        </div>
+      </section>
+    </div>
+    <div class="vb-spalte">
+      <section class="vb-karte" aria-labelledby="vb-briefing-titel">
+        <div class="vb-karte-kopf">
+          <h3 id="vb-briefing-titel" data-i18n="detail.briefingTitel">Tagesbriefing</h3>
+          <span class="vb-karte-kurz" id="vb-briefing-zusammen" hidden></span>
+        </div>
+        <div class="vb-hinweis" id="vb-briefing" aria-live="polite"></div>
+      </section>
+
+      <section class="vb-karte" aria-labelledby="vb-titel-fotos">
+        <div class="vb-karte-kopf">
+          <h3 id="vb-titel-fotos" data-i18n="fotos.titel">Fotos der Crew</h3>
+          <div class="vb-aktionen" data-nur-offen>
+            <button type="button" class="btn primary" id="btn-foto-datei" data-icon="import"><span data-i18n="fotos.datei">Foto hinzufügen</span></button>
+            <button type="button" class="btn" id="btn-foto-kamera" data-icon="kamera" hidden><span data-i18n="fotos.kamera">Mit der Kamera</span></button>
+            <input type="file" id="in-foto-datei" accept="image/*" multiple hidden>
+            <input type="file" id="in-foto-kamera" accept="image/*" capture="environment" hidden>
+          </div>
+        </div>
+        <p class="vb-hinweis" data-i18n="fotos.hinweis">Zeit und Ort liest TörnBuch aus dem Foto, sonst vom Gerät oder aus der Spur; beides lässt sich vor dem Hochladen ändern. Die Fotos stehen im Tagesblatt über dem Logbuch und auf der Stream-Seite.</p>
+        <p class="vb-status" id="foto-status" role="status" aria-live="polite"></p>
+        <div id="vb-fotos" class="vb-fotos"></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="vb-spalten" id="vb-reiter-kasse" role="tabpanel" hidden>
+    <div class="vb-spalte" data-nur-offen>
+      <section class="vb-karte" id="vb-kasse-formular" aria-labelledby="vb-titel-kasse-neu">
+        <h3 id="vb-titel-kasse-neu" data-i18n="kasse.neuTitel">Ausgabe eintragen</h3>
+        <div class="vb-kasse-felder">
+          <label class="vb-kasse-feld"><span data-i18n="kasse.datum">Datum</span>
+            <input type="date" id="in-kasse-datum"></label>
+          <label class="vb-kasse-feld vb-kasse-breit"><span data-i18n="kasse.text">Wofür</span>
+            <input type="text" id="in-kasse-text" maxlength="200" autocomplete="off" data-i18n-placeholder="kasse.textPlatzhalter" placeholder="Einkauf, Marina, Diesel …"></label>
+          <label class="vb-kasse-feld"><span data-i18n="kasse.betrag">Betrag</span>
+            <input type="text" id="in-kasse-betrag" inputmode="decimal" autocomplete="off"></label>
+          <label class="vb-kasse-feld"><span data-i18n="kasse.waehrung">Währung</span>
+            <select id="in-kasse-waehrung"><option value="EUR">EUR</option></select></label>
+          <label class="vb-kasse-feld vb-kasse-breit"><span data-i18n="kasse.zahler">Bezahlt von</span>
+            <select id="in-kasse-zahler"></select></label>
+          <label class="vb-kasse-feld vb-kasse-breit"><span data-i18n="kasse.kategorie">Art</span>
+            <select id="in-kasse-kategorie"></select></label>
+        </div>
+        <p class="vb-kasse-umrechnung" id="vb-kasse-kurs" aria-live="polite" hidden></p>
+        <fieldset class="vb-kasse-teilen">
+          <legend data-i18n="kasse.teilen">Geteilt mit</legend>
+          <label class="vb-kasse-wahl"><input type="checkbox" id="in-kasse-alle" checked> <span data-i18n="kasse.alle">Allen</span></label>
+          <div id="vb-kasse-fuer" class="vb-kasse-fuer" hidden></div>
+        </fieldset>
+        <div class="vb-aktionen">
+          <button type="button" class="btn primary" id="btn-kasse-eintragen" data-i18n="kasse.eintragen">Eintragen</button>
+        </div>
+        <p class="vb-status" id="vb-kasse-status" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+    <div class="vb-spalte">
+      <section class="vb-karte" aria-labelledby="vb-titel-kasse-wem">
+        <h3 id="vb-titel-kasse-wem" data-i18n="kasse.wemTitel">Wer zahlt wem</h3>
+        <div id="vb-kasse-kurse" class="vb-kasse-kurse" hidden></div>
+        <div id="vb-kasse-ausgleich" class="vb-kasse-ausgleich" aria-live="polite"></div>
+      </section>
+      <section class="vb-karte" aria-labelledby="vb-titel-kasse-liste">
+        <div class="vb-karte-kopf">
+          <h3 id="vb-titel-kasse-liste" data-i18n="kasse.listeTitel">Ausgaben</h3>
+          <span class="vb-karte-kurz" id="vb-kasse-gesamt" hidden></span>
+        </div>
+        <ul id="vb-kasse-kategorien" class="vb-kasse-kategorien" hidden></ul>
+        <ul id="vb-kasse-liste" class="vb-kasse-liste"></ul>
+        <div class="vb-aktionen">
+          <button type="button" class="btn" id="btn-kasse-pdf" data-i18n="kasse.pdf">Abrechnung als PDF</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="vb-reiter-technik" role="tabpanel" hidden></div>
+ </div>
+</section>
+
+<section class="vb-ansicht" id="vb-einladung-ansicht" hidden>
+  <p class="vb-einladung-vorspann" data-i18n="einladung.vorspann">Einladung zum Törn</p>
+  <h2 id="vb-einladung-toernname"></h2>
+
+  <p class="vb-hinweis" id="vb-einladung-text"></p>
+
+  <div class="vb-einladung-karte" id="vb-einladung-karte" hidden>
+    <div class="vb-werte">
+      <div><span class="k" data-i18n="detail.revier">Revier</span><span class="v" id="vb-einladung-revier"></span></div>
+      <div><span class="k" data-i18n="detail.zeitraum">Zeitraum</span><span class="v zahl" id="vb-einladung-zeitraum"></span></div>
+      <div><span class="k" data-i18n="detail.startpunkt">Startpunkt</span><span class="v" id="vb-einladung-start"></span></div>
+      <div><span class="k" data-i18n="detail.nutzung">Yachtnutzung</span><span class="v" id="vb-einladung-nutzung"></span></div>
+    </div>
+    <div class="vb-einladung-foto" id="vb-einladung-foto" hidden>
+      <img id="vb-einladung-foto-bild" alt="">
+      <p class="vb-einladung-foto-bildunterschrift" data-i18n="einladung.fotoBildunterschrift">Foto von der Yacht</p>
+    </div>
+  </div>
+
+  <div class="vb-aktionen" style="margin-top:16px">
+    <button type="button" class="btn primary" id="btn-einladung-annehmen" data-icon="haken"><span data-i18n="einladung.annehmen">Einladung annehmen</span></button>
+  </div>
+  <p class="vb-hinweis" data-i18n="einladung.hinweis">Der Link gilt sieben Tage. Vor- und Nachname kommen aus deinem Profil. Hier ist keine Eingabe nötig.</p>
+  <p class="vb-status" id="vb-einladung-status" role="status" aria-live="polite"></p>
+</section>
+
+</main>
+
+<div class="vb-overlay" id="toern-overlay" hidden>
+  <div class="vb-modal" id="toern-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="toern-titel">
+    <button type="button" class="vb-modal-schliessen" id="toern-schliessen" data-i18n-aria-label="aria.schliessen" aria-label="Schließen">✕</button>
+    <h2 id="toern-titel" data-i18n="neu.titel">Neuer Törn</h2>
+
+    <p class="vb-hinweis" data-i18n="neu.pflichtHinweis">Mit * markierte Angaben sind Pflicht.</p>
+    <label id="feld-toern-name" class="vb-form-voll">
+      <span><span data-i18n="neu.name">Name</span> <span aria-hidden="true">*</span></span>
+      <input type="text" id="in-toern-name" maxlength="200" aria-required="true">
+    </label>
+
+    <label id="feld-meine-funktion">
+      <span data-i18n="neu.meineFunktion">Meine Rolle in diesem Törn</span>
+      <select id="in-toern-meine-funktion"><option value="skipper" data-i18n="funktion.skipper">Skipperin / Skipper</option></select>
+    </label>
+
+    <fieldset class="vb-skipper" id="feld-skipper" hidden>
+      <legend><span data-i18n="neu.skipperTitel">Wer ist Skipperin / Skipper?</span> <span aria-hidden="true">*</span></legend>
+      <p class="vb-hinweis" data-i18n="neu.skipperHinweis">Jeder Törn braucht eine Skipperin oder einen Skipper. Sie oder er steht danach in der Crewliste und kann eingeladen werden.</p>
+      <div class="vb-feldpaar">
+        <label>
+          <span data-i18n="neu.skipperVorname">Vorname</span>
+          <input type="text" id="in-toern-skipper-vorname" maxlength="100" autocomplete="off" aria-required="true">
+        </label>
+        <label>
+          <span data-i18n="neu.skipperNachname">Nachname</span>
+          <input type="text" id="in-toern-skipper-nachname" maxlength="100" autocomplete="off">
+        </label>
+      </div>
+
+      <label id="feld-skipper-form">
+        <span data-i18n="neu.skipperForm">Bezeichnung</span>
+        <select id="in-toern-skipper-form">
+          <option value="" data-i18n="funktion.skipper">Skipperin / Skipper</option>
+          <option value="w" data-i18n="funktion.skipper.w">Skipperin</option>
+          <option value="m" data-i18n="funktion.skipper.m">Skipper</option>
+        </select>
+      </label>
+    </fieldset>
+
+    <div class="vb-punkte vb-form-voll" id="feld-punkte">
+      <div class="vb-punkt">
+        <span class="vb-punkt-titel"><span data-i18n="neu.startpunkt">Startpunkt</span> <span aria-hidden="true">*</span></span>
+        <p class="vb-punkt-wert" id="vb-start-wert" data-i18n="neu.punktLeer">Noch nicht gewählt</p>
+        <div class="vb-punkt-aktionen">
+          <button type="button" class="btn" id="btn-start-waehlen">Wählen …</button>
+        </div>
+      </div>
+      <div class="vb-punkt">
+        <span class="vb-punkt-titel"><span data-i18n="neu.endpunkt">Endpunkt</span></span>
+        <p class="vb-punkt-wert" id="vb-ende-wert" data-i18n="neu.punktLeer">Noch nicht gewählt</p>
+        <div class="vb-punkt-aktionen">
+          <button type="button" class="btn" id="btn-ende-waehlen">Wählen …</button>
+          <button type="button" class="btn ghost" id="btn-ende-wie-start" data-i18n="neu.endeWieStart">Wie Start</button>
+        </div>
+      </div>
+    </div>
+    <p class="vb-hinweis vb-form-voll" id="vb-revier-abgeleitet" hidden></p>
+    <div class="vb-feldpaar vb-form-voll" id="feld-zeitraum">
+  <label>
+    <span><span data-i18n="neu.von">Von</span> <span aria-hidden="true">*</span></span>
+    <input type="date" id="in-toern-von" aria-required="true">
+  </label>
+  <label>
+    <span data-i18n="neu.bis">Bis</span>
+    <input type="date" id="in-toern-bis" aria-describedby="vb-bis-hinweis">
+  </label>
+</div>
+
+<p class="vb-hinweis vb-form-voll" id="vb-bis-hinweis" data-i18n="neu.bisHinweis">„Bis“ und Endpunkt dürfen leer bleiben. Bei einer Überstellung rechnet die Törnplanung, wann das Schiff ankommt; für einen Rundtörn braucht sie das Enddatum.</p>
+
+    <label id="feld-yachtnutzung">
+      <span data-i18n="neu.yachtnutzung">Yachtnutzung</span>
+      <select id="in-toern-yachtnutzung">
+        <option value="eigene-yacht" data-i18n="yachtnutzung.eigeneYacht">Eigene Yacht</option>
+        <option value="bareboat-charter" data-i18n="yachtnutzung.bareboatCharter" selected>Charter: selbst geführt</option>
+        <option value="skippered-charter" data-i18n="yachtnutzung.skipperedCharter">Charter: mit Skipperin / Skipper</option>
+        <option value="crewed-charter" data-i18n="yachtnutzung.crewedCharter">Charter: mit Crew</option>
+      </select>
+    </label>
+
+<div class="vb-klapp" id="feld-crew-klapp">
+  <button type="button" class="vb-klapp-knopf" data-klapp="feld-crew-erfahrung-huelle" aria-expanded="false">
+    <span data-i18n="detail.crewErfahrung">Crew-Erfahrung</span> <span class="opt" data-i18n="neu.optional">· optional</span>
+  </button>
+  <div class="vb-klapp-feld" id="feld-crew-erfahrung-huelle" hidden>
+    <p class="vb-hinweis" data-i18n="neu.crewErfahrungHinweis">Wird von Tagesplanung und Törnplanung übernommen.</p>
+    <label class="vb-haken">
+      <input type="checkbox" id="in-toern-crew-angeben">
+      <span data-i18n="neu.crewErfahrungAngeben">Crew-Erfahrung angeben</span>
+    </label>
+    <div id="feld-crew-erfahrung" hidden>
+      <div class="slider-field" id="group-toern-crewfaktor">
+        <label for="in-toern-crewfaktor" data-i18n-title="field.crewfactor.title">
+          <span data-i18n="field.crewfactor">Crew-Faktor</span> <span class="slider-value" id="out-toern-crewfaktor">75 %</span>
+        </label>
+        <input type="range" id="in-toern-crewfaktor" value="0.75" min="0.5" max="1" step="0.05">
+      </div>
+      <div class="slider-field" id="group-toern-crewzumutbarkeit">
+        <label for="in-toern-crewzumutbarkeit" data-i18n-title="field.crewzumutbarkeit.title">
+          <span data-i18n="field.crewzumutbarkeit">Zumutbarkeit</span> <span class="slider-value" id="out-toern-crewzumutbarkeit">75 %</span>
+        </label>
+        <input type="range" id="in-toern-crewzumutbarkeit" value="0.75" min="0.5" max="1" step="0.05">
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div class="vb-klapp">
+  <button type="button" class="vb-klapp-knopf" data-klapp="feld-schiff" aria-expanded="false">
+    <span data-i18n="neu.schiffTitel">Schiff</span> <span class="opt" data-i18n="neu.optional">· optional</span>
+  </button>
+  <div class="vb-klapp-feld" id="feld-schiff" hidden>
+    <div class="vb-feldpaar">
+      <label>
+        <span data-i18n="neu.schiffsname">Schiffsname</span>
+        <input type="text" id="in-toern-schiffsname" maxlength="100">
+      </label>
+      <label class="vb-autocomplete">
+        <span data-i18n="neu.typ">Yachttyp</span>
+        <input type="text" id="in-toern-typ" maxlength="100" autocomplete="off">
+        <ul class="vb-autocomplete-liste" id="vb-toern-typ-vorschlaege" role="listbox" hidden></ul>
+      </label>
+    </div>
+    <p class="vb-hinweis" id="vb-polar-hinweis"></p>
+    <div class="vb-feldpaar">
+      <label>
+        <span data-i18n="neu.laenge">Länge über alles (m)</span>
+        <input type="text" inputmode="decimal" id="in-toern-laenge">
+      </label>
+      <label>
+        <span data-i18n="neu.breite">Breite (m)</span>
+        <input type="text" inputmode="decimal" id="in-toern-breite">
+      </label>
+      <label>
+        <span data-i18n="neu.tiefgang">Tiefgang (m)</span>
+        <input type="text" inputmode="decimal" id="in-toern-tiefgang">
+      </label>
+    </div>
+    <div class="vb-feldpaar">
+      <label>
+        <span data-i18n="neu.verdraengung">Verdrängung (t)</span>
+        <input type="text" inputmode="decimal" id="in-toern-verdraengung">
+      </label>
+      <label>
+        <span data-i18n="neu.motor">Motor (PS)</span>
+        <input type="number" step="1" inputmode="numeric" id="in-toern-motor">
+      </label>
+      <label>
+        <span data-i18n="neu.baujahr">Baujahr</span>
+        <input type="number" step="1" inputmode="numeric" id="in-toern-baujahr">
+      </label>
+    </div>
+
+    <div class="vb-feldpaar">
+      <label>
+        <span data-i18n="neu.verbrauch">Verbrauch unter Motor (l/h)</span>
+        <input type="text" inputmode="decimal" id="in-toern-verbrauch" aria-describedby="vb-kraftstoff-hinweis">
+      </label>
+      <label>
+        <span data-i18n="neu.tank">Tankinhalt Diesel (l)</span>
+        <input type="number" step="1" min="0" inputmode="numeric" id="in-toern-tank" aria-describedby="vb-kraftstoff-hinweis">
+      </label>
+    </div>
+    <p class="vb-hinweis" id="vb-kraftstoff-hinweis"></p>
+    <div class="vb-feldpaar">
+      <label>
+        <span data-i18n="neu.flagge">Nationalflagge</span>
+        <span class="vb-flagge-feld">
+          <input type="text" id="in-toern-flagge" maxlength="2" autocapitalize="characters" autocomplete="off" spellcheck="false" pattern="[A-Za-z]{2}" aria-describedby="vb-flagge-name">
+          <span class="vb-flagge-vorschau" id="vb-flagge-vorschau" aria-hidden="true"></span>
+        </span>
+        <small class="vb-hinweis" id="vb-flagge-name"></small>
+      </label>
+      <label>
+        <span data-i18n="neu.mmsi">MMSI</span>
+        <input type="text" id="in-toern-mmsi" maxlength="9" inputmode="numeric" pattern="[0-9]{9}">
+      </label>
+      <label>
+        <span data-i18n="neu.foto">Foto der Yacht</span>
+        <input type="file" id="in-toern-foto" accept="image/*">
+      </label>
+    </div>
+    <div class="vb-foto-vorschau" id="vb-foto-vorschau" hidden>
+      <img id="vb-foto-bild" alt="">
+      <button type="button" class="btn danger" id="btn-foto-entfernen" data-i18n="neu.fotoEntfernen">Foto entfernen</button>
+    </div>
+  </div>
+</div>
+
+    <p class="vb-status" id="toern-status" role="status" aria-live="polite"></p>
+    <div class="vb-modal-aktionen" id="toern-aktionen">
+      <button type="button" id="btn-toern-anlegen" data-primaer data-i18n="neu.anlegen">Anlegen</button>
+      <button type="button" id="btn-toern-abbrechen" data-i18n="neu.abbrechen">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="vb-overlay" id="foto-overlay" hidden>
+  <div class="vb-modal vb-modal-breit" id="foto-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="foto-titel">
+    <button type="button" class="vb-modal-schliessen" id="foto-schliessen" aria-label="Schließen" data-i18n-aria-label="fotos.abbrechen">✕</button>
+    <h2 id="foto-titel" data-i18n="fotos.dialogTitel">Fotos hinzufügen</h2>
+    <div id="foto-liste" class="vb-foto-liste"></div>
+    <p class="vb-status" id="foto-dialog-status" role="status" aria-live="polite"></p>
+    <div class="vb-modal-aktionen">
+      <button type="button" id="btn-foto-hochladen" data-primaer data-i18n="fotos.hochladen">Hochladen</button>
+      <button type="button" id="btn-foto-abbrechen" data-i18n="fotos.abbrechen">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="vb-overlay" id="stream-overlay" hidden>
+  <div class="vb-modal" id="stream-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="stream-titel">
+    <button type="button" class="vb-modal-schliessen" id="stream-schliessen" aria-label="Schließen" data-i18n-aria-label="stream.schliessen">✕</button>
+    <h2 id="stream-titel" data-i18n="stream.titel">Törn streamen</h2>
+    <p class="vb-hinweis" data-i18n="stream.erklaerung">Mit deinem Link verfolgen Daheimgebliebene den Törn ohne Konto: Karte mit aktueller Position, Logbuch und Fotos, nur lesen. Die Seite zeigt die vollen Namen der Crew.</p>
+    <label>
+      <input type="checkbox" id="in-stream-aktiv" role="switch">
+      <span data-i18n="stream.schalter">Mein Stream-Link ist eingeschaltet</span>
+    </label>
+    <div id="stream-link-bereich" hidden>
+      <label>
+        <span data-i18n="stream.link">Dein Link</span>
+        <input type="text" id="in-stream-link" readonly>
+      </label>
+      <div class="vb-aktionen">
+        <button type="button" class="btn primary" id="btn-stream-teilen" data-icon="teilen"><span data-i18n="stream.teilen">Link teilen</span></button>
+        <button type="button" class="btn" id="btn-stream-kopieren" data-i18n="stream.kopieren">Kopieren</button>
+      </div>
+    </div>
+    <p class="vb-hinweis" id="stream-aus-hinweis" hidden data-i18n="stream.aus">Ausgeschaltet: Wer deinen Link hat, sieht den Törn nicht mehr. Einschalten öffnet denselben Link wieder.</p>
+    <p class="vb-hinweis" data-i18n="stream.hinweis">Jedes Crewmitglied hat einen eigenen Link. Ausschalten beendet nur den Zugang derer, denen du deinen Link geschickt hast.</p>
+    <p class="vb-hinweis" data-i18n="stream.live">Die aktuelle Position kommt aus TörnNavLog, solange aufgezeichnet wird und Netz da ist: unterwegs alle 30 Sekunden und bei jeder Kurs- oder Fahrtänderung sofort, in der Pause und vor Anker nur die Lage, bis es weitergeht. Fotos aus dem Logbuch erscheinen gleich nach der Aufnahme, sobald Netz da ist.</p>
+
+    <p class="vb-hinweis" id="stream-frist" hidden></p>
+    <p class="vb-status" id="stream-status" role="status" aria-live="polite"></p>
+  </div>
+</div>
+
+<div class="vb-overlay" id="crewliste-overlay" hidden>
+  <div class="vb-modal vb-modal-breit" id="crewliste-modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="crewliste-titel">
+    <button type="button" class="vb-modal-schliessen" id="crewliste-schliessen" data-i18n-aria-label="aria.schliessen" aria-label="Schließen">✕</button>
+    <h2 id="crewliste-titel" data-i18n="crewliste.titel">Vollständige Crewliste</h2>
+    <p class="vb-hinweis" id="crewliste-hinweis" data-i18n="crewliste.hinweis">Fehlende Angaben lassen sich hier ergänzen. Sie werden nur für diesen Törn gespeichert, nicht im Profil des Mitglieds.</p>
+    <p class="vb-hinweis" id="crewliste-nur-name" data-i18n="crewliste.nurName" hidden>Geburtsdatum, Staatsbürgerschaft und Passnummer der übrigen Crew sehen nur die Besitzerin oder der Besitzer des Törns und die Skipperin oder der Skipper.</p>
+    <div class="vb-crewliste-voll" id="vb-crewliste-voll"></div>
+    <p class="vb-status" id="crewliste-status" role="status" aria-live="polite"></p>
+    <div class="vb-modal-aktionen">
+      <button type="button" id="btn-crewliste-pdf" data-i18n="crewliste.pdf">Als PDF</button>
+      <button type="button" id="btn-crewliste-schliessen2" data-i18n="neu.abbrechen">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<footer class="suite-footer">
+
+  <p class="suite-copyright" data-i18n-html="footer.copyright">© 2026 Sail-Suite · Alle Rechte vorbehalten.<br>Entwickelt von Sepp · Österreich</p>
+  <p class="suite-version"></p>
+
+  <span data-i18n-html="footer.credits">Daten © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-Mitwirkende · <a href="https://www.openseamap.org/" target="_blank" rel="noopener">OpenSeaMap</a> · <a href="https://emodnet.ec.europa.eu/en/bathymetry" target="_blank" rel="noopener">EMODnet Bathymetry</a> · <a href="https://doi.org/10.5067/MEaSUREs/SRTM/SRTMGL1.003" target="_blank" rel="noopener">NASA SRTM</a> · <a href="https://marineregions.org/" target="_blank" rel="noopener">Marine Regions</a> · <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a></span>
+  <details class="footer-box">
+    <summary data-i18n="footer.sourcesSummary">Datenquellen &amp; Lizenzen</summary>
+    <div class="footer-text" data-i18n-html="footer.sourcesBody"></div>
+  </details>
+  <details class="footer-box">
+    <summary data-i18n="footer.disclaimerSummary">Hinweise &amp; Haftungsausschluss</summary>
+    <div class="footer-text" data-i18n-html="footer.disclaimerBody"></div>
+  </details>
+  <p class="footer-legal" data-i18n-html="footer.legalLinks">Rechtliches: <a href="/#impressum">Impressum</a> · <a href="/#datenschutz">Datenschutzerklärung</a> · <a href="/#urheberrecht">Urheberrecht &amp; Lizenzierung</a></p>
+</footer>
+
+<div class="kp-view" id="kp-view" hidden tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="kp-titel">
+  <header class="kp-kopf">
+    <h2 id="kp-titel" data-i18n="kompendium.titel">Nautisches Kompendium</h2>
+    <button type="button" class="kp-x" id="btn-kompendium-zu" data-i18n-aria-label="kompendium.schliessen"
+            aria-label="Kompendium schließen">×</button>
+  </header>
+  <div class="kp-rumpf">
+    <nav class="kp-nav" id="kp-nav" data-i18n-aria-label="kompendium.navigation" aria-label="Abschnitte des Kompendiums"></nav>
+    <div class="kp-inhalt" id="kp-inhalt"></div>
+  </div>
+</div>
+<script type="module" src="/src/apps/voyagebook/main.ts"></script>
+</body>
+</html>

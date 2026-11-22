@@ -1,0 +1,495 @@
+
+
+body.voyageplan { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
+
+main.vp {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 18px 16px 40px;
+}
+
+.vp-hinweis-block {
+  text-align: center; padding: 40px 16px; display: grid; gap: 10px; justify-items: center;
+}
+.vp-hinweis-block[hidden] { display: none; }
+.vp-hinweis-block h2 { margin: 0; font-size: 18px; }
+.vp-hinweis-block p { color: var(--muted); max-width: 40ch; }
+
+.vp-plan h2 { margin: 0 0 4px; font-size: 20px; }
+.vp-plan h3 { margin: 22px 0 8px; font-size: 15px; color: var(--akzent); }
+
+.vp-hinweis { color: var(--muted); font-size: 13.5px; line-height: 1.5; margin: 6px 0; }
+.vp-status { min-height: 18px; font-size: 13.5px; color: var(--akzent); margin: 8px 0; }
+.vp-status.vp-nur-lesen {
+  border: 1px solid var(--line); border-left: 3px solid var(--akzent); border-radius: 8px;
+  padding: 8px 10px; color: var(--text);
+}
+
+
+.vp-wunschliste { margin: 8px 0 24px; }
+.vp-wunschliste label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); position: relative; margin-top: 10px; }
+.vp-wunschliste input {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px 10px; color: var(--text); font: inherit; width: 100%; box-sizing: border-box;
+}
+.vp-wunschliste .vp-feldpaar { margin-top: 10px; }
+.vp-wunschliste .vp-feldpaar label { margin-top: 0; }
+
+.vp-karte-waehlen { margin: -4px 0 10px; }
+.vp-chipliste {
+  list-style: none; margin: 8px 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.vp-chip {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px;
+  padding: 6px 8px 6px 12px; font-size: 13px;
+}
+
+.vp-chip[hidden] { display: none; }
+.vp-chip button {
+  flex: none; min-width: 32px; min-height: 32px; display: flex; align-items: center;
+  justify-content: center; background: transparent; border: 0; border-radius: 50%;
+  color: var(--muted); font-size: 16px; line-height: 1; cursor: pointer; padding: 0;
+}
+.vp-chip button:hover, .vp-chip button:focus-visible { background: var(--panel); color: var(--red); }
+.vp-chip-endziel {
+  border-left: 3px solid var(--akzent); margin: 8px 0 0;
+  width: fit-content;
+}
+
+.vp-machbarkeit[hidden] { display: none; }
+.vp-machbarkeit {
+  margin: 16px 0 0; padding: 10px 12px; font-size: 13.5px; line-height: 1.6;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+}
+.vp-machbarkeit-gehtMitLuft { border-left: 3px solid var(--green); }
+.vp-machbarkeit-gehtKnapp { border-left: 3px solid var(--gelb); }
+.vp-machbarkeit-gehtNicht { border-left: 3px solid var(--red); }
+
+.vp-karte {
+  
+  isolation: isolate;
+  height: min(50vh, 420px); min-height: 260px; width: 100%;
+  border: 1px solid var(--line); border-radius: 12px; margin: 12px 0 8px;
+  background: var(--panel);
+}
+
+.vp-karten-werkzeuge { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+
+.vp-etappen-formular {
+  background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--akzent);
+  border-radius: 10px; padding: 12px 14px; margin: 10px 0; display: grid; gap: 10px;
+}
+.vp-etappen-formular h3 { margin: 0; }
+.vp-etappen-formular label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); position: relative; }
+.vp-etappen-formular input {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px 10px; color: var(--text); font: inherit;
+}
+.vp-feldpaar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 420px) { .vp-feldpaar { grid-template-columns: 1fr; } }
+
+
+
+
+.vp-punkt { margin-bottom: 12px; }
+.vp-punkt-titel { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.vp-punkt-wert { margin: 0 0 8px; font-size: 14px; font-weight: 600; word-break: break-word; }
+.vp-punkt-wert.leer { font-weight: 400; color: var(--muted); }
+.vp-punkt-aktionen { display: flex; gap: 6px; flex-wrap: wrap; }
+.vp-punkt-aktionen .btn { font-size: 13px; padding: 7px 10px; }
+
+.vp-modal-aktionen { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.vp-etappenliste { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.vp-etappen-zeile {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--teal);
+  border-radius: 10px; padding: 10px 12px;
+}
+.vp-etappen-nummer {
+  flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--panel-2);
+  display: flex; align-items: center; justify-content: center;
+  font: 700 13px var(--mono); color: var(--teal);
+}
+.vp-etappen-info { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
+.vp-etappen-namen { font-size: 14px; }
+.vp-etappen-detail { font-size: 12px; color: var(--muted); }
+.vp-etappen-zeile button { flex: none; font-size: 12.5px; padding: 6px 10px; }
+
+@media (max-width: 400px) {
+  .vp-etappen-zeile { flex-wrap: wrap; justify-content: flex-end; }
+  .vp-etappen-info { flex: 1 1 calc(100% - 38px); }
+}
+
+.vp-aktionen { display: flex; gap: 10px; margin-top: 16px; }
+
+
+
+.search-control {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 3px; width: 150px; max-width: calc(100% - 80px); font-size: 13px;
+  transition: width .15s ease;
+}
+.search-control:focus-within { width: 240px; }
+.search-input {
+  width: 100%; min-height: 30px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px;
+  padding: 4px 8px; color: var(--text); font: inherit; box-sizing: border-box;
+  
+  text-overflow: ellipsis;
+}
+@media (prefers-reduced-motion: reduce) { .search-control { transition: none; } }
+.search-results {
+  list-style: none; margin: 4px 0 0; padding: 0; max-height: 200px; overflow-y: auto;
+}
+.search-results li {
+  padding: 6px 8px; font-size: 12.5px; cursor: pointer; border-radius: 6px;
+}
+.search-results li.active, .search-results li:hover { background: var(--panel-2); color: var(--teal); }
+
+
+.vp-lade-anzeige {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  padding: 36px 0 28px; text-align: center;
+}
+.vp-lade-anzeige[hidden] { display: none; }
+.vp-lade-anzeige .lade-anzeige { position: relative; width: 96px; height: 96px; }
+.vp-lade-anzeige .lade-ring { width: 100%; height: 100%; transform: rotate(-90deg); transform-origin: 50% 50%; }
+.vp-lade-anzeige .lade-ring-spur, .vp-lade-anzeige .lade-ring-bogen {
+  fill: none; stroke-width: 7; stroke-linecap: round;
+}
+.vp-lade-anzeige .lade-ring-spur { stroke: var(--line); }
+
+.vp-lade-anzeige .lade-ring-bogen { stroke: var(--teal); stroke-dasharray: 66 197.9; }
+@media (prefers-reduced-motion: no-preference) {
+  .vp-lade-anzeige .lade-ring { animation: lade-ring-dreh 1.3s linear infinite; }
+  .vp-lade-anzeige .lade-boot { animation: lade-boot-wiegen 2.6s ease-in-out infinite; }
+}
+@keyframes lade-ring-dreh { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
+.vp-lade-anzeige .lade-boot {
+  position: absolute; top: 50%; left: 50%; width: 52px; height: 52px;
+  transform: translate(-50%, -50%); transform-origin: 24px 34px;
+}
+@keyframes lade-boot-wiegen {
+  0%, 100% { transform: translate(-50%, -50%) rotate(-4deg); }
+  50% { transform: translate(-50%, -50%) rotate(4deg); }
+}
+.vp-lade-anzeige .lade-boot-rumpf { fill: var(--akzent); }
+.vp-lade-anzeige .lade-boot-mast { stroke: var(--teal); stroke-width: 2; stroke-linecap: round; }
+.vp-lade-anzeige .lade-boot-grossegel { fill: var(--teal); }
+.vp-lade-anzeige .lade-boot-fock { fill: var(--teal); opacity: .65; }
+.vp-lade-anzeige-text { margin: 0; font-size: 13.5px; color: var(--muted); max-width: 36em; padding: 0 16px; }
+
+.vp-lade-anzeige-stand { margin: 0; font-size: 14px; font-weight: 600; padding: 0 16px; }
+.vp-lade-anzeige-stand:empty { display: none; }
+.vp-lade-abbrechen { min-height: 44px; min-width: 160px; }
+
+
+.vp-wochentabelle { display: grid; gap: 8px; margin-top: 10px; }
+.vp-woche-zeile {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 9px 12px; font-size: 13px;
+}
+.vp-woche-gerechnet.vp-lage-guenstig { border-left: 3px solid var(--green); }
+.vp-woche-gerechnet.vp-lage-brauchbar { border-left: 3px solid var(--gelb); }
+.vp-woche-gerechnet.vp-lage-unfahrbar { border-left: 3px solid var(--red); }
+.vp-woche-geruest { border-left: 3px dashed var(--muted); color: var(--muted); }
+.vp-woche-fehler { border-left: 3px solid var(--red); color: var(--muted); font-style: italic; }
+
+.vp-woche-vorbei { border-left: 3px solid var(--muted); color: var(--muted); }
+.vp-woche-badge { width: 9px; height: 9px; border-radius: 50%; flex: none; font-size: 8px; line-height: 9px; text-align: center; }
+.vp-woche-badge.vp-lage-guenstig { background: var(--green); }
+.vp-woche-badge.vp-lage-brauchbar { background: var(--gelb); }
+.vp-woche-badge.vp-lage-unfahrbar { background: var(--red); }
+
+.vp-woche-geplant .vp-woche-badge { display: inline-block; vertical-align: middle; margin-right: 2px; }
+.vp-woche-ring { color: var(--muted); flex: none; }
+.vp-woche-tag { font-weight: 600; min-width: 90px; }
+.vp-woche-namen { flex: 1 1 160px; }
+.vp-woche-sm, .vp-woche-dauer, .vp-woche-ablegen, .vp-woche-wind { color: var(--muted); font-family: var(--mono); }
+.vp-woche-info { color: var(--muted); font-style: italic; }
+.vp-woche-nacht { font-size: 12px; }
+
+.vp-woche-gewitter { font-size: 12px; font-weight: 600; }
+
+
+.vp-woche-wunschziel { border-left: 3px solid var(--akzent); }
+.vp-woche-wunschziel .vp-woche-namen { font-weight: 600; }
+.vp-woche-hafentag { color: var(--muted); }
+.vp-woche-anker { font-size: 12px; }
+.vp-woche-anker-offen { opacity: 0.6; }
+
+.vp-woche-warum { font-size: 12px; color: var(--muted); cursor: help; flex: none; }
+
+.vp-woche-gespeichert { border-left: 3px dashed var(--line); }
+
+
+.vp-woche-umschalter { display: flex; gap: .4rem; flex-wrap: wrap; margin: .5rem 0; }
+
+.vp-woche-umschalter [aria-selected="true"] {
+  background: var(--panel-2); color: var(--akzent); border-color: var(--akzent); font-weight: 700;
+  box-shadow: inset 0 -3px 0 var(--akzent);
+}
+
+
+.vp-woche-coursecast { font-size: .78rem; color: var(--muted); text-decoration: underline; }
+
+
+.vp-sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+
+.vp-woche-kennzahlen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem .9rem;
+  margin: .4rem 0 .6rem;
+  font-size: .85rem;
+}
+.vp-woche-kennzahlen > div { display: flex; gap: .3rem; align-items: baseline; }
+.vp-woche-kennzahlen dt { color: var(--muted, #666); }
+.vp-woche-kennzahlen dd { margin: 0; font-weight: 600; }
+
+
+details.vp-woche-warum { flex: 1 1 100%; font-size: .85rem; margin-top: .2rem; }
+details.vp-woche-warum summary { cursor: pointer; color: var(--muted, #666); }
+details.vp-woche-warum p { margin: .3rem 0 0; }
+
+
+.vp-woche-anker-text { font-size: .75rem; margin-left: .2rem; }
+
+
+#vp-vergleich-tabelle { overflow-x: auto; }
+
+
+.vp-planung h4 {
+  margin: 1rem 0 .35rem;
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--muted, #666);
+}
+.vp-planung h4:first-of-type { margin-top: .25rem; }
+
+
+.vp-stufen {
+  border: 0;
+  padding: 0;
+  margin: 0 0 .6rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .35rem;
+}
+.vp-stufen legend {
+  float: left;
+  width: 100%;
+  padding: 0;
+  margin-bottom: .2rem;
+  font-size: .9rem;
+}
+
+.vp-stufe[aria-pressed='true'] {
+  background: var(--amber);
+  color: #1a1207;
+  border-color: var(--amber);
+  font-weight: 700;
+}
+
+.vp-grenzwerte { display: flex; flex-wrap: wrap; gap: .6rem; }
+.vp-grenzwerte label { flex: 1 1 6rem; }
+
+.vp-checkbox { display: flex; align-items: center; gap: .5rem; }
+.vp-checkbox input { width: auto; }
+
+
+.vp-raender-zeiten { display: flex; flex-wrap: wrap; gap: .6rem; }
+.vp-raender-zeiten label { flex: 1 1 8rem; }
+
+
+.vp-chip-art {
+  font-size: .75rem;
+  padding: .05rem .4rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+.vp-chip-art[aria-pressed='true'] { background: var(--line); font-weight: 600; }
+
+
+.vp-umkehrlinie {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: .35rem 0;
+  padding: .3rem .5rem;
+  border-top: 2px dashed var(--warn, #b45309);
+  border-bottom: 2px dashed var(--warn, #b45309);
+  font-size: .85rem;
+  color: var(--warn, #b45309);
+}
+.vp-umkehr-text { flex: 1 1 auto; }
+
+.vp-umkehr-bruch { font-weight: 600; }
+
+.vp-umkehrlinie-nie { border-top-style: solid; border-bottom-style: solid; }
+
+
+.vp-wunschliste-zweite { border-left: 3px solid var(--teal); padding-left: 12px; }
+.vp-options-name {
+  background: transparent; border: 0; border-bottom: 1px dashed var(--line);
+  color: var(--teal); font: inherit; font-weight: 600; font-size: 15px;
+  padding: 2px 0; width: 100%; box-sizing: border-box;
+}
+.vp-options-name::placeholder { color: var(--muted); font-weight: 400; }
+.vp-woche-label { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
+
+.vp-woche-ueberblick { margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; }
+.vp-wochentabelle-zweite { margin-top: 18px; }
+
+
+.vp-woche-spur { margin-top: 12px; font-size: 13px; }
+.vp-woche-spur summary { cursor: pointer; color: var(--muted); }
+.vp-woche-spur ul { margin: 8px 0 0; padding-left: 20px; }
+.vp-woche-spur li { margin-bottom: 6px; line-height: 1.4; }
+
+
+.vp-vergleich { margin: 18px 0; padding: 12px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.vp-vergleich h4 { margin: 0 0 8px; font-size: 14px; }
+.vp-vergleich-tabelle-el { width: 100%; border-collapse: collapse; font-size: 13px; }
+.vp-vergleich-tabelle-el th, .vp-vergleich-tabelle-el td { text-align: left; padding: 5px 10px 5px 0; }
+.vp-vergleich-tabelle-el th[scope="row"] { color: var(--muted); font-weight: 400; white-space: nowrap; }
+.vp-vergleich-tabelle-el th[scope="col"] { color: var(--teal); }
+.vp-vergleich-tabelle-el tr + tr th, .vp-vergleich-tabelle-el tr + tr td { border-top: 1px solid var(--line); }
+.vp-vergleich-entscheidungspunkt { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+
+
+.vp-briefing-aktionen { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+.vp-briefing-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.vp-briefing-knoepfe .btn { font-size: 12.5px; padding: 6px 10px; }
+.vp-briefing-fehler { color: var(--red); font-size: 12.5px; margin: 6px 0 0; }
+
+
+.vp-rollierend { margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.vp-rollierend-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.vp-rollierend-zeile {
+  background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--teal);
+  border-radius: 10px; padding: 8px 12px; font-size: 13px; display: grid; gap: 3px;
+}
+.vp-rollierend-zeile.vp-rollierend-weicht { border-left-color: var(--gelb); }
+.vp-rollierend-tag { font-weight: 600; }
+.vp-rollierend-abweichung { color: var(--gelb); font-size: 12px; }
+
+
+
+.vp-karte-marke span {
+  display: flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  font: 700 11px var(--mono); color: #2b1a00;
+  border: 1.5px solid rgba(0, 0, 0, .35);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .4);
+}
+
+.vp-karte-marke-gedaempft span { opacity: .4; box-shadow: none; }
+
+
+.vp-karte-marke-ziehbar span { outline: 2px dashed rgba(0, 0, 0, .55); outline-offset: 2px; cursor: grab; }
+
+
+.vp-eingriff { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin-top: .5rem; }
+.vp-eingriff-umlegen { display: inline-flex; gap: .3rem; align-items: center; }
+.vp-eingriff-auswahl { max-width: 100%; }
+.vp-fixierungen { margin: .5rem 0; }
+.vp-fixierungen-liste { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: .4rem; }
+.vp-fixierungen-liste li { display: inline-flex; align-items: center; gap: .3rem; border: 1px solid var(--border, #ccc); border-radius: 999px; padding: .1rem .2rem .1rem .6rem; }
+#btn-option-waehlen-1[aria-pressed="true"], #btn-option-waehlen-2[aria-pressed="true"] { font-weight: 600; outline: 2px solid currentColor; }
+
+
+.vp-zitat { margin: .4rem 0; padding: .3rem .6rem; border-left: 3px solid var(--teal, #2a7f7a); }
+.vp-zitat p { margin: .2rem 0; }
+.vp-zitat-quelle { font-size: .8rem; color: var(--muted); overflow-wrap: anywhere; }
+
+
+.vp-karte-pfeil span {
+  display: block; width: 16px; height: 16px; line-height: 16px; text-align: center;
+  font-size: 14px; text-shadow: 0 0 2px rgba(0, 0, 0, .85), 0 0 1px rgba(0, 0, 0, .85);
+}
+
+
+.vp-rueckgabe-hinweis { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
+
+
+.vp-wunschliste label.vp-checkbox {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin-top: 12px; color: var(--text); font-size: 14px; cursor: pointer;
+}
+.vp-wunschliste label.vp-checkbox input {
+  flex: none; width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--amber);
+}
+.vp-checkbox-text { display: grid; gap: 2px; }
+.vp-checkbox-hinweis { color: var(--muted); font-size: 12.5px; line-height: 1.4; }
+.vp-fein h4 { margin: 16px 0 4px; }
+
+
+
+.vp-etappen-formular [hidden] { display: none; }
+.vp-ab-tag { margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line, rgba(127,127,127,.25)); }
+.vp-ab-tag-zeile { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.vp-ab-tag-zeile label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+
+.vp-ab-tag-zeile input {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px 10px; color: var(--text); font: inherit; max-width: 100%; box-sizing: border-box;
+}
+[data-theme="nacht"] .vp-ab-tag-zeile input, [data-theme="nacht"] .vp-etappen-formular input { color-scheme: dark; }
+.vp-woche-hafentag .vp-woche-info { color: var(--muted); }
+
+.vp-etappen-formular label, .vp-etappen-formular .vp-feldpaar > * { min-width: 0; }
+.vp-etappen-formular input:not([type="checkbox"]) { width: 100%; min-width: 0; box-sizing: border-box; }
+.vp-etappen-formular label.vp-checkbox { display: flex; align-items: flex-start; gap: 8px; }
+.vp-etappen-formular label.vp-checkbox input { width: auto; flex: none; margin-top: 2px; }
+.vp-etappen-formular #vp-formular-fahrt { display: grid; gap: 10px; }
+.vp-etappen-formular #vp-formular-fahrt[hidden] { display: none; }
+.vp-etappen-formular p:empty { display: none; }
+.vp-etappen-formular p.vp-hinweis { margin: 0; }
+
+
+.vp-planung-raster[hidden] { display: none; }
+.vp-wunschliste select {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px 10px; color: var(--text); font: inherit; width: 100%; box-sizing: border-box;
+}
+.vp-wunschliste select option { background: var(--panel-2); color: var(--text); }
+.vp-planung-raster { align-items: end; }
+
+[data-theme="nacht"] .vp-karte .leaflet-map-pane > .leaflet-pane:not(.leaflet-seekarte-pane):not(.leaflet-seekartenNamen-pane) {
+  filter: grayscale(1) invert(1) sepia(1) hue-rotate(-50deg) saturate(6) brightness(.6) contrast(1.1);
+}
+[data-theme="nacht"] .vp-karte .leaflet-control-zoom a { background: var(--panel-2); color: var(--text); border-color: var(--line); }
+[data-theme="nacht"] .vp-karte .leaflet-control-zoom a:hover { background: var(--panel); }
+[data-theme="nacht"] .vp-karte .leaflet-control-attribution { background: rgba(24,4,2,.75); color: var(--muted); }
+[data-theme="nacht"] .vp-karte .leaflet-control-attribution a { color: var(--teal); }
+
+.search-control { width: 170px; }
+
+.vp-status:empty { min-height: 0; margin: 0; }
+
+
+footer { padding: 16px 16px 4px; }
+.vp-footer-legal { text-align: center; font-size: 12px; color: var(--muted); margin: 30px 0 4px; }
+.vp-footer-legal a { color: var(--teal); }
+.sig { margin-top: 8px; font-size: 11px; color: var(--muted); text-align: center; padding-bottom: 16px; }
+
+
+.vp-anspruch-toern { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
+.vp-anspruch-toern b { color: var(--text); }
