@@ -37,7 +37,7 @@ readings. That server is not part of this repository.
 Requirements: [Node.js](https://nodejs.org/) 22 or later and npm.
 
 ```bash
-git clone https://github.com/seppseebacher-del/sail-suite-app.git
+git clone https://github.com/sailingsepp/sail-suite-app.git
 cd sail-suite-app
 npm ci
 npm run dev        # development server at http://localhost:5173
