@@ -13,6 +13,55 @@ use at sea without a connection.
 
 A fifth page, `stream/`, lets people at home follow a shared voyage read-only.
 
+## Screenshots
+
+English interface, day and night view. Voyage, yacht and crew are invented; weather, radar and
+official warnings are the real data of the day the pictures were taken.
+
+**Landing page** · day and night
+
+<p>
+<img src="bilder/start-tag.png" width="49%" alt="Landing page, day view">
+<img src="bilder/start-nacht.png" width="49%" alt="Landing page, night view in chartplotter red">
+</p>
+
+**VoyageBook** · voyage overview and crew
+
+<p>
+<img src="bilder/voyagebook-toern.png" width="49%" alt="VoyageBook: voyage details, yacht and links to the other apps">
+<img src="bilder/voyagebook-crew.png" width="49%" alt="VoyageBook: crew list with functions and invitation">
+</p>
+
+**VoyagePlan** · wish destinations and the rough pre-check
+
+<p><img src="bilder/voyageplan.png" width="98%" alt="VoyagePlan: map, wish destinations and pre-check of the distance"></p>
+
+**CourseCast** · daily briefing Split → Stari Grad, aerial view and rain radar, night view
+
+<p>
+<img src="bilder/coursecast-briefing.png" width="49%" alt="CourseCast: recommended departure, passage figures and demand">
+<img src="bilder/coursecast-briefing-text.png" width="49%" alt="CourseCast: warnings and weather section of the briefing">
+</p>
+<p>
+<img src="bilder/coursecast-luftbild.png" width="49%" alt="CourseCast: route on the aerial view">
+<img src="bilder/coursecast-briefing-nacht.png" width="49%" alt="CourseCast: briefing in the night view">
+</p>
+
+**SailPilot** · on the phone: route planning, passage with instruments, aerial view, rain radar, gusts
+along the route, night view
+
+<p>
+<img src="bilder/trackbook-route.png" width="24%" alt="SailPilot: route from CourseCast, planned around the islands">
+<img src="bilder/trackbook-tag.png" width="24%" alt="SailPilot: passage with SOG, COG, bearing and cross-track error">
+<img src="bilder/trackbook-luftbild.png" width="24%" alt="SailPilot: aerial view under the route">
+<img src="bilder/trackbook-radar.png" width="24%" alt="SailPilot: rain radar layer with legend">
+</p>
+<p>
+<img src="bilder/trackbook-boeen.png" width="24%" alt="SailPilot: weather map with forecast gusts along the route">
+<img src="bilder/trackbook-boeen-nacht.png" width="24%" alt="SailPilot: gusts in the night view">
+<img src="bilder/trackbook-nacht.png" width="24%" alt="SailPilot: navigation in the night view">
+</p>
+
 ## Accounts and sync
 
 CourseCast, SailPilot and VoyagePlan require a free account and sit behind
