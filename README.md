@@ -6,7 +6,7 @@ use at sea without a connection.
 
 | App | Version | Purpose |
 |---|---|---|
-| **VoyagePlan** · Törnplanung | 5.2.1 | Plans the whole voyage: which harbour on which day |
+| **VoyagePlan** · Törnplanung | 5.2.2 | Plans the whole voyage: which harbour on which day |
 | **CourseCast** · Tagesplanung | 5.7.2 | Daily weather briefing for a fixed route: when to cast off, what to expect on the way |
 | **SailPilot** · TörnNavLog | 6.3.0 | Automatic logbook and backup navigation on the phone already on board |
 | **VoyageBook** · TörnBuch | 5.1.10 | Voyage, crew list, crew kitty, statistics and PDFs |
@@ -993,7 +993,9 @@ The formulas and methods behind the suite's figures, kept current with the code.
   chain per number of night legs if it is shorter than every chain with
   fewer. Each edge of a found chain is checked with its route on the water
   (straight where free, otherwise around land) against the hours it may
-  take; an edge that fails is barred and the chain searched again. The
+  take; an edge that fails is barred and the chain searched again. A night
+  leg running more than 15 NM across land is left out during the search;
+  without a chain that passes, the corridor is the sea route. The
   chains are the corridor of the candidate selection, their harbours stay
   beyond the cap of 40 to 60 (one per 10 NM of chain), and their edges are
   built before the time budget. For the early arrival the plan search runs

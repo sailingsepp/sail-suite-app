@@ -1,3 +1,4 @@
+import { suchSeeweg } from './ueberstellungRechner';
 import { holeKandidatenknotenImGebiet, holeKuestenlinienFuerNetz, dedupliziereHafenknoten } from '@/data/haefen';
 import { openMeteoKontingentErschoepft } from '@/data/openMeteoNetz';
 import { holeInselAbschnitteOderWirf, type InselAbschnitte } from '@/data/skipperguide';
@@ -15,7 +16,7 @@ import { waehlePlaene, zaehleRueckwegAmHinweg, zaehleTageAmHeimathafen, zaehleUe
 import { ausrichtungstermRundtoern, ausrichtungstermEinweg } from '@/core/ausrichtung';
 import { waehleToernvorschlag, waehleToernvorschlaege, bildeKetteAufNetzAb, SAATPLAN_SCHWELLE_NM } from '@/core/saatplan';
 import { huellenumfangSm, selbstkreuzungen, rueckschritte } from '@/core/gummiband';
-import { seeweg, boxUm } from '@/core/landumfahrung';
+import { boxUm } from '@/core/landumfahrung';
 import { schutzStufe } from '@/core/shelter';
 import { revierVonPunkt } from '@/core/revierzonen';
 import { bearingDeg } from '@/core/geo';
@@ -332,10 +333,8 @@ export async function rechne(
   let seewegPunkte: Punkt[] | null = null;
   let seewegSm = 0;
   if (anfrage.offenesEnde && rueckgabehafen) {
-    const b0 = boxUm([anfrage.start.ort, zielOrt], 150);
-    const { kuestenlinienRueckfall } = await import('@/data/kuestenlinienFallback');
-    const k0 = await kuestenlinienRueckfall(b0.swLat, b0.swLon, b0.neLat, b0.neLon);
-    seewegPunkte = k0 ? seeweg(anfrage.start.ort, zielOrt, k0, 150, 0.5, true) : null;
+
+    seewegPunkte = await suchSeeweg(anfrage.start.ort, zielOrt);
     if (seewegPunkte) {
       let l = 0;
       for (let i = 1; i < seewegPunkte.length; i++) l += distNM(seewegPunkte[i - 1]!.lat, seewegPunkte[i - 1]!.lon, seewegPunkte[i]!.lat, seewegPunkte[i]!.lon);
@@ -386,7 +385,7 @@ export async function rechne(
   const naechteErlaubt = (anfrage.nachtVorgaben ?? nachtVorgabenAus(planung)).nachtfahrtBudget;
 
   const kettenTagSm = (KETTEN_RESERVE * planung.maxStundenProTag * anfrage.cfg.motorSpeed) / KANTEN_AUFSCHLAG;
-  const ketten = anfrage.offenesEnde && rueckgabehafen
+  const ketten = anfrage.offenesEnde && rueckgabehafen && kueste != null
     ? etappenKetten(
       kettenStationen(anfrage.start, optionEingaben[0]?.wunschziele ?? [], rueckgabehafen),
       erlaubt.filter((k) => k.art !== 'bucht'), kettenTagSm,
@@ -579,7 +578,7 @@ export async function rechne(
 
   const nachtfahrtBudget = (anfrage.nachtVorgaben ?? nachtVorgabenAus(planung)).nachtfahrtBudget;
 
-  const netz: Kandidatennetz = kantenOhneVtg(nachtfahrtBudget > 0
+  const netz: Kandidatennetz = kantenOhneVtg(nachtfahrtBudget > 0 && kueste != null
     ? ergaenzeNachtkanten(netzTag, {
       revier, maxStundenProTag: planung.maxStundenProTag, kuestenlinien: kueste ?? [], erlaubt: kanteErlaubt,
       ausgeschlossen: ohneKanten, immer: new Set(pflichtKnoten.map((_, i) => i)),

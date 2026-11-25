@@ -249,6 +249,8 @@ function umfahreBeide(a: Punkt, b: Punkt, kueste: readonly [Punkt, Punkt][]): Pu
 
 export const KETTE_LAND_MAX_SM = 5;
 
+export const KETTE_NACHT_LAND_MAX_SM = 15;
+
 export function laengstesLandstueckSm(a: Punkt, b: Punkt, kueste: readonly [Punkt, Punkt][]): number {
   const sm = distNM(a.lat, a.lon, b.lat, b.lon);
   if (kueste.length === 0 || sm < 0.1) return 0;
@@ -323,6 +325,39 @@ export function etappenKetten(
   }
   const gesperrt = new Set<string>();
 
+  const ZELLE = 0.5;
+  const zellen = new Map<string, [Punkt, Punkt][]>();
+  if (K > 0) {
+    for (const seg of kueste) {
+      const y0 = Math.floor(Math.min(seg[0].lat, seg[1].lat) / ZELLE), y1 = Math.floor(Math.max(seg[0].lat, seg[1].lat) / ZELLE);
+      const x0 = Math.floor(Math.min(seg[0].lon, seg[1].lon) / ZELLE), x1 = Math.floor(Math.max(seg[0].lon, seg[1].lon) / ZELLE);
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+        const k = `${y}|${x}`;
+        let liste = zellen.get(k);
+        if (!liste) { liste = []; zellen.set(k, liste); }
+        liste.push(seg as [Punkt, Punkt]);
+      }
+    }
+  }
+  const nachtUeberLand = new Map<string, boolean>();
+  const nachtkanteUeberLand = (i: number, j: number): boolean => {
+    if (zellen.size === 0) return false;
+    const schluessel = `${Math.min(i, j)}|${Math.max(i, j)}`;
+    let u = nachtUeberLand.get(schluessel);
+    if (u == null) {
+      const a = knoten[i]!.ort, b = knoten[j]!.ort;
+      const nah = new Set<[Punkt, Punkt]>();
+      for (let y = Math.floor(Math.min(a.lat, b.lat) / ZELLE); y <= Math.floor(Math.max(a.lat, b.lat) / ZELLE); y++) {
+        for (let x = Math.floor(Math.min(a.lon, b.lon) / ZELLE); x <= Math.floor(Math.max(a.lon, b.lon) / ZELLE); x++) {
+          for (const seg of zellen.get(`${y}|${x}`) ?? []) nah.add(seg);
+        }
+      }
+      u = laengstesLandstueckSm(a, b, [...nah]) > KETTE_NACHT_LAND_MAX_SM;
+      nachtUeberLand.set(schluessel, u);
+    }
+    return u;
+  };
+
   const geprueft = new Map<string, boolean>();
   const ueberLand = (a: Punkt, b: Punkt): boolean => {
     const schluessel = `${a.lat},${a.lon}|${b.lat},${b.lon}`;
@@ -355,6 +390,7 @@ export function etappenKetten(
         if (gesperrt.has(`${Math.min(n, j)}|${Math.max(n, j)}`)) continue;
         const k2 = k + (sm > tagSm ? 1 : 0);
         if (k2 > K) continue;
+        if (sm > tagSm && nachtkanteUeberLand(n, j)) continue;
         const v = id(j, j === g ? g + 1 : g, k2);
         if (best + sm < dist[v]!) { dist[v] = best + sm; vor[v] = u; }
       }
@@ -363,7 +399,6 @@ export function etappenKetten(
   };
   const ketten: Etappenkette[] = [];
 
-  let ungeprueft: Etappenkette[] = [];
   for (let versuch = 0; versuch < KETTE_VERSUCHE; versuch++) {
     const { dist, vor } = suche();
     ketten.length = 0;
@@ -384,13 +419,11 @@ export function etappenKetten(
       kuerzeste = dist[ziel]!;
       ketten.push({ knoten: folge.map((n) => knoten[n]!), sm: dist[ziel]!, naechte: k });
     }
-    if (versuch === 0) ungeprueft = [...ketten];
-    if (ketten.length === 0) return ungeprueft;
+    if (ketten.length === 0) return [];
     if (!neuGesperrt) return ketten;
-
-    if (Date.now() - beginn > (opt.fristMs ?? KETTE_FRIST_MS)) return [...ketten];
+    if (Date.now() - beginn > (opt.fristMs ?? KETTE_FRIST_MS)) return [];
   }
-  return ungeprueft;
+  return [];
 }
 
 export function kantePasst(

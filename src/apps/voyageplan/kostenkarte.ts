@@ -391,7 +391,9 @@ function rechneKante(
       kennzahlen: {
         ...kennzahlenOhneWetter(datum),
         totalHrs: b.totalHrs, vmgShareAnteil: b.vmgShare, motorShareAnteil: b.motorShare,
-        dunkelShareAnteil: b.dunkelShare, maxWindKn: b.maxWind, maxGustKn: b.maxGust, maxHsM: b.maxHs,
+        dunkelShareAnteil: b.dunkelShare, maxWindKn: b.maxWind, maxGustKn: b.maxGust,
+
+        maxHsM: b.seaValid ? b.maxHs : null,
         schutzWellenanlaufNM, revierSchutzhafen,
 
         modellUebereinstimmungProzent: lauf.modellJeTag.get(dateStr) ?? null,
