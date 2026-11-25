@@ -12,8 +12,6 @@ import { liesSitzungsToken } from '@/shell/session';
 import { initModal, type ModalHandle } from '@/shell/modal';
 import { STRINGS } from './strings';
 
-
-
 const $ = (id: string) => document.getElementById(id);
 
 function wort(schluessel: string): string {
@@ -38,8 +36,6 @@ function anzeigename(m: CrewEintrag): string {
   if (p?.vorname) return p.vorname;
   return wort('sync.unbekanntesMitglied');
 }
-
-
 
 async function ladeSendeListe(token: string, toernId: string): Promise<void> {
   const liste = $('tb-sync-senden-liste');
@@ -85,8 +81,6 @@ async function laufendeOderLetzteFahrt(): Promise<Fahrt | null> {
   return fahrten.sort((a, b) => b.begonnen - a.begonnen)[0] ?? null;
 }
 
-
-
 async function ladeEingangsListe(token: string): Promise<void> {
   const liste = $('tb-sync-eingang-liste');
   const leer = $('tb-sync-eingang-leer');
@@ -112,11 +106,8 @@ async function ladeEingangsListe(token: string): Promise<void> {
   }
 }
 
-
 async function uebernimmLokal(roh: FahrtPayload): Promise<boolean> {
-  
-  
-  
+
   const fahrt = bereinigeFahrt((roh as Partial<FahrtPayload> | null)?.fahrt);
   if (!fahrt) return false;
   const payload: FahrtPayload = {
@@ -149,7 +140,7 @@ async function uebernimmLokal(roh: FahrtPayload): Promise<boolean> {
   for (const ort of payload.orte) {
     const rest: Ortsmarke = { ...ort };
     delete rest.id;
-    await merkeOrt(rest); 
+    await merkeOrt(rest);
   }
   return true;
 }
@@ -171,8 +162,6 @@ async function nimmAn(token: string, u: UebergabeMeta, knopf: HTMLButtonElement)
   await ladeEingangsListe(token);
 }
 
-
-
 function zeigeStatus(schluessel: string): void {
   const el = $('tb-sync-status');
   if (el) el.textContent = wort(schluessel);
@@ -186,9 +175,7 @@ async function oeffneDatensicherung(): Promise<void> {
   const token = liesSitzungsToken();
   const toern = await aktuellerToern();
   if (!token || !toern) {
-    
-    
-    
+
     zeigeStatus('sync.keinToernOderSitzung');
     return;
   }
@@ -200,8 +187,6 @@ export function initDatensicherung(): void {
   const syncModalEl = $('tb-sync-modal');
   if (syncModalEl) syncModal = initModal(syncModalEl, schliesseSyncModal);
 
-  
-  
   $('btn-wachwechsel')?.addEventListener('click', () => void oeffneDatensicherung());
   $('btn-sync-weg')?.addEventListener('click', schliesseSyncModal);
 }

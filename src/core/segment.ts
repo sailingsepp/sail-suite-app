@@ -3,17 +3,16 @@ import { polarSpeed, mastFaktorEffektiv } from './polar';
 import { vmgOptimum } from './vmg';
 import type { SchiffConfig, SegmentLoesung } from './types';
 
-
 export interface SegWind {
   speed: number;
-  dir: number; 
-  
+  dir: number;
+
   speed80?: number | null;
 }
 
 export interface SegCurrent {
   speed: number;
-  dir: number; 
+  dir: number;
 }
 
 interface Kurs {
@@ -29,40 +28,31 @@ interface Kurs {
   stwReal?: number;
 }
 
-
 export function solveSegment(
   course: number,
   wind: SegWind,
   cur: SegCurrent,
   cfg: SchiffConfig,
 ): SegmentLoesung {
-  
+
   const [wux, wuy] = uv(wind.dir + 180);
-  
-  
-  
-  
-  
+
   const mastFactor = cfg.boat.referenceHeight === 'mast'
     ? mastFaktorEffektiv(wind.speed, wind.speed80 ?? null)
     : 1;
-  
-  
-  
-  const Wx = wind.speed * mastFactor * wux, Wy = wind.speed * mastFactor * wuy;
-  const [cux, cuy] = uv(cur.dir); 
-  const Cx = cur.speed * cux, Cy = cur.speed * cuy;
-  
-  const sws = Math.hypot(Wx - Cx, Wy - Cy); 
-  const swFrom = bearingOf(-(Wx - Cx), -(Wy - Cy));
-  
-  
-  
-  const sws10 = sws / mastFactor;
-  const targetTwa = relAngle(swFrom, course); 
 
-  const k = cur.speed * Math.sin(toRad(cur.dir - course)); 
-  const a = cur.speed * Math.cos(toRad(cur.dir - course)); 
+  const Wx = wind.speed * mastFactor * wux, Wy = wind.speed * mastFactor * wuy;
+  const [cux, cuy] = uv(cur.dir);
+  const Cx = cur.speed * cux, Cy = cur.speed * cuy;
+
+  const sws = Math.hypot(Wx - Cx, Wy - Cy);
+  const swFrom = bearingOf(-(Wx - Cx), -(Wy - Cy));
+
+  const sws10 = sws / mastFactor;
+  const targetTwa = relAngle(swFrom, course);
+
+  const k = cur.speed * Math.sin(toRad(cur.dir - course));
+  const a = cur.speed * Math.cos(toRad(cur.dir - course));
 
   function withSpeed(v: number): Kurs {
     const ratio = Math.max(-1, Math.min(1, -k / v));
@@ -77,18 +67,15 @@ export function solveSegment(
     const c = withSpeed(cfg.speedKn);
     sail = { ...c, twa: relAngle(swFrom, c.h) };
   } else {
-    const swsM = sws; 
-    const gamma = targetTwa; 
+    const swsM = sws;
+    const gamma = targetTwa;
     const beat = vmgOptimum(swsM, cfg.crewFactor, true, cfg.boat);
     const run = vmgOptimum(swsM, cfg.crewFactor, false, cfg.boat);
 
     if (sws10 < cfg.minSailWind) {
-      sail = null; 
+      sail = null;
     } else if (gamma < beat.angle || gamma > run.angle) {
-      
-      
-      
-      
+
       const up = gamma < beat.angle;
       const opt = up ? beat : run;
       const vEff = opt.vmg / Math.cos(toRad(up ? gamma : 180 - gamma));
@@ -96,13 +83,13 @@ export function solveSegment(
       sail = {
         h: hh, v: vEff, sog: vEff * Math.cos(toRad(hh - course)) + a,
         held: Math.abs(k) <= vEff,
-        twa: opt.angle, 
-        targetTwa: gamma, 
+        twa: opt.angle,
+        targetTwa: gamma,
         beating: up, gybing: !up,
         beatAngle: opt.angle, stwReal: opt.speed,
       };
     } else {
-      
+
       let h = course, v = 0;
       for (let it = 0; it < 8; it++) {
         v = polarSpeed(swsM, relAngle(swFrom, h), cfg.crewFactor, cfg.boat);
@@ -128,11 +115,8 @@ export function solveSegment(
     chosen = sail;
   }
 
-  
   const blocked = !chosen.held || chosen.sog <= 0.1;
-  
-  
-  
+
   const stwR = chosen.stwReal ?? chosen.v;
   const twaR = toRad(chosen.twa ?? 0);
   const aws = Math.hypot(sws * Math.sin(twaR), sws * Math.cos(twaR) + stwR);

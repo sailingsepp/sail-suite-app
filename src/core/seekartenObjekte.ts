@@ -4,8 +4,6 @@ import type { GeoFeature, Inselflaeche } from './osmAuszug';
 import { lateinisch } from './umschrift';
 import { streifenMaske } from './hoehen';
 
-
-
 export const SEEKARTE_FAKTOR = 1_000_000;
 
 const STEG_TOLERANZ_M = 0.5;
@@ -27,18 +25,18 @@ export type VerkehrRoh = [VerkehrArt, 0 | 1, number[]];
 
 export interface SeekartenPaket {
   revier: string;
-  
+
   bbox: [number, number, number, number];
   erstellt: string;
   faktor: number;
   stege: StegRoh[];
   namen: KartenName[];
-  
+
   orte?: OrtsFlaecheRoh[];
   strassen?: StrasseRoh[];
-  
+
   pisten?: PisteRoh[];
-  
+
   verkehr?: VerkehrRoh[];
 }
 
@@ -54,7 +52,6 @@ function kodiere(punkte: readonly Pos[], faktor = SEEKARTE_FAKTOR, toleranzM = S
   return aus;
 }
 
-
 export function dekodiereSteg(k: readonly number[], faktor = SEEKARTE_FAKTOR): Float64Array {
   const p = new Float64Array(k.length);
   let lat = 0, lon = 0;
@@ -65,7 +62,6 @@ export function dekodiereSteg(k: readonly number[], faktor = SEEKARTE_FAKTOR): F
   return p;
 }
 
-
 function breiteDm(t: Readonly<Record<string, string>>): number {
   const m = /^\s*(\d+(?:[.,]\d+)?)\s*(m)?\s*$/.exec(t['width'] ?? '');
   const w = m ? Number(m[1]!.replace(',', '.')) : NaN;
@@ -73,7 +69,6 @@ function breiteDm(t: Readonly<Record<string, string>>): number {
 }
 
 const geschlossen = (r: readonly Pos[]) => r.length >= 4 && r[0]![0] === r[r.length - 1]![0] && r[0]![1] === r[r.length - 1]![1];
-
 
 export function stegeAus(f: GeoFeature): StegRoh[] {
   const p = f.properties ?? {};
@@ -101,16 +96,10 @@ export function stegeAus(f: GeoFeature): StegRoh[] {
   return aus;
 }
 
-
-
-
-
-
 export const STREIFEN_KM = 20;
 
 export interface Kap { lat: number; lon: number; name: string }
 export interface Flugplatz { lat: number; lon: number; name: string; icao: string }
-
 
 function lageVon(f: GeoFeature): { lat: number; lon: number } | null {
   const g = f.geometry;
@@ -129,7 +118,6 @@ function lageVon(f: GeoFeature): { lat: number; lon: number } | null {
 
 const nameVon = (p: Record<string, unknown>) => (typeof p['name'] === 'string' ? p['name'].trim() : '');
 
-
 export function kapAus(f: GeoFeature): Kap | null {
   const p = f.properties ?? {};
   if (p['natural'] !== 'cape') return null;
@@ -137,7 +125,6 @@ export function kapAus(f: GeoFeature): Kap | null {
   const l = lageVon(f);
   return name && l ? { ...l, name: lateinisch(name) } : null;
 }
-
 
 export function flugplatzAus(f: GeoFeature): Flugplatz | null {
   const p = f.properties ?? {};
@@ -150,14 +137,7 @@ export function flugplatzAus(f: GeoFeature): Flugplatz | null {
   return { ...l, name: lateinisch(name), icao };
 }
 
-
-
-
-
-
-
 export interface Windrad { lat: number; lon: number; hoeheM: number | null }
-
 
 export function windradAus(f: GeoFeature): Windrad | null {
   const p = f.properties ?? {};
@@ -172,27 +152,20 @@ export function windradAus(f: GeoFeature): Windrad | null {
   return { lat, lon, hoeheM: werte.length ? Math.round(Math.max(...werte)) : null };
 }
 
-
 export function pisteAus(f: GeoFeature): PisteRoh | null {
   const p = f.properties ?? {};
   if (p['aeroway'] !== 'runway' || !f.geometry) return null;
   const t: Record<string, string> = {};
   for (const [k, v] of Object.entries(p)) if (typeof v === 'string') t[k] = v;
   const g = f.geometry;
-  
+
   if (g.type === 'LineString' && geschlossen(g.coordinates as Pos[]) && p['area'] !== 'no') return null;
-  
+
   const r = g.type === 'LineString' ? g.coordinates as Pos[]
     : g.type === 'Polygon' ? (g.coordinates as Pos[][])[0]
       : g.type === 'MultiPolygon' ? (g.coordinates as Pos[][][])[0]?.[0] ?? null : null;
   return r && r.length >= 2 ? [breiteDm(t), kodiere(r)] : null;
 }
-
-
-
-
-
-
 
 const VTG_ARTEN: Record<string, VerkehrArt> = {
   separation_zone: 'zone', separation_roundabout: 'zone',
@@ -202,7 +175,6 @@ const VTG_ARTEN: Record<string, VerkehrArt> = {
 
 export const VERKEHR_TOLERANZ_M = 10;
 
-
 export function verkehrAus(f: GeoFeature): VerkehrRoh[] {
   const p = f.properties ?? {};
   const art: VerkehrArt | undefined = p['route'] === 'ferry' ? 'faehre'
@@ -211,7 +183,7 @@ export function verkehrAus(f: GeoFeature): VerkehrRoh[] {
   if (!art || !g) return [];
   if (g.type === 'LineString') {
     const r = g.coordinates as Pos[];
-    
+
     if (art !== 'faehre' && geschlossen(r) && p['area'] !== 'no') return [];
     return r.length >= 2 ? [[art, 0, kodiere(r, SEEKARTE_FAKTOR, VERKEHR_TOLERANZ_M)]] : [];
   }
@@ -219,7 +191,6 @@ export function verkehrAus(f: GeoFeature): VerkehrRoh[] {
   const teile = g.type === 'Polygon' ? [g.coordinates as Pos[][]] : g.type === 'MultiPolygon' ? g.coordinates as Pos[][][] : [];
   return teile.flatMap((t) => (t[0] && t[0].length >= 4 ? [[art, 1, kodiere(t[0], SEEKARTE_FAKTOR, VERKEHR_TOLERANZ_M)] as VerkehrRoh] : []));
 }
-
 
 export function hoeheM(ele: string | undefined): number | null {
   const m = /^\s*(-?\d+(?:[.,]\d+)?)\s*(m|ft|')?\s*$/i.exec(ele ?? '');
@@ -231,7 +202,6 @@ export function hoeheM(ele: string | undefined): number | null {
 
 export interface Gipfel { lat: number; lon: number; name: string; hoeheM: number }
 
-
 export function gipfelAus(f: GeoFeature): Gipfel | null {
   const p = f.properties ?? {};
   if (p['natural'] !== 'peak' || f.geometry?.type !== 'Point') return null;
@@ -242,24 +212,19 @@ export function gipfelAus(f: GeoFeature): Gipfel | null {
   return { lat, lon, name: lateinisch(name), hoeheM: h };
 }
 
-
 export function sichtweiteNM(hoeheMeter: number): number {
   return 2.07 * Math.sqrt(Math.max(0, hoeheMeter));
 }
 
-
 export const GIPFEL_RESERVE_NM = 5;
-
 
 export const GIPFEL_KUESTE_MAX_KM = 20;
 
 export const GIPFEL_UMKREIS_KM = 5;
 
-
 export function gipfelVonSeeSichtbar(hoeheMeter: number, kuesteNM: number): boolean {
   return sichtweiteNM(hoeheMeter) > kuesteNM + GIPFEL_RESERVE_NM;
 }
-
 
 function ringKm2(r: readonly Pos[]): number {
   const lat0 = r[0]?.[1] ?? 0;
@@ -277,7 +242,6 @@ function imRing(lon: number, lat: number, r: readonly Pos[]): boolean {
   }
   return drin;
 }
-
 
 export function inselBeschriftung(f: Inselflaeche): { lat: number; lon: number; km2: number } | null {
   let groesst: Pos[] | null = null, km2 = 0, summe = 0;
@@ -308,13 +272,11 @@ export function inselBeschriftung(f: Inselflaeche): { lat: number; lon: number; 
   return { lat, lon, km2: summe };
 }
 
-
 export function aufKachelrand(a1: number, o1: number, a2: number, o2: number): boolean {
   const g = KARTE_KACHEL_GRAD, e = 1e-7;
   const rand = (v: number) => Math.abs(v / g - Math.round(v / g)) < e;
   return (rand(a1) && rand(a2) && Math.abs(a1 - a2) < e) || (rand(o1) && rand(o2) && Math.abs(o1 - o2) < e);
 }
-
 
 export function kuestenAbstandM(lat: number, lon: number, ringe: (name: string) => readonly Float64Array[] | null, maxM: number): number {
   const g = KARTE_KACHEL_GRAD;
@@ -323,7 +285,7 @@ export function kuestenAbstandM(lat: number, lon: number, ringe: (name: string) 
   const zelleM = g * Math.min(kx, ky);
   let best = Infinity;
   for (let s = 0; ; s++) {
-    
+
     if ((s - 1) * zelleM > Math.min(best, maxM)) break;
     for (let di = -s; di <= s; di++) {
       for (let dj = -s; dj <= s; dj++) {
@@ -346,17 +308,14 @@ export function kuestenAbstandM(lat: number, lon: number, ringe: (name: string) 
   return best <= maxM ? best : Infinity;
 }
 
-
 export const ORT_KUESTE_KM: Record<'stadt' | 'ort' | 'dorf', number> = { stadt: 10, ort: 5, dorf: 3 };
 
 export const PLACE_ART: Record<string, 'stadt' | 'ort' | 'dorf'> = { city: 'stadt', town: 'ort', village: 'dorf' };
-
 
 export function plaetze(t: Readonly<Record<string, string>>): number | null {
   const v = Number((t['capacity'] ?? '').trim());
   return Number.isInteger(v) && v > 0 && v < 10_000 ? v : null;
 }
-
 
 export function hafenArt(t: Readonly<Record<string, string>>): 'marina' | 'hafen' | null {
   const kat = t['seamark:harbour:category'] ?? '';
@@ -365,20 +324,18 @@ export function hafenArt(t: Readonly<Record<string, string>>): 'marina' | 'hafen
   return null;
 }
 
-
-
 export const WINDRAD_DOPPELT_M = 30;
 
 export function ohneDoppelte(namen: readonly KartenName[], m = 1000): KartenName[] {
   const aus: KartenName[] = [];
   const gruppe = (a: NamenArt) => (a === 'marina' || a === 'hafen' ? 'h' : a);
-  
+
   const je = new Map<string, KartenName[]>();
   for (const x of namen) {
     const k = `${gruppe(x[2])}|${x[3].toLocaleLowerCase('hr')}`;
     const da = je.get(k) ?? [];
     const kx = 111_320 * Math.cos((x[0] * Math.PI) / 180);
-    
+
     const r = x[2] === 'windrad' ? WINDRAD_DOPPELT_M : m;
     if (da.some((y) => Math.hypot((y[1] - x[1]) * kx, (y[0] - x[0]) * 110_540) < r)) continue;
     da.push(x);
@@ -388,22 +345,18 @@ export function ohneDoppelte(namen: readonly KartenName[], m = 1000): KartenName
   return aus;
 }
 
-
-
-
-
 export function sichtbarAb(art: NamenArt, wert: number | null): number {
   switch (art) {
     case 'stadt': return 8;
     case 'ort': return 10;
     case 'dorf': return 11;
-    
+
     case 'hafen': case 'marina': return 8;
     case 'anker': return 9;
     case 'gipfel': { const h = wert ?? 0; return h >= 800 ? 9 : h >= 500 ? 11 : h >= 250 ? 12 : 13; }
     case 'flugplatz': return 9;
     case 'kap': return 10;
-    
+
     case 'windrad': return 11;
     case 'insel': case 'inselchen': {
       const km2 = wert ?? 0;
@@ -412,23 +365,20 @@ export function sichtbarAb(art: NamenArt, wert: number | null): number {
   }
 }
 
-
 export const HAEFEN_ZUERST_AB_ZOOM = 12;
-
 
 export function vorrang(art: NamenArt, wert: number | null, zoom = HAEFEN_ZUERST_AB_ZOOM): number {
   const hafen = zoom >= HAEFEN_ZUERST_AB_ZOOM;
   const stufe: Record<NamenArt, number> = hafen
     ? { marina: 1, hafen: 1, anker: 2, stadt: 3, insel: 4, inselchen: 4, flugplatz: 5, kap: 6, gipfel: 7, ort: 8, dorf: 9, windrad: 10 }
     : { stadt: 1, insel: 2, inselchen: 2, marina: 3, hafen: 3, anker: 4, flugplatz: 5, kap: 6, gipfel: 7, ort: 8, dorf: 9, windrad: 10 };
-  
+
   const innen = art === 'insel' || art === 'inselchen' || art === 'gipfel' || ((art === 'marina' || art === 'hafen') && wert)
     ? 1 / (1 + (wert ?? 0)) : 0.5;
   return stufe[art] + Math.min(0.999, innen);
 }
 
 export interface Kasten { x0: number; y0: number; x1: number; y1: number }
-
 
 export function ohneUeberlappung(lagen: readonly (readonly Kasten[])[], belegt: readonly Kasten[] = []): number[] {
   const voll: Kasten[] = [...belegt];
@@ -440,11 +390,7 @@ export function ohneUeberlappung(lagen: readonly (readonly Kasten[])[], belegt: 
   });
 }
 
-
-
-
 export interface OsmPunkt { lat: number; lon: number; tags: Readonly<Record<string, string>> }
-
 
 export function baueSeekarte(
   e: {
@@ -452,12 +398,12 @@ export function baueSeekarte(
     stege: readonly StegRoh[]; gipfel: readonly Gipfel[]; orte: readonly OsmPunkt[]; haefen: readonly OsmPunkt[];
     inseln: readonly Inselflaeche[];
     ortsflaechen?: readonly OrtsFlaecheRoh[]; strassen?: readonly StrasseRoh[];
-    
+
     kaps?: readonly Kap[]; flugplaetze?: readonly Flugplatz[]; pisten?: readonly PisteRoh[];
     metar?: (icao: string) => boolean | null;
-    
+
     windraeder?: readonly Windrad[];
-    
+
     verkehr?: readonly VerkehrRoh[];
   },
   kuesteM: (lat: number, lon: number, maxM: number) => number | null,
@@ -466,7 +412,7 @@ export function baueSeekarte(
   const r6 = (x: number) => Math.round(x * 1e6) / 1e6;
   for (const h of e.haefen) {
     const name = (h.tags['name'] ?? h.tags['seamark:name'] ?? '').trim();
-    
+
     if (h.tags['seamark:type'] === 'anchorage') {
       if (kuesteM(h.lat, h.lon, 0) !== null) namen.push([r6(h.lat), r6(h.lon), 'anker', lateinisch(name), null]);
       continue;
@@ -496,7 +442,7 @@ export function baueSeekarte(
     if (d === null || !Number.isFinite(d) || !gipfelVonSeeSichtbar(g.hoeheM, d / 1852)) continue;
     gipfel.push(g);
   }
-  
+
   gipfel.sort((a, b) => b.hoeheM - a.hoeheM);
   const behalten: Gipfel[] = [];
   for (const g of gipfel) {
@@ -505,7 +451,7 @@ export function baueSeekarte(
     behalten.push(g);
     namen.push([r6(g.lat), r6(g.lon), 'gipfel', g.name, g.hoeheM]);
   }
-  
+
   const imStreifen = (lat: number, lon: number) => {
     const d = kuesteM(lat, lon, STREIFEN_KM * 1000);
     return d !== null && Number.isFinite(d);
@@ -516,7 +462,7 @@ export function baueSeekarte(
     const m = a.icao && e.metar ? e.metar(a.icao) : null;
     namen.push([r6(a.lat), r6(a.lon), 'flugplatz', a.name, m === null ? null : m ? 1 : 0, a.icao]);
   }
-  
+
   for (const t of e.windraeder ?? []) if (imStreifen(t.lat, t.lon)) namen.push([r6(t.lat), r6(t.lon), 'windrad', '', t.hoeheM]);
   const pisten = (e.pisten ?? []).filter((p) => imStreifen(p[1][0]! / SEEKARTE_FAKTOR, p[1][1]! / SEEKARTE_FAKTOR));
   namen.sort((a, b) => vorrang(a[2], a[4]) - vorrang(b[2], b[4]));
@@ -528,31 +474,22 @@ export function baueSeekarte(
   };
 }
 
-
-
-
-
-
 export const ORT_STREIFEN_KM = 3;
 
 const ORT_TOLERANZ_M = 4;
-
 
 export type OrtsArt = 0 | 1 | 2;
 const ORTS_ART: Record<string, OrtsArt> = { residential: 0, commercial: 1, retail: 1, industrial: 2 };
 
 export type OrtsFlaecheRoh = [OrtsArt, number[][]];
 
-
 export type StrassenKlasse = 0 | 1 | 2 | 3;
 const STRASSEN_KLASSE: Record<string, StrassenKlasse> = { motorway: 0, trunk: 0, primary: 1, secondary: 2, tertiary: 3 };
 
 export type StrasseRoh = [StrassenKlasse, number[]];
 
-
 export const STRASSEN_AB_ZOOM: Record<StrassenKlasse, number> = { 0: 11, 1: 11, 2: 12, 3: 13 };
 export const ORTE_AB_ZOOM = 10;
-
 
 export function ortsflaecheAus(f: GeoFeature, nahe: (lat: number, lon: number) => boolean): OrtsFlaecheRoh[] {
   const p = f.properties ?? {};
@@ -569,7 +506,6 @@ export function ortsflaecheAus(f: GeoFeature, nahe: (lat: number, lon: number) =
   }
   return aus;
 }
-
 
 export function strassenAus(f: GeoFeature, nahe: (lat: number, lon: number) => boolean): StrasseRoh[] {
   const p = f.properties ?? {};
@@ -588,7 +524,6 @@ export function strassenAus(f: GeoFeature, nahe: (lat: number, lon: number) => b
   }
   return aus;
 }
-
 
 export function kuestenNaheRaster(
   ringe: Iterable<Float64Array>, box: { s: number; w: number; n: number; o: number }, schritt: number, maxM: number,

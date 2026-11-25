@@ -1,7 +1,6 @@
 import { istFeuer } from './leuchtfeuer';
 import { SEEZEICHEN_TYPEN } from './osmAuszug';
 
-
 type Tags = Readonly<Record<string, string>>;
 
 export type TrefferArt = 'feuer' | 'tonne' | 'tankstelle' | 'hafen' | 'gefahr';
@@ -20,7 +19,6 @@ export const istTankstelle = (t: Tags): boolean => t['waterway'] === 'fuel'
   || (t['seamark:small_craft_facility:category'] ?? '').split(';').includes('fuel_station')
   || (t['amenity'] === 'fuel' && !!t['seamark:type']);
 
-
 export function trefferArt(t: Tags): Exclude<TrefferArt, 'gefahr'> | null {
   if (istTonne(t)) return 'tonne';
   if (istFeuer(t)) return 'feuer';
@@ -28,7 +26,6 @@ export function trefferArt(t: Tags): Exclude<TrefferArt, 'gefahr'> | null {
   if (istTankstelle(t)) return 'tankstelle';
   return null;
 }
-
 
 export function trefferAm(
   elemente: readonly (readonly [number, number, Tags])[], gefahren: readonly GefahrStelle[], zoom: number,

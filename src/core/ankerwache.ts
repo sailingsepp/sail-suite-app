@@ -1,7 +1,5 @@
 import { distNM, bearingDeg } from './geo';
 
-
-
 export interface AnkerwacheZiel {
   lat: number;
   lon: number;
@@ -11,25 +9,24 @@ export interface AnkerwacheZiel {
 export type AnkerwacheStufe = 'ruhig' | 'alarm';
 
 export interface AnkerwacheBefund {
-  
+
   abstandM: number;
-  
+
   peilung: number;
-  
+
   aussen: boolean;
-  
+
   genauigkeitM?: number;
 }
-
 
 export const GENAUIGKEIT_ZEIGEN_AB_RADIUS = 0.25;
 export const genauigkeitZeigen = (b: Pick<AnkerwacheBefund, 'genauigkeitM'>, radiusM: number): boolean =>
   (b.genauigkeitM ?? 0) > GENAUIGKEIT_ZEIGEN_AB_RADIUS * radiusM;
 
 export interface AnkerwacheOptionen {
-  
+
   alarmAbFixe?: number;
-  
+
   ruhigAbFixe?: number;
 }
 
@@ -38,9 +35,7 @@ export const ANKERWACHE_VORGABEN: Required<AnkerwacheOptionen> = {
   ruhigAbFixe: 5,
 };
 
-
 export const OHNE_FIX_WARNUNG_MS = 2 * 60_000;
-
 
 export function ohnePositionSeit(
   jetzt: number, letzterFixT: number | null, aktivSeit: number, grenzeMs = OHNE_FIX_WARNUNG_MS,
@@ -49,9 +44,7 @@ export function ohnePositionSeit(
   return jetzt - seit > grenzeMs ? seit : null;
 }
 
-
 export const FIX_ALTER_ZEIGEN_AB_MS = 30_000;
-
 
 export function fixAlterSek(jetzt: number, letzterFixT: number | null, abMs = FIX_ALTER_ZEIGEN_AB_MS): number | null {
   if (letzterFixT === null) return null;
@@ -60,24 +53,19 @@ export function fixAlterSek(jetzt: number, letzterFixT: number | null, abMs = FI
   return Math.floor(alter / 5000) * 5;
 }
 
-
 export function istNeuerFix(fixT: number, gewerteterT: number | null): boolean {
   return gewerteterT === null || fixT > gewerteterT;
 }
-
 
 export function pruefePosition(
   ziel: AnkerwacheZiel, lat: number, lon: number, accM: number,
 ): AnkerwacheBefund {
   const abstandM = distNM(ziel.lat, ziel.lon, lat, lon) * 1852;
   const peilung = bearingDeg(ziel.lat, ziel.lon, lat, lon);
-  
-  
-  
+
   const aussen = abstandM - Math.max(0, accM) > ziel.radiusM;
   return { abstandM, peilung, aussen, genauigkeitM: Math.max(0, accM) };
 }
-
 
 export function bewerteFolge(
   befunde: AnkerwacheBefund[], bisherigeStufe: AnkerwacheStufe,
@@ -93,20 +81,17 @@ export function bewerteFolge(
   return letzte.every((b) => !b.aussen) ? 'ruhig' : 'alarm';
 }
 
-
-
-
 export interface WeiterleitungsMeldung {
-  
+
   abstandM: number;
-  
+
   zeitpunkt: number;
 }
 
 export interface WeiterleitungsOptionen {
-  
+
   minAbstandMs?: number;
-  
+
   eskalationM?: number;
 }
 
@@ -114,7 +99,6 @@ export const WEITERLEITUNG_VORGABEN: Required<WeiterleitungsOptionen> = {
   minAbstandMs: 15 * 60_000,
   eskalationM: 25,
 };
-
 
 export function sollWeiterleiten(
   abstandM: number, letzteMeldung: WeiterleitungsMeldung | null, jetzt: number,
@@ -127,16 +111,11 @@ export function sollWeiterleiten(
   return false;
 }
 
-
-
-
 export const SCHWOJSPUR_MS = 3 * 3_600_000;
 
 export const SCHWOJSPUR_GENAUIGKEIT_ANTEIL = 0.5;
 
-
 export const SCHWOJSPUR_UMKREIS = 3;
-
 
 export function schwojSpur(
   fixe: readonly { t: number; lat: number; lon: number; acc?: number }[], ziel: AnkerwacheZiel, jetzt: number,

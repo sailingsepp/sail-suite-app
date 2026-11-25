@@ -4,8 +4,6 @@ import { liesSitzungsToken, liesEigeneNutzerId } from '@/shell/session';
 import { holeToerne, schreibeBriefing, type ToernZeile, type BriefingQuelle } from '@/data/toernApi';
 import { escapeHtml } from '@/core/html';
 
-
-
 let toerneCache: ToernZeile[] | null = null;
 
 const LOKALER_SPEICHER_SCHLUESSEL = 'sail-suite:briefing-toern';
@@ -19,7 +17,6 @@ async function holeEigeneOffeneToerne(token: string): Promise<ToernZeile[]> {
   toerneCache = gefiltert;
   return gefiltert;
 }
-
 
 export function initServerTeilen(abschnitte: BriefingAbschnitt[], datum: Date, quelle: BriefingQuelle = 'coursecast'): void {
   const btn = document.getElementById('btn-teilen-crew') as HTMLButtonElement | null;
@@ -58,7 +55,7 @@ export function initServerTeilen(abschnitte: BriefingAbschnitt[], datum: Date, q
       auswahl.hidden = false;
       bestaetigen.hidden = false;
       status.textContent = '';
-      
+
       auswahl.innerHTML = toerne.map((t) => `<option value="${escapeHtml(t.id)}">${escapeHtml(t.name)}</option>`).join('');
       const gemerkt = localStorage.getItem(LOKALER_SPEICHER_SCHLUESSEL);
       if (gemerkt && toerne.some((t) => t.id === gemerkt)) auswahl.value = gemerkt;

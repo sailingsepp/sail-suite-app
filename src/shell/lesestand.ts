@@ -1,7 +1,5 @@
 import { API_BASIS } from './api';
 
-
-
 const DB_NAME = 'sail-suite-lesestand';
 const STORE = 'antworten';
 const BESITZER = '__besitzer';
@@ -45,7 +43,6 @@ async function mitStore<T>(modus: IDBTransactionMode, tu: (s: IDBObjectStore) =>
   });
 }
 
-
 async function pruefeBesitzer(): Promise<void> {
   let konto: string | null = null;
   try {
@@ -54,7 +51,7 @@ async function pruefeBesitzer(): Promise<void> {
     const j = await res.json() as { email?: string | null; username?: string | null };
     konto = j.email ?? j.username ?? null;
   } catch {
-    return; 
+    return;
   }
   if (!konto) return;
   const bisher = await mitStore<unknown>('readonly', (s) => s.get(BESITZER));
@@ -62,7 +59,6 @@ async function pruefeBesitzer(): Promise<void> {
   await mitStore('readwrite', (s) => s.clear());
   await mitStore('readwrite', (s) => s.put(konto, BESITZER));
 }
-
 
 export function aktiviereLesestand(): void {
   if (aktiv) return;
@@ -74,15 +70,12 @@ export function lesestandAktiv(): boolean {
   return aktiv;
 }
 
-
 export const vorlaeufigUnbekannt = (status: number): boolean => status >= 500 || status === 429;
-
 
 export function merkeLesestand(schluessel: string, daten: unknown): void {
   if (!aktiv || daten === null || daten === undefined) return;
   void bereit.then(() => mitStore('readwrite', (s) => s.put({ zeit: Date.now(), daten } satisfies Eintrag, schluessel)));
 }
-
 
 export async function lesestandRueckfall<T>(schluessel: string): Promise<T | null> {
   if (!aktiv) return null;
@@ -94,12 +87,10 @@ export async function lesestandRueckfall<T>(schluessel: string): Promise<T | nul
   return e.daten as T;
 }
 
-
 export function aufLesestand(hoerer_: (zeit: number) => void): void {
   hoerer.add(hoerer_);
   if (aeltester !== null) hoerer_(aeltester);
 }
-
 
 export function loescheLesestand(): Promise<void> {
   return new Promise((res) => {

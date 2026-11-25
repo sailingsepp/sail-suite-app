@@ -1,4 +1,3 @@
-
 import { liesSitzungsToken } from '@/shell/session';
 import { aktuelleSprache } from '@/shell/sprache';
 import { oeffneLiegeplatzWahl } from '@/ui/liegeplatzWahl';
@@ -14,7 +13,6 @@ function setzeRaenderStatus(schluessel: string): void {
   const el = $('vp-raender-status');
   if (el) el.textContent = wort(schluessel);
 }
-
 
 function speichereRaender(aenderung: PlanRahmen): Promise<boolean> {
   return merkeRahmenSpeichern(speichereRaenderJetzt(aenderung));
@@ -37,8 +35,7 @@ async function speichereRaenderJetzt(aenderung: PlanRahmen): Promise<boolean> {
   setzeToern(neu);
   setzeRaenderStatus(rahmenWeichtAb(neu) ? 'raender.gemerkt' : 'raender.wieImToern');
   zeigeRahmenAbweichung();
-  
-  
+
   aktualisiereWunschlistenKontext();
   return true;
 }
@@ -50,7 +47,6 @@ function zeigeHafen(praefix: 'start' | 'rueckgabe', hafen: ToernHafen | null | u
     wert.classList.toggle('leer', !hafen);
   }
 }
-
 
 function zeigeRueckgabeHinweis(): void {
   const el = $('vp-rueckgabe-hinweis');
@@ -66,7 +62,6 @@ function zeigeRueckgabeHinweis(): void {
   el.textContent = schluessel ? wort(schluessel, werte) : '';
 }
 
-
 function zeigeRahmenAbweichung(): void {
   const box = $('vp-rahmen-abweichung');
   if (box) box.hidden = !app.toernGespeichert || !rahmenWeichtAb(app.toernGespeichert);
@@ -75,7 +70,6 @@ function zeigeRahmenAbweichung(): void {
     if (el) el.disabled = app.nurLesen;
   }
 }
-
 
 async function rahmenInDenToern(): Promise<void> {
   const roh = app.toernGespeichert;
@@ -92,7 +86,6 @@ async function rahmenInDenToern(): Promise<void> {
   aktualisiereWunschlistenKontext();
 }
 
-
 async function rahmenVerwerfen(): Promise<void> {
   const roh = app.toernGespeichert;
   if (!roh) return;
@@ -100,7 +93,6 @@ async function rahmenVerwerfen(): Promise<void> {
   for (const f of RAHMEN_FELDER) (ohne as Record<string, unknown>)[f] = roh[f] ?? null;
   if (await speichereRaender(ohne)) zeigeRaender();
 }
-
 
 export function zeigeRaender(): void {
   if (!app.toern) return;
@@ -116,8 +108,7 @@ export function zeigeRaender(): void {
   if (bis) { bis.value = app.toern.bis ?? ''; bis.min = app.toern.von ?? ''; }
   zeigeRueckgabeHinweis();
   zeigeRahmenAbweichung();
-  
-  
+
   for (const id of [
     'btn-start-waehlen', 'btn-rueckgabe-waehlen',
     'in-uebernahme-zeit', 'in-rueckgabe-zeit', 'in-plan-von', 'in-plan-bis',
@@ -137,10 +128,7 @@ async function waehleHafen(praefix: 'start' | 'rueckgabe'): Promise<void> {
   });
   if (!wahl) return;
   const hafen: ToernHafen = { name: wahl.name, lat: wahl.lat, lon: wahl.lon };
-  
-  
-  
-  
+
   const revier = await revierFuerToern({
     start: praefix === 'start' ? hafen : app.toern?.start_hafen ?? null,
     ziel: praefix === 'rueckgabe' ? hafen : app.toern?.rueckgabe_hafen ?? null,
@@ -149,33 +137,25 @@ async function waehleHafen(praefix: 'start' | 'rueckgabe'): Promise<void> {
       : startRevierTeil(app.toern?.revier),
     ...(praefix === 'rueckgabe' && wahl.land ? { landZiel: wahl.land } : {}),
   }, aktuelleSprache());
-  
-  
-  
-  
+
   await speichereRaender({ [feld]: hafen, ...(revier ? { revier } : {}) });
   zeigeHafen(praefix, praefix === 'start' ? app.toern?.start_hafen : app.toern?.rueckgabe_hafen);
 }
 
 export function initRaender(): void {
   for (const praefix of ['start', 'rueckgabe'] as const) {
-    
-    
+
     $(`btn-${praefix}-waehlen`)?.addEventListener('click', () => void waehleHafen(praefix));
   }
 
   for (const [id, feld] of [['in-uebernahme-zeit', 'uebernahme_zeit'], ['in-rueckgabe-zeit', 'rueckgabe_zeit']] as const) {
     const el = $(id) as HTMLInputElement | null;
-    
-    
-    
+
     el?.addEventListener('change', () => {
       void speichereRaender({ [feld]: el.value || null }).then(() => zeigeRueckgabeHinweis());
     });
   }
 
-  
-  
   for (const [id, feld] of [['in-plan-von', 'von'], ['in-plan-bis', 'bis']] as const) {
     const el = $(id) as HTMLInputElement | null;
     el?.addEventListener('change', () => {

@@ -1,4 +1,3 @@
-
 import { distNM } from '@/core/geo';
 import type { Hafenknoten } from '@/core/hafennetz';
 import type { Punkt } from '@/core/types';
@@ -8,13 +7,11 @@ import {
 } from './overpass';
 import { ART_RANG } from './alternatives';
 
-
 function sindDublette(a: Hafenknoten, b: Hafenknoten): boolean {
   if (distNM(a.ort.lat, a.ort.lon, b.ort.lat, b.ort.lon) > 0.5) return false;
   const na = a.name.toLowerCase(), nb = b.name.toLowerCase();
   return na === nb || na.includes(nb) || nb.includes(na);
 }
-
 
 export function dedupliziereHafenknoten(kandidaten: readonly Hafenknoten[]): Hafenknoten[] {
   const ergebnis: Hafenknoten[] = [];
@@ -31,7 +28,6 @@ export function dedupliziereHafenknoten(kandidaten: readonly Hafenknoten[]): Haf
   return ergebnis;
 }
 
-
 export async function holeKandidatenknoten(
   ankerpunkte: readonly Punkt[], radiusNM = 8, budget?: Zeitbudget, wirfBeiFehler = false,
 ): Promise<Hafenknoten[]> {
@@ -44,24 +40,20 @@ export async function holeKandidatenknoten(
   return dedupliziereHafenknoten(alle);
 }
 
-
 export interface LiegeplatzWahl extends Hafenknoten {
   distanzSm: number;
 }
-
 
 export function ordneLiegeplaetze(knoten: readonly Hafenknoten[], um: Punkt): LiegeplatzWahl[] {
   return knoten
     .map((k): LiegeplatzWahl => ({ ...k, distanzSm: distNM(um.lat, um.lon, k.ort.lat, k.ort.lon) }))
     .sort((a, b) => {
-      
-      
+
       if (Math.abs(a.distanzSm - b.distanzSm) > 0.3) return a.distanzSm - b.distanzSm;
       if (ART_RANG[a.art] !== ART_RANG[b.art]) return ART_RANG[a.art] - ART_RANG[b.art];
       return a.name.localeCompare(b.name);
     });
 }
-
 
 const BUDGET_LIEGEPLATZWAHL: Zeitbudget = { timeoutMs: 12_000, versuche: 3, pauseMs: 2000 };
 
@@ -70,7 +62,6 @@ export async function liegeplaetzeUmOrt(
 ): Promise<LiegeplatzWahl[]> {
   return ordneLiegeplaetze(await holeKandidatenknoten([um], radiusNM, budget, true), um);
 }
-
 
 export async function holeKandidatenknotenImGebiet(
   box: { swLat: number; swLon: number; neLat: number; neLon: number },
@@ -82,7 +73,6 @@ export async function holeKandidatenknotenImGebiet(
     treffer.map((a) => ({ name: a.name, ort: { lat: a.lat, lon: a.lon }, art: a.art })),
   );
 }
-
 
 export async function holeKuestenlinienFuerNetz(
   swLat: number, swLon: number, neLat: number, neLon: number, budget: Zeitbudget = BUDGET_INTERAKTIV,

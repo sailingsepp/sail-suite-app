@@ -1,4 +1,3 @@
-
 import type { StundenWind } from './types';
 
 export const ABWEICHUNG_DEUTLICH_KN = 4;
@@ -10,30 +9,29 @@ export const STUNDE_VON = 6;
 export const STUNDE_BIS = 21;
 
 export interface Modellabgleich {
-  
+
   mittelKn: number;
-  
+
   mittelBetragKn: number;
-  
+
   maxKn: number;
   maxUhrzeit: string;
-  
+
   maxRechnungMehr: boolean;
   stufe: 'gering' | 'deutlich' | 'stark';
-  
+
   richtungGrad: number;
-  
+
   segelwindUneins: { von: string; bis: string; rechnungSegelt: boolean; stunden: number } | null;
-  
+
   stunden: number;
-  
+
   jeStunde: { uhr: string; r: number; v: number }[];
 }
 
 function mittel(a: number[]): number {
   return a.reduce((x, y) => x + y, 0) / a.length;
 }
-
 
 export function vergleicheModelle(
   rechnung: StundenWind[],
@@ -85,9 +83,7 @@ export function vergleicheModelle(
 
   let segelwindUneins: Modellabgleich['segelwindUneins'] = null;
   if (minSailWind != null) {
-    
-    
-    
+
     let bester: { von: number; bis: number } | null = null;
     let lauf: { von: number; bis: number } | null = null;
     jeStunde.forEach((s, i) => {
@@ -110,8 +106,6 @@ export function vergleicheModelle(
     jeStunde: jeStunde.map((s) => ({ uhr: s.uhr, r: s.r, v: s.v })),
   };
 }
-
-
 
 export function segelwindWaehrend(m: Modellabgleich, von: Date, bis: Date): boolean {
   const u = m.segelwindUneins;

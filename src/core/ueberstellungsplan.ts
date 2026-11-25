@@ -1,34 +1,32 @@
 import type { Punkt } from './types';
 import { distNM, relAngle } from './geo';
 
-
-
 export interface UeberstellungsHalt {
   name: string;
   ort: Punkt;
   art: 'marina' | 'hafen' | 'bucht';
-  
+
   s: number;
-  
+
   abstandSm: number;
 }
 
 export interface UeberstellungsVorgaben {
-  
+
   fahrtKn: number;
-  
+
   tankReichweiteSm: number | null;
-  
+
   motoranteil?: (vonS: number, bisS: number, abfahrt: number) => number;
-  
+
   enge?: (vonS: number, bisS: number, abfahrt: number) => EngenDurchfahrt | null;
-  
+
   maxHafennaechte: number | null;
-  
+
   ruhetage: number;
-  
+
   tankstoppStunden: number;
-  
+
   tankstelleVon: number;
   tankstelleBis: number;
 }
@@ -38,22 +36,20 @@ export const UEBERSTELLUNG_VORGABEN: Omit<UeberstellungsVorgaben, 'fahrtKn'> = {
   tankstoppStunden: 1.5, tankstelleVon: 8, tankstelleBis: 19,
 };
 
-
 export interface EngenDurchfahrt {
   name: string;
-  
+
   zeit: number;
   wartenMs: number;
-  
+
   strom: string;
   kn: number;
   mitlaufend: boolean;
-  
+
   vorlaufSm: number;
-  
+
   langsamKn: number | null;
 }
-
 
 export const TANK_SPIELRAUM = 0.1;
 
@@ -62,19 +58,19 @@ export type HaltArt = 'tanken' | 'nacht' | 'ruhetag' | 'ziel';
 export interface UeberstellungsSchlag {
   vonIndex: number;
   nachIndex: number;
-  
+
   abfahrt: number;
   ankunft: number;
   sm: number;
-  
+
   motorSm: number;
-  
+
   enge?: EngenDurchfahrt;
-  
+
   halt: HaltArt;
-  
+
   weiter: number;
-  
+
   ruhetage?: number;
 }
 
@@ -85,12 +81,11 @@ export interface UeberstellungsPlan {
   motorSm: number;
   hafennaechte: number;
   tankstopps: number;
-  
+
   ruhetageOhneHalt: number;
 }
 
 const STUNDE = 3_600_000;
-
 
 function naechsteOeffnung(t: number, von: number, bis: number): number {
   const d = new Date(t);
@@ -107,7 +102,6 @@ function engeImSchlag(
   return d ? { enge: { ...d, zeit: d.zeit + verschub } } : {};
 }
 
-
 export function schlagMotorSm(
   halte: readonly UeberstellungsHalt[], i: number, j: number, abfahrt: number, v: Pick<UeberstellungsVorgaben, 'motoranteil'>,
 ): number {
@@ -117,12 +111,10 @@ export function schlagMotorSm(
   return lang * anteil + a.abstandSm + b.abstandSm;
 }
 
-
 export function schlagSm(halte: readonly UeberstellungsHalt[], i: number, j: number): number {
   const a = halte[i]!, b = halte[j]!;
   return Math.abs(b.s - a.s) + a.abstandSm + b.abstandSm;
 }
-
 
 export function planeUeberstellung(
   halte: readonly UeberstellungsHalt[], start: number, v: UeberstellungsVorgaben,
@@ -131,7 +123,7 @@ export function planeUeberstellung(
   if (n < 2 || v.fahrtKn <= 0) return null;
   const ziel = n - 1;
   const maxN = v.maxHafennaechte ?? n;
-  
+
   type Eintrag = { weiter: number; vorI: number; vorK: number; halt: HaltArt; ankunft: number };
   const beste: (Eintrag | undefined)[][] = halte.map(() => []);
   beste[0]![0] = { weiter: start, vorI: -1, vorK: -1, halt: 'tanken', ankunft: start };
@@ -147,11 +139,11 @@ export function planeUeberstellung(
       for (let j = i + 1; j <= ziel; j++) {
         const sm = schlagSm(halte, i, j);
         if (grenze != null && schlagMotorSm(halte, i, j, e.weiter, v) > grenze) {
-          
+
           if (!v.motoranteil && halte[j]!.s - halte[i]!.s > grenze) break;
           continue;
         }
-        
+
         const ankunft = e.weiter + (sm / v.fahrtKn) * STUNDE + (v.enge?.(halte[i]!.s, halte[j]!.s, e.weiter)?.wartenMs ?? 0);
         if (j === ziel) {
           if (!bestZiel || ankunft < bestZiel.ankunft - 60_000
@@ -160,7 +152,7 @@ export function planeUeberstellung(
           }
           continue;
         }
-        
+
         if (halte[j]!.art === 'bucht') continue;
         const offen = naechsteOeffnung(ankunft, v.tankstelleVon, v.tankstelleBis);
         const nacht = offen - ankunft > 6 * STUNDE;
@@ -177,7 +169,6 @@ export function planeUeberstellung(
   }
   if (!bestZiel) return null;
 
-  
   const kette: { i: number; k: number; ankunft: number; halt: HaltArt; weiter: number }[] = [];
   kette.push({ i: ziel, k: bestZiel.vorK, ankunft: bestZiel.ankunft, halt: 'ziel', weiter: bestZiel.ankunft });
   let i = bestZiel.vorI, k = bestZiel.vorK;
@@ -190,11 +181,9 @@ export function planeUeberstellung(
   kette.push({ i: 0, k: 0, ankunft: start, halt: 'tanken', weiter: start });
   kette.reverse();
 
-  
   const halteIdx = kette.slice(1, -1).map((_, x) => x + 1);
   let verschub = 0;
-  
-  
+
   const ruheAn = new Map<number, number>();
   for (let r = 0; r < v.ruhetage && halteIdx.length > 0; r++) {
     const x = halteIdx[Math.floor(((r + 0.5) * halteIdx.length) / v.ruhetage)]!;
@@ -203,9 +192,7 @@ export function planeUeberstellung(
   const schlaege: UeberstellungsSchlag[] = [];
   for (let x = 1; x < kette.length; x++) {
     const a = kette[x - 1]!, b = kette[x]!;
-    
-    
-    
+
     const enge = engeImSchlag(v, halte[a.i]!.s, halte[b.i]!.s, a.weiter, verschub);
     const abfahrt = a.weiter + verschub + (enge.enge?.wartenMs ?? 0);
     const ankunft = b.ankunft + verschub;
@@ -229,7 +216,6 @@ export function planeUeberstellung(
   };
 }
 
-
 export function aufDemWeg(p: Punkt, weg: readonly Punkt[]): { s: number; abstandSm: number } {
   let bestS = 0, bestD = Infinity, lauf = 0;
   for (let i = 1; i < weg.length; i++) {
@@ -247,21 +233,18 @@ export function aufDemWeg(p: Punkt, weg: readonly Punkt[]): { s: number; abstand
   return { s: bestS, abstandSm: bestD };
 }
 
-
 export const UEBERSTELLUNG_SEGEL_TWA_MIN = 50;
 
-
 export interface WindProbe {
-  
+
   s: number;
-  
+
   kurs: number;
   zeit: readonly number[];
   kn: readonly number[];
-  
+
   richtung: readonly number[];
 }
-
 
 export function motoranteilAusWind(
   proben: readonly WindProbe[], fahrtKn: number, minSegelKn: number,

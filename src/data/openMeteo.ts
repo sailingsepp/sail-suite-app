@@ -3,23 +3,21 @@ import type { StundenWind, Tageslicht, Wind, StreckenPunkt } from '@/core/types'
 import { holeOpenMeteoJson } from './openMeteoNetz';
 import { meldeFormatabweichung } from './fehlerbericht';
 
-
 export const RECHENMODELL = 'ecmwf_ifs025';
 export const VERGLEICHSMODELL = 'best_match';
 export type WindModell = typeof RECHENMODELL | typeof VERGLEICHSMODELL;
 
 export interface WindForPoints {
   hourly: StundenWind[];
-  
+
   utcOffsetSeconds: number;
-  
+
   vergleich: (StundenWind | null)[];
-  
+
   rechenmodell: WindModell;
-  
+
   zone?: string | null;
 }
-
 
 const HOURLY_FELDER = [
   'wind_speed_10m', 'wind_direction_10m', 'wind_gusts_10m', 'wind_speed_80m',
@@ -30,7 +28,6 @@ const HOURLY_FELDER = [
 function hatWerte(a: unknown): a is (number | null)[] {
   return Array.isArray(a) && a.some((v) => v != null);
 }
-
 
 export function trenneModelle(hourly: Record<string, unknown>): { rechnung: StundenWind; vergleich: StundenWind | null; rechenmodell: WindModell } {
   if (Array.isArray(hourly.wind_speed_10m)) {
@@ -53,31 +50,22 @@ export function trenneModelle(hourly: Record<string, unknown>): { rechnung: Stun
       wind_speed_10m: feld('wind_speed_10m', VERGLEICHSMODELL) as number[],
       wind_direction_10m: feld('wind_direction_10m', VERGLEICHSMODELL) as number[],
       wind_gusts_10m: (feld('wind_gusts_10m', VERGLEICHSMODELL) ?? []) as number[],
-      
+
       weather_code: [], precipitation: [], cape: [],
     }
     : null;
   return { rechnung: rechnung as unknown as StundenWind, vergleich, rechenmodell: windModell };
 }
 
-
-
-
-
-
-
-
 export const FORECAST_DAYS = 6;
 
-const CHUNK = 10; 
-
+const CHUNK = 10;
 
 function bloecke<T>(alle: T[]): T[][] {
   const out: T[][] = [];
   for (let i = 0; i < alle.length; i += CHUNK) out.push(alle.slice(i, i + CHUNK));
   return out;
 }
-
 
 function istGueltigeWindantwort(hourly: unknown): hourly is StundenWind {
   if (!hourly || typeof hourly !== 'object') return false;
@@ -87,7 +75,6 @@ function istGueltigeWindantwort(hourly: unknown): hourly is StundenWind {
   return (['wind_speed_10m', 'wind_direction_10m'] as const)
     .every((feld) => Array.isArray(h[feld]) && (h[feld] as unknown[]).length === zeit.length);
 }
-
 
 export function einheitlicheZone(antworten: readonly { timezone?: string }[]): string | null {
   const zonen = antworten.map((a) => a.timezone).filter((z): z is string => typeof z === 'string' && z.length > 0);
@@ -99,7 +86,6 @@ export function einheitlicheZone(antworten: readonly { timezone?: string }[]): s
   return [...anzahl].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]![0];
 }
 
-
 export function mitZone(url: string, zone: string): string {
   return url.replace('timezone=auto', `timezone=${encodeURIComponent(zone)}`);
 }
@@ -108,9 +94,7 @@ export async function fetchWindForPoints(points: StreckenPunkt[]): Promise<WindF
   const hourly = new Array<StundenWind>(points.length);
   let utcOffsetSeconds = 0;
   const bloeckeRoh: { url: string; arr: unknown[] }[] = [];
-  
-  
-  
+
   await Promise.all(bloecke(points).map(async (chunk, b) => {
     const lats = chunk.map((p) => p.lat.toFixed(4)).join(',');
     const lons = chunk.map((p) => p.lon.toFixed(4)).join(',');
@@ -124,10 +108,6 @@ export async function fetchWindForPoints(points: StreckenPunkt[]): Promise<WindF
     bloeckeRoh[b] = { url, arr: Array.isArray(data) ? data : [data] };
   }));
 
-  
-  
-  
-  
   const zone = einheitlicheZone(bloeckeRoh.flatMap((x) => x.arr as { timezone?: string }[]));
   if (zone) {
     await Promise.all(bloeckeRoh.map(async (blk, b) => {
@@ -149,8 +129,7 @@ export async function fetchWindForPoints(points: StreckenPunkt[]): Promise<WindF
       }
       hourly[b * CHUNK + idx] = getrennt.rechnung;
       vergleich[b * CHUNK + idx] = getrennt.vergleich;
-      
-      
+
       if (getrennt.rechenmodell !== RECHENMODELL) rechenmodell = VERGLEICHSMODELL;
       if (b === 0 && idx === 0 && punkt.utc_offset_seconds != null) utcOffsetSeconds = punkt.utc_offset_seconds;
     });
@@ -181,7 +160,6 @@ function istGueltigeTageslichtantwort(daily: unknown): daily is Tageslicht {
     && d.sunrise.length > 0 && d.sunrise.length === d.sunset.length;
 }
 
-
 export async function fetchDaylight(lat: number, lon: number, zone: string | null = null): Promise<Tageslicht> {
   const roh = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}`
     + `&daily=sunrise,sunset,uv_index_max&timezone=auto&forecast_days=${FORECAST_DAYS}`;
@@ -195,10 +173,6 @@ export async function fetchDaylight(lat: number, lon: number, zone: string | nul
   return daily;
 }
 
-
-
-
-
 const ZEITEN_CACHE = new WeakMap<StundenWind, number[]>();
 function geparsteZeiten(hourly: StundenWind): number[] {
   let t = ZEITEN_CACHE.get(hourly);
@@ -206,9 +180,7 @@ function geparsteZeiten(hourly: StundenWind): number[] {
   return t;
 }
 
-
 export const LUECKE_STUNDEN = 3;
-
 
 export function naechsterWert(reihe: readonly (number | null)[], i: number): number | null {
   for (let d = 0; d <= LUECKE_STUNDEN; d++) {
@@ -219,7 +191,6 @@ export function naechsterWert(reihe: readonly (number | null)[], i: number): num
   return null;
 }
 
-
 export function windAt(hourly: StundenWind, targetDate: Date): Wind {
   const times = geparsteZeiten(hourly);
   const target = targetDate.getTime();
@@ -228,33 +199,22 @@ export function windAt(hourly: StundenWind, targetDate: Date): Wind {
   if (idx === 0) idx = 1;
   const i0 = idx - 1, i1 = idx;
   const t0 = times[i0]!, t1 = times[i1]!;
-  
-  
-  
-  
-  
-  
+
   const frac = t1 > t0 ? Math.min(1, Math.max(0, (target - t0) / (t1 - t0))) : 0;
-  
-  
+
   const n0 = naechsterWert(hourly.wind_speed_10m, i0), n1 = naechsterWert(hourly.wind_speed_10m, i1);
-  
+
   const windLuecke = n0 == null || n1 == null;
   const s0 = n0 ?? 0, s1 = n1 ?? s0;
   const speed = s0 + (s1 - s0) * frac;
   const d0 = naechsterWert(hourly.wind_direction_10m, i0) ?? 0, d1 = naechsterWert(hourly.wind_direction_10m, i1) ?? d0;
   const diff = ((d1 - d0 + 540) % 360) - 180;
   const dir = (d0 + diff * frac + 360) % 360;
-  
-  
-  
-  
+
   const g0 = hourly.wind_gusts_10m ? hourly.wind_gusts_10m[i0] : null;
   const g1 = hourly.wind_gusts_10m ? hourly.wind_gusts_10m[i1] : null;
   const gust = (g0 == null && g1 == null) ? speed : Math.max(g0 ?? 0, g1 ?? 0);
-  
-  
-  
+
   const wc0 = hourly.weather_code ? hourly.weather_code[i0] : null;
   const wc1 = hourly.weather_code ? hourly.weather_code[i1] : null;
   const sev = (c: number | null | undefined) => (c == null ? -1 : (c >= 95 ? 100 + c : c));
@@ -265,19 +225,13 @@ export function windAt(hourly: StundenWind, targetDate: Date): Wind {
   const cape0 = hourly.cape ? (hourly.cape[i0] ?? 0) : 0;
   const cape1 = hourly.cape ? (hourly.cape[i1] ?? 0) : 0;
   const cape = hourly.cape ? cape0 + (cape1 - cape0) * frac : 0;
-  
-  
-  
+
   const lin = (a: (number | null)[] | undefined): number | null =>
     (a && a[i0] != null && a[i1] != null) ? a[i0]! + (a[i1]! - a[i0]!) * frac : null;
   const speed80 = lin(hourly.wind_speed_80m);
   const visibility = lin(hourly.visibility);
   const liftedIndex = lin(hourly.lifted_index);
-  
-  
-  
-  
-  
+
   const gfVon = (s: number | undefined, g: number | null | undefined) =>
     (s != null && s > 0 && g != null) ? g / s : 0;
   const gf0 = gfVon(s0, g0), gf1 = gfVon(s1, g1);

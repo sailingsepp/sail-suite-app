@@ -1,10 +1,7 @@
-
-
 export type RevierRechtshinweis = 'kroatien-seefunk' | 'griechenland-coskipper';
 
 const KROATIEN_MUSTER = /\b(kroatien|croatia|hrvatska)\b/i;
 const GRIECHENLAND_MUSTER = /\b(griechenland|greece|ellada|hellas)\b/i;
-
 
 export function erkenneRevierRechtshinweise(revier: string | null | undefined): RevierRechtshinweis[] {
   if (!revier) return [];

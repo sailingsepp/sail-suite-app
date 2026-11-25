@@ -1,12 +1,6 @@
-
-
-
-
-
 export interface KuesteOsmBox {
   s: number; w: number; n: number; e: number;
 }
-
 
 export const KUESTE_OSM_BOX: KuesteOsmBox = {"s":33,"w":-1.5,"n":47,"e":35};
 

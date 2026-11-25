@@ -6,10 +6,6 @@ import { ZWOELFTEL } from '@/core/kompendium';
 import { gezeitenBegriffe } from './gezeitenBegriffe';
 import type { Sprache } from '@/core/types';
 
-
-
-
-
 export function kompass(sprache: Sprache): string {
   const t = tFuer(sprache);
   const p = pfeile();
@@ -57,8 +53,6 @@ ${sprache === 'en' ? '<p class="kp-note">Right-hand column: the German abbreviat
 ${quelle(sprache, 'kursbeschickung', 'dreyer')}`;
 }
 
-
-
 export function einheiten(sprache: Sprache): string {
   const t = tFuer(sprache);
   const zeilen: [string, string, string][] = sprache === 'en' ? [
@@ -85,8 +79,6 @@ export function einheiten(sprache: Sprache): string {
 ${rechner('u', [{ name: 'kn', label: t('Knoten', 'Knots'), wert: 6 }], sprache)}
 ${quelle(sprache, 'nist', 'kabel', 'dewiki_relings')}`;
 }
-
-
 
 export function gezeitenGrundlagen(sprache: Sprache): string {
   const t = tFuer(sprache);
@@ -120,8 +112,6 @@ ${rechner('tz', [
 ${gezeitenBegriffe(sprache)}
 ${quelle(sprache, 'twelfths', 'dreyer', 'wiki_gezeiten', 'wiki_tide', 'yacht_skn', 'struna_skn', 'pmf_skn')}`;
 }
-
-
 
 export function formeln(sprache: Sprache): string {
   const t = tFuer(sprache);
@@ -163,8 +153,6 @@ ${rechner('ki', [{ name: 'auge', label: t('h Auge (m)', 'h eye (m)'), wert: 2.5 
 ${quelle(sprache, 'zembra', 'dewiki_relings', 'rumpf', 'kimm')}`;
 }
 
-
-
 export function ankern(sprache: Sprache): string {
   const t = tFuer(sprache);
   const fig = `<figure class="kp-fig"><svg class="kp-zeichnung" viewBox="0 0 360 180" role="img" aria-label="${t('Ankerkette mit Kettenlinie', 'Anchor chain forming a catenary')}">`
@@ -192,8 +180,6 @@ export function ankern(sprache: Sprache): string {
 </div></div>
 ${sprache === 'en' ? quelle(sprache, 'blauwasser', 'colregs') : quelle(sprache, 'blauwasser', 'kvr')}`;
 }
-
-
 
 export function mob(sprache: Sprache): string {
   const t = tFuer(sprache);
@@ -234,8 +220,6 @@ ${sprache === 'en' ? '<p class="kp-note">Translated from the German compilation;
 ${quelle(sprache, 'wiki_mob', 'imo_cold')}`;
 }
 
-
-
 export function ersteHilfe(sprache: Sprache): string {
   const t = tFuer(sprache);
   return `
@@ -252,9 +236,6 @@ export function ersteHilfe(sprache: Sprache): string {
 </div>
 ${quelle(sprache, 'imo_cold', 'dflagge')}`;
 }
-
-
-
 
 export function quellenAbschnitt(sprache: Sprache): string {
   const t = tFuer(sprache);

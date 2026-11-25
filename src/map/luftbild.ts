@@ -3,14 +3,13 @@ import { API_BASIS } from '@/shell/api';
 import { aktuelleSprache, aufSprachwechsel } from '@/shell/sprache';
 import { icon } from '@/shell/icons';
 
-
 export type LuftbildStand = 'aus' | 'laedt' | 'an' | 'fehlt';
 
 export interface Luftbild {
   stand(): LuftbildStand;
   an(): boolean;
   setze(an: boolean): Promise<void>;
-  
+
   beiWechsel(f: () => void): void;
 }
 
@@ -25,7 +24,6 @@ export const LUFTBILD_PANE = 'luftbild';
 function escHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-
 
 export function luftbildNennung(quellen: string, sprache: 'de' | 'en'): string {
   return `Powered by <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a> · ${TEXT[sprache].quellen}: ${escHtml(quellen)}`;
@@ -108,7 +106,6 @@ export function luftbildAuf(karte: L.Map, opt: { speicher: string; nennungsFeld:
     beiWechsel: (f) => { rueckrufe.push(f); },
   };
 }
-
 
 export function luftbildKnopf(lb: Luftbild, klasse: string): HTMLButtonElement {
   const k = document.createElement('button');

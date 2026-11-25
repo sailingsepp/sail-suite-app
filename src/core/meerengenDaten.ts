@@ -1,4 +1,3 @@
-
 export interface MeerengeRoh {
   id: string; de: string; en: string; ort: string;
   achse: { lat0: number; lon0: number; ux: number; uy: number; uMin: number; uMax: number; vMin: number; vMax: number };

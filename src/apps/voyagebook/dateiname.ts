@@ -1,4 +1,3 @@
-
 import type { Sprache } from '@/core/types';
 
 export type PdfArt = 'bericht' | 'nachweis' | 'blatt' | 'crewliste' | 'bordkassa';
@@ -11,7 +10,6 @@ const ART: Record<PdfArt, Record<Sprache, string>> = {
   bordkassa: { de: 'Bordkassa', en: 'Kitty' },
 };
 
-
 export function dateinamenTeil(text: string, max = 50): string {
   const umgeschrieben = text
     .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
@@ -20,7 +18,6 @@ export function dateinamenTeil(text: string, max = 50): string {
     .replace(/đ/g, 'd').replace(/Đ/g, 'D');
   return umgeschrieben.replace(/[^A-Za-z0-9-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').slice(0, max);
 }
-
 
 export function pdfDateiname(
   art: PdfArt, toernName: string, sprache: Sprache,

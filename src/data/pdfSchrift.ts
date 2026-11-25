@@ -3,7 +3,6 @@ import regularUrl from '@/assets/fonts/Inter-Regular.ttf?url';
 import boldUrl from '@/assets/fonts/Inter-Bold.ttf?url';
 import italicUrl from '@/assets/fonts/Inter-Italic.ttf?url';
 
-
 export const SCHRIFT = 'Inter';
 
 type Daten = { normal: string; bold: string; italic: string };
@@ -14,7 +13,7 @@ async function alsBase64(url: string): Promise<string> {
   if (!r.ok) throw new Error(`Schrift ${r.status}`);
   const bytes = new Uint8Array(await r.arrayBuffer());
   let s = '';
-  
+
   for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   return btoa(s);
 }
@@ -25,7 +24,6 @@ function holeDaten(): Promise<Daten | null> {
     .catch(() => { laden = null; return null; });
   return laden;
 }
-
 
 export async function bindeSchriftEin(d: jsPDF): Promise<boolean> {
   const daten = await holeDaten();

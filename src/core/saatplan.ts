@@ -1,4 +1,3 @@
-
 import { distNM } from './geo';
 import {
   TOERNVORSCHLAEGE, type Toernvorschlag, type ToernvorschlagRevier, type ToernvorschlagRoutenart,
@@ -6,9 +5,7 @@ import {
 import type { Hafenknoten } from './hafennetz';
 import type { Punkt } from './types';
 
-
 export const SAATPLAN_SCHWELLE_NM = 3;
-
 
 export function waehleToernvorschlag(
   revier: ToernvorschlagRevier, routenart: ToernvorschlagRoutenart, start: Punkt,
@@ -26,7 +23,6 @@ export function waehleToernvorschlag(
   return bester;
 }
 
-
 export function waehleToernvorschlaege(
   revier: ToernvorschlagRevier, routenart: ToernvorschlagRoutenart, start: Punkt,
   anzahl = 3, maxStartSm = 15, vorschlaege: readonly Toernvorschlag[] = TOERNVORSCHLAEGE,
@@ -42,10 +38,9 @@ export function waehleToernvorschlaege(
 
 export interface SaatplanKette {
   routeId: string;
-  
+
   knotenIndizes: number[];
 }
-
 
 export function bildeKetteAufNetzAb(
   vorschlag: Toernvorschlag, knoten: readonly Hafenknoten[], schwelleNM = SAATPLAN_SCHWELLE_NM,

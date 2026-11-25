@@ -2,10 +2,7 @@ import { initModal } from './modal';
 import { icon } from './icons';
 import { aktuelleSprache } from './sprache';
 
-
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-
-
 
 type PdfJs = typeof import('pdfjs-dist');
 
@@ -20,22 +17,11 @@ export function ladePdfjs(): Promise<PdfJs> {
   return pdfjsPromise;
 }
 
-
-
-
-
-
-
 let modal: HTMLDivElement | null = null;
 let griff: ReturnType<typeof initModal> | null = null;
 let seiten: HTMLDivElement | null = null;
 let geladeneHref = '';
 let aktuellerSchliessRueckruf: (() => void) | null = null;
-
-
-
-
-
 
 let pdfDatei: File | null = null;
 let pdfDateiPromise: Promise<File | null> | null = null;
@@ -70,7 +56,6 @@ function herunterladen(datei: File): void {
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
-
 async function teile(): Promise<void> {
   const href = geladeneHref;
   if (!href) return;
@@ -85,8 +70,7 @@ async function teile(): Promise<void> {
       await nav.share({ files: [datei], title: datei.name });
       return;
     } catch (err) {
-      
-      
+
       if ((err as DOMException)?.name === 'AbortError') return;
     }
   }
@@ -132,8 +116,7 @@ async function zeichnePdf(href: string): Promise<void> {
     const lib = await ladePdfjs();
     const dok = await lib.getDocument({ url: href }).promise;
     seiten.textContent = '';
-    
-    
+
     const zielBreite = seiten.clientWidth || 320;
     for (let n = 1; n <= dok.numPages; n++) {
       const seite = await dok.getPage(n);
@@ -165,17 +148,13 @@ async function zeichnePdf(href: string): Promise<void> {
   }
 }
 
-
 function oeffneModal(href: string, ausloeser: HTMLElement, aufSchliessen: (() => void) | null): void {
   const m = holeModal();
   m.hidden = false;
   griff!.beimOeffnen(ausloeser);
   aktuellerSchliessRueckruf = aufSchliessen;
   beschrifte();
-  
-  
-  
-  
+
   if (geladeneHref !== href) {
     geladeneHref = href;
     ladeDatei(href);
@@ -192,15 +171,11 @@ function schliesse(): void {
   if (rueckruf) rueckruf();
 }
 
-
 export function initHandbuchModal(knopfId = 'btn-handbuch'): void {
   const gefunden = document.getElementById(knopfId) as HTMLAnchorElement | null;
   if (!gefunden) return;
   const link = gefunden;
 
-  
-  
-  
   const standalone = window.matchMedia('(display-mode: standalone)').matches
     || (navigator as unknown as { standalone?: boolean }).standalone === true;
   if (!standalone) return;
@@ -210,7 +185,6 @@ export function initHandbuchModal(knopfId = 'btn-handbuch'): void {
     oeffneModal(link.href, link, null);
   });
 }
-
 
 export function oeffneHandbuchImmer(href: string, ausloeser: HTMLElement, aufSchliessen: () => void): void {
   oeffneModal(href, ausloeser, aufSchliessen);

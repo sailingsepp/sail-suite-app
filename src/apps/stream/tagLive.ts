@@ -1,5 +1,3 @@
-
-
 import { letzteDaemmerung, letzteMorgendaemmerung, DAEMMERUNG_SPIEL_MS } from '@/core/tagesende';
 
 export type Punkt3 = [number, number, number];
@@ -16,8 +14,7 @@ export function tagMitLive<F extends { beendet: number | null }, E extends TagEi
   const schluessel = (e: TagEintrag) => `${e.art}@${e.t}`;
   const eintraege = new Map<string, E>();
   for (const e of tag.eintraege) eintraege.set(schluessel(e), e);
-  
-  
+
   for (const e of live.eintraege) {
     const alt = eintraege.get(schluessel(e)) as (E & { text?: string }) | undefined;
     const neu = e as E & { text?: string };
@@ -30,7 +27,6 @@ export function tagMitLive<F extends { beendet: number | null }, E extends TagEi
     orte: tag.orte,
   };
 }
-
 
 export interface TagGruppe<E extends TagEintrag> { tag: string; heute: boolean; eintraege: E[] }
 
@@ -48,11 +44,9 @@ export function tagGruppen<E extends TagEintrag>(
   return gruppen;
 }
 
-
 export function brauchtTagTrenner<E extends TagEintrag>(gruppen: readonly TagGruppe<E>[]): boolean {
   return gruppen.some((g) => !g.heute);
 }
-
 
 export const ABLEGEN_NACH_START_MS = 15 * 60_000;
 export function fahrtagZeit(
@@ -70,7 +64,6 @@ export function fahrtagZeit(
   return letzteMorgendaemmerung(ort.lat, ort.lon, pruef + 86_400_000) ?? begonnen;
 }
 
-
 function eintragsOrt(eintraege: readonly TagEintrag[]): { lat: number; lon: number } | null {
   let bester: { t: number; lat: number; lon: number } | null = null;
   for (const e of eintraege) {
@@ -80,7 +73,6 @@ function eintragsOrt(eintraege: readonly TagEintrag[]): { lat: number; lon: numb
   }
   return bester && { lat: bester.lat, lon: bester.lon };
 }
-
 
 export function fahrtagBereiche(spannen: readonly { von: string; bis: string }[]): { von: number; bis: number }[] {
   const tage = new Set<string>();

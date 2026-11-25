@@ -7,28 +7,24 @@ import { initModal } from '@/shell/modal';
 import { STRINGS } from './strings';
 import type { Fix } from '@/core/spur';
 
-
-
 const $ = (id: string) => document.getElementById(id);
 const wort = (schluessel: string): string =>
   STRINGS[aktuelleSprache()][schluessel] ?? schluessel;
 const sm = () => (aktuelleSprache() === 'en' ? 'NM' : 'sm');
 
 function dauer(sekunden: number): string {
-  
+
   const min = Math.round(Math.max(0, sekunden) / 60);
   const h = Math.floor(min / 60);
   const m = min % 60;
   return h > 0 ? `${h} h ${String(m).padStart(2, '0')} min` : `${m} min`;
 }
 
-
 function text(schluessel: string, werte: Record<string, string | number>): string {
   let s = wort(schluessel);
   for (const [k, v] of Object.entries(werte)) s = s.replace(`{${k}}`, String(v));
   return s;
 }
-
 
 let offen: { fahrt: string; neue: Fix[]; bericht: MischBericht } | null = null;
 
@@ -52,9 +48,6 @@ function zeigeBericht(gelesen: number, b: MischBericht): void {
   }
   kasten.innerHTML = zeilen.map((z) => `<div>${z}</div>`).join('');
 
-  
-  
-  
   if (warnung) {
     const w = !b.passtZeitlich
       ? wort('import.warnZeit')
@@ -71,9 +64,9 @@ function zeigeBericht(gelesen: number, b: MischBericht): void {
 }
 
 export function initSpurimport(
-  
+
   zielFahrt: () => Promise<{ id: string; fixe: Fix[] } | null>,
-  
+
   uebernimm: (fixe: Fix[]) => void,
   eintragen: (e: LogEintrag) => void,
   melde: (nachricht: string) => void,
@@ -108,14 +101,13 @@ export function initSpurimport(
       const roh = await datei.text();
       const gelesen = leseFremdspur(roh);
       const { neue, bericht } = mischeSpur(ziel.fixe, gelesen.fixe);
-      
-      
+
       offen = { fahrt: ziel.id, neue, bericht };
       zeigeBericht(gelesen.fixe.length, bericht);
       importModalEl?.removeAttribute('hidden');
       importModal?.beimOeffnen();
     } catch (err) {
-      
+
       const art = err instanceof ImportFehler ? err.art : 'unbekannt';
       melde(text('import.fehler', { grund: wort(`import.grund.${art}`) }));
     }
@@ -128,8 +120,7 @@ export function initSpurimport(
     void (async () => {
       await schreibeFixe(jetzt.fahrt, jetzt.neue);
       uebernimm(jetzt.neue);
-      
-      
+
       eintragen({
         fahrt: jetzt.fahrt, t: Date.now(), art: 'import',
         lat: null, lon: null,

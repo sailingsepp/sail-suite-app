@@ -1,7 +1,4 @@
-
 @import 'leaflet/dist/leaflet.css';
-
-
 
 .lpw-overlay {
   position: fixed; inset: 0; z-index: 3000; display: flex; align-items: center; justify-content: center;
@@ -23,7 +20,6 @@
 }
 .lpw-schliessen:hover, .lpw-schliessen:focus-visible { color: var(--fg); background: var(--panel-2); }
 
-
 .lpw-suche { position: relative; display: block; margin: 0 0 10px; }
 .lpw-suche span { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
 .lpw-suche input { width: 100%; box-sizing: border-box; }
@@ -34,7 +30,6 @@
 .lpw-suche input, .lpw-frei input { font-size: 16px; }
 
 .lpw-hinweis { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
-
 
 .lpw-spalten { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
 @media (max-width: 700px) { .lpw-spalten { grid-template-columns: 1fr; } }

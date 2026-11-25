@@ -4,7 +4,6 @@ import { aktuellerToernId, aktuelleFixe, aktuellerZustand } from './aufzeichnung
 import { warnlageAktuell } from './seewetter';
 import { istOnline } from './netz';
 
-
 const SCHLUESSEL = 'sail-suite:warnlage';
 const TAKT_MS = 10 * 60_000;
 const ERNEUERN_MS = 6 * 3600_000;
@@ -14,7 +13,6 @@ interface Gemeldet { toern: string; lage: string; zeit: number }
 function gemeldet(): Gemeldet | null {
   try { return JSON.parse(localStorage.getItem(SCHLUESSEL) ?? 'null') as Gemeldet | null; } catch { return null; }
 }
-
 
 async function ortungOhneFrage(): Promise<{ lat: number; lon: number } | null> {
   try {
@@ -46,7 +44,7 @@ async function pruefe(): Promise<void> {
   const toern = aktuellerToernId();
   if (!token || !toern) return;
   const alt = gemeldet();
-  
+
   const faellig = !alt || alt.toern !== toern || Date.now() - alt.zeit >= ERNEUERN_MS;
   const pos = await position(faellig).catch(() => null);
   if (!pos) return;
@@ -60,10 +58,10 @@ async function pruefe(): Promise<void> {
 }
 
 export function initWarnlage(): void {
-  
+
   setTimeout(() => void pruefe(), 15_000);
   setInterval(() => void pruefe(), TAKT_MS);
   window.addEventListener('online', () => void pruefe());
-  
+
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void pruefe(); });
 }

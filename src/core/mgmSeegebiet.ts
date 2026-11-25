@@ -1,6 +1,3 @@
-
-
-
 export const NAH_KM = 100;
 
 const ORT = {
@@ -13,7 +10,6 @@ const ORT = {
   anamur: [36.0803, 32.8312],
   iskenderun: [36.5902, 36.1710],
 } as const;
-
 
 const ABSCHNITTE: { name: string; von: readonly [number, number]; bis: readonly [number, number] }[] = [
   { name: 'East Black Sea (Hopa - Sinop)', von: ORT.hopa, bis: ORT.sinop },
@@ -35,7 +31,6 @@ function abstandKm(lat: number, lon: number, a: readonly [number, number], b: re
   return Math.hypot(px - ax - t * dx, py - ay - t * dy) * 111.2;
 }
 
-
 export function mgmGebietAn(lat: number, lon: number): string | null {
   if (lat >= MARMARA.s && lat <= MARMARA.n && lon >= MARMARA.w && lon <= MARMARA.o) return MARMARA.name;
   let best: { name: string; km: number } | null = null;
@@ -45,7 +40,6 @@ export function mgmGebietAn(lat: number, lon: number): string | null {
   }
   return best && best.km <= NAH_KM ? best.name : null;
 }
-
 
 export function mgmGebieteEntlang(punkte: { lat: number; lon: number }[]): string[] {
   const out: string[] = [];

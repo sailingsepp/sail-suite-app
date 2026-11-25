@@ -6,7 +6,6 @@ import { landKachelnFuerBox } from '@/core/kartenKacheln';
 import { dekodiereSteg, type KartenName, type OrtsArt, type SeekartenPaket, type StegArt, type StrassenKlasse, type VerkehrArt } from '@/core/seekartenObjekte';
 import { API_BASIS } from '@/shell/api';
 
-
 const DB_NAME = 'sail-suite-seekarte';
 const STORE = 'pakete';
 const MANIFEST_NEU_MS = 6 * 3600_000;
@@ -91,7 +90,6 @@ function einordnen<T extends { s: number; w: number; n: number; o: number }>(je:
   }
 }
 
-
 function rahmenRoh(ks: readonly (readonly number[])[], faktor: number): { s: number; w: number; n: number; o: number } {
   let s = Infinity, w = Infinity, n = -Infinity, o = -Infinity;
   for (const k of ks) {
@@ -106,7 +104,6 @@ function rahmenRoh(ks: readonly (readonly number[])[], faktor: number): { s: num
   }
   return { s: s / faktor, w: w / faktor, n: n / faktor, o: o / faktor };
 }
-
 
 function mitPunkten<T extends object>(x: T, k: readonly number[], faktor: number): T & { p: Float64Array } {
   let p: Float64Array | null = null;
@@ -152,7 +149,6 @@ async function holeManifest(netz: boolean, basis: string): Promise<VorrechnungMa
   return manifest?.wert ?? null;
 }
 
-
 export function ladeSeekartenObjekte(b: Box, netz: boolean, basis = API_BASIS): Promise<boolean> {
   const schluessel = `${netz}|${Math.floor(b.swLat)}|${Math.floor(b.swLon)}|${Math.floor(b.neLat)}|${Math.floor(b.neLon)}`;
   const da = laeuft.get(schluessel);
@@ -181,7 +177,6 @@ export function ladeSeekartenObjekte(b: Box, netz: boolean, basis = API_BASIS): 
   return lauf;
 }
 
-
 export function stegeJetzt(b: Box): Steg[] {
   const aus = new Set<Steg>();
   for (const z of landKachelnFuerBox(b)) {
@@ -193,7 +188,6 @@ export function stegeJetzt(b: Box): Steg[] {
   }
   return [...aus];
 }
-
 
 export async function molenUm(punkte: readonly Punkt[], randSm: number): Promise<MoleRoh[]> {
   const netz = typeof navigator === 'undefined' || navigator.onLine !== false;
@@ -218,12 +212,10 @@ function imAusschnitt<T extends { s: number; w: number; n: number; o: number }>(
   return [...aus];
 }
 
-
 export function ortsflaechenJetzt(b: Box): Ortsflaeche[] { return imAusschnitt(b, ORTE); }
 export function strassenJetzt(b: Box): Strasse[] { return imAusschnitt(b, STRASSEN); }
 export function pistenJetzt(b: Box): Piste[] { return imAusschnitt(b, PISTEN); }
 export function verkehrJetzt(b: Box): Verkehrsweg[] { return imAusschnitt(b, VERKEHR); }
-
 
 export function namenJetzt(b: Box): KartenName[] {
   const aus: KartenName[] = [];
@@ -240,7 +232,6 @@ export function namenJetzt(b: Box): KartenName[] {
   }
   return aus;
 }
-
 
 export function _vergessen(): void {
   db = null; offen = null; manifest = null; geladen.clear(); alleAbgelegt = null; laeuft.clear();

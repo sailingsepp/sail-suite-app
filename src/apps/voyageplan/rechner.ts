@@ -1,4 +1,3 @@
-
 import { holeKandidatenknotenImGebiet, holeKuestenlinienFuerNetz, dedupliziereHafenknoten } from '@/data/haefen';
 import { openMeteoKontingentErschoepft } from '@/data/openMeteoNetz';
 import { holeInselAbschnitteOderWirf, type InselAbschnitte } from '@/data/skipperguide';
@@ -54,36 +53,32 @@ import {
   K_BESTE, STANDARD_RADIUS_NM, OPTION_SCHLUESSEL_1, OPTION_SCHLUESSEL_2,
 } from './rechnerProtokoll';
 
-
 function rechneEineOption(
   option: OptionEingabe, wunschzielKnoten: readonly number[],
   eingabeBasis: Omit<WochenplanEingabe, 'wunschzielKnoten' | 'sammler'>,
-  
+
   umkehrlinie: (ergebnis: WochenplanErgebnis, wunschzielKnoten: readonly number[]) => UmkehrpunktErgebnis | null,
-  
+
   praeferenzen: ErklaertePraeferenzen,
-  
+
   reihungsKontext: ReihungsKontext = {},
-  
+
   langerTagAbSm: number | null = null,
-  
+
   mindestHafentage = 0,
-  
+
   regelmassSm: number | null = null,
 ): OptionErgebnis {
   const sammler = new BegruendungsSammler();
   const kennung = { schluessel: option.schluessel, name: option.name, umkehrpunkt: null };
-  
-  
+
   const freieRunde = regelmassSm != null && regelmassSm > 0 && option.wunschziele.length === 0 && !option.endziel;
   const eingabe: WochenplanEingabe = {
     ...eingabeBasis, wunschzielKnoten: [...wunschzielKnoten], sammler,
     ...(freieRunde ? { freieRunde: { regelmassSm: regelmassSm! } } : {}),
     ...(reihungsKontext.ankunftsTag != null ? { offenesEnde: true } : {}),
   };
-  
-  
-  
+
   const wiederholteLiegeplaetze = (plan: WochenplanErgebnis, naeheSm = HEIMAT_NAEHE_SM): number => zaehleWiederholteLiegeplaetze(
     plan.etappen, eingabeBasis.startIndex, eingabeBasis.zielIndex, eingabeBasis.gesamtFahrtage,
     eingabeBasis.netz.knoten.map((k) => k.ort), naeheSm,
@@ -92,12 +87,7 @@ function rechneEineOption(
     ...reihungsKontext, wiederholteLiegeplaetze: (plan) => wiederholteLiegeplaetze(plan),
     kurzeTage: (plan) => zaehleKurzeTage(plan.etappen, regelmassSm!),
   } : { ...reihungsKontext, wiederholteLiegeplaetze: (plan) => wiederholteLiegeplaetze(plan, 0) };
-  
-  
-  
-  
-  
-  
+
   const offenesEnde = reihungsKontext.ankunftsTag != null;
   const bisZurAnkunft = (p: WochenplanErgebnis): WochenplanErgebnis => {
     let n = p.etappen.length;
@@ -109,11 +99,7 @@ function rechneEineOption(
   const roheKandidaten = rechneVielfaeltigeWochenplaene(eingabe)
     .map((p) => (offenesEnde ? bisZurAnkunft(p) : p))
     .filter((p) => p.etappen.filter((e) => e.istHafentag).length >= mindestHafentage);
-  
-  
-  
-  
-  
+
   const einmal = (p: WochenplanErgebnis): boolean => wunschzielKnoten.every((k) => p.etappen.filter((e) =>
     !e.istHafentag && e.nachIndex === k && !(k === eingabeBasis.zielIndex && e.tag === eingabeBasis.gesamtFahrtage)).length <= 1);
   const gefiltert = roheKandidaten.filter(einmal);
@@ -121,14 +107,9 @@ function rechneEineOption(
   if (kandidatenplaene.length === 0) return { ...kennung, ergebnis: null, begruendung: null, reihenfolge: [] };
 
   let gewaehlt = waehlePlaene(kandidatenplaene, praeferenzen, kontext);
-  
-  
-  
-  
-  
-  
+
   const sieger = gewaehlt.gereiht[0];
-  
+
   if (!freieRunde && sieger && wiederholteLiegeplaetze(sieger, 0) > 0) {
     const folge = (p: WochenplanErgebnis): string => p.etappen.filter((e) => !e.istHafentag).map((e) => `${e.vonIndex}>${e.nachIndex}`).join(',');
     const bekannt = new Set(kandidatenplaene.map(folge));
@@ -148,11 +129,9 @@ function rechneEineOption(
   return { ...kennung, ergebnis, begruendung, reihenfolge, umkehrpunkt: umkehrlinie(ergebnis, wunschzielKnoten) };
 }
 
-
 const STUFE2_RUNDEN = 3;
 
 const STUFE2_REST_MAX = 120;
-
 
 const SKIPPERGUIDE_MAX_INSELN = 12;
 
@@ -171,20 +150,15 @@ function ortSchluessel(p: Punkt): string {
   return `${p.lat.toFixed(5)},${p.lon.toFixed(5)}`;
 }
 
-
 const SEEGEBIET_UMKREIS_GRAD = 0.05;
 
-
 const GITTER_RAND_GRAD = 0.1;
-
 
 const ORT_BASIS_MAX_SM = 20;
 
 const ZUFAHRT_ERSATZ_MAX_SM = 5;
 
-
 const FREIE_RUNDE_MAX_KANDIDATEN = 60;
-
 
 const LANGE_TAGE_MAX_STUNDEN = 12;
 
@@ -200,12 +174,10 @@ function netzRechteck(netz: Kandidatennetz, rand: number): { swLat: number; swLo
   };
 }
 
-
 function kanteZu(netz: Kandidatennetz, von: number, nach: number): number | null {
   const i = netz.kanten.findIndex((k) => k.von === von && k.nach === nach);
   return i >= 0 ? i : null;
 }
-
 
 function baueReihungsKontext(
   netz: Kandidatennetz, start: Punkt, gesamtFahrtage: number,
@@ -213,20 +185,16 @@ function baueReihungsKontext(
 ): ReihungsKontext {
   const kontext: ReihungsKontext = {};
 
-  
   const uebernachtungen = (plan: WochenplanErgebnis): Punkt[] => [
     start, ...plan.etappen.filter((e) => !e.istHafentag).map((e) => netz.knoten[e.nachIndex]?.ort).filter((o): o is Punkt => o != null),
   ];
   kontext.huellenumfangSm = (plan) => huellenumfangSm(uebernachtungen(plan));
   kontext.selbstkreuzungen = (plan) => selbstkreuzungen(uebernachtungen(plan));
-  
-  
+
   if (istEinweg && distNM(start.lat, start.lon, ziel.lat, ziel.lon) >= HEIMAT_NAEHE_SM) {
     kontext.rueckschritte = (plan) => rueckschritte(uebernachtungen(plan), ziel);
   }
 
-  
-  
   if (!istEinweg) {
     kontext.rueckwegAmHinweg = (plan) => {
       const teile = zerlegeRundreise(netz, plan, 0, 0);
@@ -266,7 +234,6 @@ function baueReihungsKontext(
   return kontext;
 }
 
-
 function baueTrajektorie(
   ergebnis: WochenplanErgebnis, netz: Kandidatennetz, startIndex: number,
   wunschzielKnoten: readonly number[], wunschzielJeKnoten: ReadonlyMap<number, Wunschziel>,
@@ -289,16 +256,14 @@ function baueTrajektorie(
 
 export async function rechne(
   anfrage: RechnerAnfrage,
-  
+
   melde: (f: RechnerFortschritt) => void = () => {},
-  
+
   speicher: KostenkartenSpeicher | null = null,
 ): Promise<RechnerAntwort> {
-  
+
   if (anfrage.offenesEnde && !anfrage.ohneUmkehrpunkt) anfrage = { ...anfrage, ohneUmkehrpunkt: true };
-  
-  
-  
+
   if (anfrage.obergrenzeSm != null && anfrage.obergrenzeSm < 1) {
     return {
       lage: 'keinPlanGefunden', grund: { art: 'tagesmeilenNull' },
@@ -306,9 +271,7 @@ export async function rechne(
     };
   }
   melde({ art: 'fortschritt', phase: 'haefen', schritt: 'kandidaten' });
-  
-  
-  
+
   const zeitbudgetMs = anfrage.zeitbudgetMs ?? ZEITBUDGET_MS;
   const frist = Date.now() + zeitbudgetMs;
   const budgetErreicht = (): boolean => Date.now() >= frist;
@@ -316,55 +279,36 @@ export async function rechne(
     schluessel: OPTION_SCHLUESSEL_1, name: 'Option 1',
     wunschziele: anfrage.wunschziele, endziel: anfrage.endziel,
   };
-  
-  
-  
+
   const optionEingaben: OptionEingabe[] = anfrage.zweiteOption
     ? [option1, { ...anfrage.zweiteOption, schluessel: OPTION_SCHLUESSEL_2 }]
     : [option1];
 
-  
-  
-  
   const planung = mitVorgaben(anfrage.planung);
 
-  
-  
   const rueckgabehafen = anfrage.rueckgabehafen ?? null;
   const pflichtKnoten = baueOptionsPflichtknoten(anfrage.start, optionEingaben, rueckgabehafen);
   const zielIndex = zielKnotenIndex(optionEingaben, rueckgabehafen != null);
 
-  
-  
-  
-  
   const fixierungen = anfrage.fixierungen ?? [];
   const pflichtOrte = fixierungen.map((f, i) => ({
     tag: f.tag, knotenIndex: pflichtKnoten.length + i,
   }));
   for (const f of fixierungen) pflichtKnoten.push({ name: f.name, ort: f.ort, art: 'hafen' });
-  
-  
-  
+
   const zielOrt = rueckgabehafen?.ort ?? anfrage.start.ort;
   const maxTagesetappeSm = schaetzeMaxTagesetappeSm(anfrage.cfg, anfrage.maxStundenProTag, anfrage.obergrenzeSm);
-  
+
   const halbachseKetteSm = suchraumHalbachseFuerKetteSm(
     maxTagesetappeSm, anfrage.gesamtFahrtage, anfrage.start.ort, zielOrt, pflichtKnoten.map((k) => k.ort),
   );
-  
-  
-  
+
   const nurFreieRunde = optionEingaben.every((o) => o.wunschziele.length === 0 && !o.endziel);
   let halbachseSm = nurFreieRunde
     ? Math.min(suchraumHalbachseSm(maxTagesetappeSm, anfrage.gesamtFahrtage),
       Math.max(halbachseKetteSm, (planung.regelmassSm * anfrage.gesamtFahrtage) / 3))
     : halbachseKetteSm;
-  
-  
-  
-  
-  
+
   let seewegPunkte: Punkt[] | null = null;
   let seewegSm = 0;
   if (anfrage.offenesEnde && rueckgabehafen) {
@@ -381,26 +325,13 @@ export async function rechne(
   }
   const radiusNM = Math.max(STANDARD_RADIUS_NM, maxTagesetappeSm);
 
-  
-  
-  
-  
-  
-  
   const box = seewegPunkte
     ? boxUm([...seewegPunkte, ...pflichtKnoten.map((k) => k.ort)], Math.max(40, maxTagesetappeSm))
     : suchraumBoundingBox([anfrage.start.ort, zielOrt, ...pflichtKnoten.map((k) => k.ort)], halbachseSm);
-  
-  
-  
-  
-  
-  
-  
-  
+
   const paket = await gemerkt(speicher, 'vorrechnung-teil', box, () => holeVorrechnung(box, true)).catch(() => null);
   const ausPaket: Hafenknoten[] = paket
-    
+
     ? kandidatenInBox(paket, box).filter((a) => !(a.art === 'bucht' && istGolfName(a.name)))
       .map((a) => ({ name: a.name, ort: { lat: a.lat, lon: a.lon }, art: a.art }))
     : [];
@@ -410,24 +341,13 @@ export async function rechne(
     () => holeKandidatenknotenImGebiet(box, pflichtKnoten.map((k) => k.ort), radiusNM),
   ).catch((): Hafenknoten[] => []);
   const rohKandidaten = dedupliziereHafenknoten([...live, ...ausPaket]);
-  
-  
+
   const haefenNurTeilpaket = !paketDecktGanz && live.length === 0 && ausPaket.length > 0;
   const haefenUnbekannt = !paketDecktGanz && live.length === 0 && ausPaket.length === 0;
-  
-  
-  
-  
+
   const erlaubt = filtereAnkerbuchten(rohKandidaten, planung.ankerbuchtenGleichwertig);
   const imRaum = filtereSuchraum(erlaubt, anfrage.start.ort, zielOrt, halbachseSm);
 
-  
-  
-  
-  
-  
-  
-  
   const alleWunschzielArtige = alleWunschzielArtigeListe(optionEingaben);
   const ortsbasisVorab = new Map<number, Wunschziel>();
   alleWunschzielArtige.forEach((w, i) => {
@@ -439,10 +359,7 @@ export async function rechne(
   });
 
   melde({ art: 'fortschritt', phase: 'haefen', schritt: 'kueste' });
-  
-  
-  
-  
+
   const kuesteErgebnis = await gemerkt(speicher, 'kueste', box, async () => {
     const ergebnis = await holeKuestenlinienFuerNetz(box.swLat, box.swLon, box.neLat, box.neLon);
     if (!ergebnis) throw new Error('Kuestenlinien nicht verfuegbar');
@@ -451,21 +368,14 @@ export async function rechne(
   const kueste = kuesteErgebnis?.linien ?? null;
   const kuesteRueckfall = kuesteErgebnis?.rueckfall ?? false;
 
-  
-  
   const bezugspunkte = [anfrage.start.ort, zielOrt, ...pflichtKnoten.map((k) => k.ort)];
   const korridor = [...korridorWege(bezugspunkte, kueste ?? []), ...(seewegPunkte ? [seewegPunkte] : [])];
-  
-  
-  
+
   const zelleSm = nurFreieRunde ? Math.max(KANDIDATEN_ZELLE_SM, planung.regelmassSm / 3) : KANDIDATEN_ZELLE_SM;
-  
-  
+
   const maxKandidaten = nurFreieRunde ? FREIE_RUNDE_MAX_KANDIDATEN
     : Math.min(FREIE_RUNDE_MAX_KANDIDATEN, Math.max(MAX_KANDIDATEN, Math.ceil(seewegSm / 15)));
-  
-  
-  
+
   const saatRevier = revierVonPunkt(anfrage.start.ort.lat, anfrage.start.ort.lon);
   const saatVorschlaege = saatRevier === 'adria' || saatRevier === 'aegaeis' || saatRevier === 'ionisch'
     ? waehleToernvorschlaege(saatRevier, rueckgabehafen != null ? 'einwegtoern' : 'rundtoern', anfrage.start.ort) : [];
@@ -485,20 +395,14 @@ export async function rechne(
 
   const revier: RevierRandbedingungen = {
     boat: anfrage.cfg.boat, crewFactor: anfrage.cfg.crewFactor, motorSpeedKn: anfrage.cfg.motorSpeed,
-    
-    
+
     vorherrschenderWindDeg: windrichtung(anfrage.start.ort, anfrage.wunschziele, anfrage.endziel),
     vorherrschenderWindKn: NORMALWIND_KN,
   };
-  
-  
-  
-  
-  
-  
+
   const netzOsm = baueKandidatennetz(pflichtKnoten, kandidaten, revier, planung.maxStundenProTag, kueste ?? [], MAX_NACHBARN);
   melde({ art: 'fortschritt', phase: 'haefen', schritt: 'inseln' });
-  
+
   const inselnBekannt = inselnAusPaket(paket, netzOsm.knoten.map((k) => k.ort));
   const inselnLive = inselnBekannt.fehlend.length === 0 ? [] : await gemerkt(speicher, 'inseln',
     inselnBekannt.fehlend.map((i) => netzOsm.knoten[i]!.ort),
@@ -517,9 +421,7 @@ export async function rechne(
   })));
   const sgKnoten: Hafenknoten[] = filtereSuchraum(
     filtereAnkerbuchten(
-      
-      
-      
+
       zitate.map((z) => ({ name: z.name, ort: z.ort, art: 'bucht' as const })),
       planung.ankerbuchtenGleichwertig,
     ),
@@ -529,18 +431,14 @@ export async function rechne(
     const seite = inselSeiten.find((s) => s.seite === z.seite);
     if (seite) inselJeOrt.set(ortSchluessel(z.ort), [seite.seite]);
   }
-  
+
   const netzRoh = sgKnoten.length === 0 ? netzOsm : baueKandidatennetz(
     pflichtKnoten,
-    
+
     dedupliziereHafenknoten([...begrenzeKandidaten(dedupliziereHafenknoten([...kandidaten, ...sgKnoten]), bezugspunkte, maxKandidaten, korridor, zelleSm), ...saatKnoten]),
     revier, planung.maxStundenProTag, kueste ?? [], MAX_NACHBARN,
   );
 
-  
-  
-  
-  
   const poiBasis = ordnePoiBasen(
     netzRoh, alleWunschzielArtige.flatMap((w, i) => (w.art === 'poi' ? [i + 1] : [])),
   );
@@ -552,15 +450,7 @@ export async function rechne(
       };
     }
   }
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
   const ungenauIndizes = alleWunschzielArtige.flatMap(
     (w, i) => (w.art !== 'poi' && w.ungenauerOrt && !ortsbasisVorab.has(i + 1) ? [i + 1] : []),
   );
@@ -573,13 +463,7 @@ export async function rechne(
       };
     }
   }
-  
-  
-  
-  
-  
-  
-  
+
   const zufahrtErsatz: { wunsch: string; basis: string; sm: number }[] = [];
   const hatZufahrt = (j: number): boolean => netzRoh.kanten.some((k) => k.nach === j);
   alleWunschzielArtige.forEach((w, i) => {
@@ -592,11 +476,11 @@ export async function rechne(
       const sm = distNM(p.lat, p.lon, k.ort.lat, k.ort.lon);
       if (sm <= ZUFAHRT_ERSATZ_MAX_SM && sm < besteSm) { beste = kIdx; besteSm = sm; }
     });
-    if (beste == null) return; 
+    if (beste == null) return;
     ortBasis.set(j, beste);
     zufahrtErsatz.push({ wunsch: w.name, basis: netzRoh.knoten[beste]!.name, sm: besteSm });
   });
-  
+
   const wunschzielJeKnoten = new Map<number, Wunschziel>();
   alleWunschzielArtige.forEach((w, i) => { if (w.art !== 'poi') wunschzielJeKnoten.set(i + 1, ortsbasisVorab.get(i + 1) ?? w); });
   alleWunschzielArtige.forEach((w, i) => {
@@ -608,18 +492,12 @@ export async function rechne(
     if (w.art !== 'poi' && basis != null && !wunschzielJeKnoten.has(basis)) wunschzielJeKnoten.set(basis, w);
   });
 
-  
-  
-  
-  
-  
   let staatenErledigt = 0;
   if (planung.grenzuebertritt !== 'gern') melde({ art: 'fortschritt', phase: 'haefen', schritt: 'staaten', erledigt: 0, gesamt: netzRoh.knoten.length });
   const staaten: Staatsnamen[] = planung.grenzuebertritt === 'gern'
     ? netzRoh.knoten.map(() => null)
     : await parallelMitGrenze(NEBENLAEUFIGE_ABRUFE, netzRoh.knoten.map((k) => () =>
-      
-      
+
       (staatAusPaket(paket, k.ort) !== undefined
         ? Promise.resolve<Staatsnamen>(staatAusPaket(paket, k.ort)!)
         : gemerkt(speicher, 'staat', k.ort, () => fetchStaatsnamen(k.ort.lat, k.ort.lon, SEEGEBIET_UMKREIS_GRAD)))
@@ -629,9 +507,7 @@ export async function rechne(
     istKlarierGrenze(staaten[kante.von] ?? null, staaten[kante.nach] ?? null);
 
   if (planung.grenzuebertritt === 'nie') {
-    
-    
-    
+
     for (let i = 1; i < pflichtKnoten.length; i++) {
       if (istKlarierGrenze(staaten[0] ?? null, staaten[i] ?? null)) {
         return {
@@ -641,17 +517,12 @@ export async function rechne(
       }
     }
   }
-  
-  
-  
-  
+
   const kanteErlaubt = (k: Hafenkante): boolean => !(planung.grenzuebertritt === 'nie' && quertGrenze(k))
     && !(planung.langeTage === 'nie' && k.sm > planung.regelmassSm)
     && !poiBasis.has(k.von) && !poiBasis.has(k.nach)
     && !ortBasis.has(k.von) && !ortBasis.has(k.nach);
-  
-  
-  
+
   const ohneKanten = new Set([...poiBasis.keys(), ...ortBasis.keys()]);
   const netzTag: Kandidatennetz = verbindeTeilnetze(
     { knoten: netzRoh.knoten, kanten: netzRoh.kanten.filter(kanteErlaubt) },
@@ -660,33 +531,26 @@ export async function rechne(
       ausgeschlossen: ohneKanten,
     },
   );
-  
-  
+
   const nachtfahrtBudget = (anfrage.nachtVorgaben ?? nachtVorgabenAus(planung)).nachtfahrtBudget;
-  
+
   const netz: Kandidatennetz = kantenOhneVtg(nachtfahrtBudget > 0
     ? ergaenzeNachtkanten(netzTag, {
       revier, maxStundenProTag: planung.maxStundenProTag, kuestenlinien: kueste ?? [], erlaubt: kanteErlaubt,
       ausgeschlossen: ohneKanten, immer: new Set(pflichtKnoten.map((_, i) => i)),
     })
     : netzTag, kueste ?? []);
-  
-  
-  
+
   const einklarierAufschlag = planung.grenzuebertritt === 'wenn noetig'
     ? einklarierStunden(planung.maxStundenProTag) * SCORE_PRO_FAHRTSTUNDE : 0;
   const mitEinklarieren = <T extends { score: number }>(kanteIndex: number, b: T): T =>
     einklarierAufschlag > 0 && quertGrenze(netz.kanten[kanteIndex]!) ? { ...b, score: b.score + einklarierAufschlag } : b;
 
   const startDatum = new Date(`${anfrage.startDatumIso}T00:00:00`);
-  
-  
+
   const datumFuerTag = (tag: number): Date =>
     new Date(startDatum.getFullYear(), startDatum.getMonth(), startDatum.getDate() + tag - 1);
 
-  
-  
-  
   const alsDatumStr = (d: Date): string => {
     const p2 = (n: number): string => String(n).padStart(2, "0");
     return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
@@ -697,33 +561,11 @@ export async function rechne(
   const modellJeTag = await gemerkt(speicher, 'ensemble', { start: anfrage.start.ort, planTage },
     () => holeModellUebereinstimmung(anfrage.start.ort, planTage));
 
-  
-  
-  
-  
-  
-  
   const inselJeKnoten = new Map(netz.knoten.map((k, i) => [i, inselJeOrt.get(ortSchluessel(k.ort)) ?? []] as const));
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   const gitterBox = netzRechteck(netz, GITTER_RAND_GRAD);
   melde({ art: 'fortschritt', phase: 'haefen', schritt: 'gitter' });
-  
-  
-  
-  
-  
-  
-  
+
   const gitterPunkte = (s: number): number =>
     (Math.floor((gitterBox.neLat - gitterBox.swLat) / s) + 2) * (Math.floor((gitterBox.neLon - gitterBox.swLon) / s) + 2);
   const gitterSchritt = [0.25, 0.5, 1].find((s) => gitterPunkte(s) <= 400) ?? 1;
@@ -732,8 +574,7 @@ export async function rechne(
     if (!g) throw new Error('kein Windgitter');
     return g;
   }).catch(() => null);
-  
-  
+
   melde({ art: 'fortschritt', phase: 'haefen', schritt: 'netz', knoten: netz.knoten.length, kanten: netz.kanten.length, zeitbudgetMs });
 
   const nachtVorgaben = anfrage.nachtVorgaben ?? nachtVorgabenAus(planung);
@@ -748,19 +589,17 @@ export async function rechne(
   ) => befuelleKostenkarte(
     teilnetz, anfrage.gesamtFahrtage, startDatum, anfrage.cfg, planung.grenzwerte, 'buergerlich', 30, 1,
     anfrage.sprache, kueste, vorgaben, new Date(), raender, modellJeTag, inselJeKnoten,
-    
+
     (erledigt, gesamt, was) => melde(was === 'tageslicht'
       ? { art: 'fortschritt', phase: 'haefen', schritt: 'tageslicht', erledigt, gesamt }
       : { art: 'fortschritt', phase, erledigt, gesamt }),
-    
-    
+
     laufSpeicher, mitGitter ? gitter : null,
     { kreuzen: planung.kreuzen, motoren: planung.motoren },
     abbruch, zeitbudgetMs,
   );
   const { kosten: kostenStufe1, bericht: kartenBericht, vorherrschenderWindDeg, windproben } = await befuelle(netz, true, 'wetter');
-  
-  
+
   const liegeschutz = liegeschutzJeOrtUndTag(
     netz, gitter, kueste, inselJeKnoten, startDatum,
     Array.from({ length: anfrage.gesamtFahrtage }, (_, i) => i + 1),
@@ -775,17 +614,13 @@ export async function rechne(
     ...(haefenNurTeilpaket ? { haefenTeilpaket: true as const } : {}),
     ...(haefenUnbekannt ? { haefenUnbekannt: true as const } : {}),
   };
-  
+
   const ohneHaefenHinweis = (b: typeof bericht): typeof bericht => {
     const rest = { ...b };
     delete rest.haefenUnbekannt;
     return rest;
   };
-  
-  
-  
-  
-  
+
   const ueberStunden = (b: EtappenBewertung): boolean =>
     b.regime === 'gerechnet' && b.kennzahlen.totalHrs != null
     && b.kennzahlen.totalHrs > (b.istNachtschlag ? NACHTSCHLAG_MAX_STUNDEN : planung.maxStundenProTag);
@@ -793,10 +628,7 @@ export async function rechne(
     .filter(([, b]) => !ueberStunden(b))
     .map(([schluessel, b]) => [schluessel, mitEinklarieren(Number(schluessel.split(':')[0]), b)] as const));
   melde({ art: 'fortschritt', phase: 'suche' });
-  
-  
-  
-  
+
   if (bericht.kanten > 0 && bericht.fehlgeschlagen === bericht.kanten) {
     const kontingent = openMeteoKontingentErschoepft();
     return {
@@ -806,38 +638,14 @@ export async function rechne(
     };
   }
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   const reserve = planung.reserveTage + planung.freieRuhetage;
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
   const nachtTage = nachtBonusTage(nachtfahrtBudget, planung.maxStundenProTag);
-  
+
   const baueErreichbar = (reserveTage: number, stunden = planung.maxStundenProTag, bonusTage = nachtTage) => {
   const reichweiteTag0 = new Map<string, number>();
   return (knotenIndex: number, tag: number, offeneIndizes: readonly number[]): boolean => {
-    
-    
-    
-    
+
     if (anfrage.ohneUmkehrpunkt) return true;
     const knoten = netz.knoten[knotenIndex];
     if (!knoten) return false;
@@ -845,8 +653,7 @@ export async function rechne(
     let r0 = reichweiteTag0.get(schluessel);
     if (r0 == null) {
       const offeneWunschziele = offeneIndizes.map((i) => wunschzielJeKnoten.get(i)!);
-      
-      
+
       r0 = reichweiteAmTag(
         knoten.ort, 0, anfrage.gesamtFahrtage, zielOrt, offeneWunschziele, revier,
         stunden, reserveTage,
@@ -858,77 +665,57 @@ export async function rechne(
   };
   const erreichbar = baueErreichbar(reserve);
 
-  
-  
-  
-  
   const pflichtIndizesJeOption = wunschzielIndizesJeOption(optionEingaben);
   const ruhetagKnoten = [
     ...(anfrage.ruhetagIndizes ?? []).map((i) => pflichtIndizesJeOption[0]?.[i]),
     ...(anfrage.zweiteOptionRuhetagIndizes ?? []).map((i) => pflichtIndizesJeOption[1]?.[i]),
   ].filter((k): k is number => k != null);
-  
-  
-  
-  
+
   const wunschzielKnotenJeOption = pflichtIndizesJeOption.map((liste) =>
     [...new Set(liste.map((k) => poiBasis.get(k) ?? ortBasis.get(k) ?? k))]);
 
-  
-  
   const ersterTagFrei = anfrage.uebernahmeIso != null
     && Number(anfrage.uebernahmeIso.slice(11, 13)) >= UEBERNAHME_SPAET_AB_UHR;
   const eingabeBasis = {
     netz, startIndex: 0, zielIndex, gesamtFahrtage: anfrage.gesamtFahrtage,
     kosten, kBeste: K_BESTE, erreichbar, datumFuerTag,
-    
-    
+
     nachtfahrtBudget,
     ruhetagKnoten,
     pflichtOrte,
     ersterTagFrei,
     liegeschutz,
-    
+
     saatplaene: saatVorschlaege
       .map((v) => bildeKetteAufNetzAb(v, netz.knoten)?.knotenIndizes)
       .filter((k): k is number[] => k != null),
   };
-  
-  
-  
-  
+
   const umkehrlinie = (
     ergebnis: WochenplanErgebnis, wunschzielKnoten: readonly number[],
   ): UmkehrpunktErgebnis | null => {
-    if (anfrage.ohneUmkehrpunkt) return null; 
+    if (anfrage.ohneUmkehrpunkt) return null;
     return umkehrpunkt(
       baueTrajektorie(ergebnis, netz, 0, wunschzielKnoten, wunschzielJeKnoten),
       zielOrt, anfrage.gesamtFahrtage, revier, planung.maxStundenProTag, reserve,
     );
   };
-  
-  
+
   const reihungsKontext: ReihungsKontext = {
     ...baueReihungsKontext(netz, anfrage.start.ort, anfrage.gesamtFahrtage, vorherrschenderWindDeg, rueckgabehafen != null, zielOrt),
     regelmassSm: planung.regelmassSm,
-    
-    
+
     ...(anfrage.offenesEnde ? { ankunftsTag: (plan: WochenplanErgebnis) => plan.etappen[plan.etappen.length - 1]?.tag ?? null } : {}),
-    
-    
+
     ueberzaehligeHafentage: (plan: WochenplanErgebnis) => zaehleUeberzaehligeHafentage(
       plan.etappen, planung.freieRuhetage + anfrage.wunschziele.filter((w) => w.art === 'ruhetag').length, ersterTagFrei,
     ),
-    
+
     tageAmHeimathafen: (plan: WochenplanErgebnis) => zaehleTageAmHeimathafen(
       plan.etappen.map((e) => ({ tag: e.tag, ort: netz.knoten[e.nachIndex]!.ort })),
       [anfrage.start.ort, zielOrt], anfrage.gesamtFahrtage, ersterTagFrei,
     ),
-    
-    
-    
-    
-    
+
     ...(planung.buchtenBevorzugt ? {
       naechteOhneBucht: (plan: WochenplanErgebnis) => plan.etappen.filter(
         (e) => !e.istNachtschlag && netz.knoten[e.nachIndex]?.art !== 'bucht',
@@ -946,20 +733,6 @@ export async function rechne(
   );
   let optionErgebnisse = rechneOptionen();
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   if (gitter && !budgetErreicht()) {
     const bestaetigt = new Set<number>();
     const rechneNach = async (kanten: number[]): Promise<boolean> => {
@@ -972,8 +745,7 @@ export async function rechne(
         for (let t = 1; t <= anfrage.gesamtFahrtage; t++) {
           const neu = punktKosten.get(kostenSchluessel(i, t));
           const alt = kosten.get(kostenSchluessel(k, t));
-          
-          
+
           if (alt?.regime === 'geruest' || neu?.regime === 'geruest') continue;
           if (neu && !ueberStunden(neu)) kosten.set(kostenSchluessel(k, t), mitEinklarieren(k, neu));
           else if (alt) { kosten.delete(kostenSchluessel(k, t)); geaendert = true; }
@@ -993,7 +765,7 @@ export async function rechne(
     }
     if (geaendert) {
       const uebrige = netz.kanten.map((_, k) => k).filter((k) => !bestaetigt.has(k));
-      
+
       if (uebrige.length > 0 && uebrige.length <= STUFE2_REST_MAX && !budgetErreicht()) {
         await rechneNach(uebrige);
         optionErgebnisse = rechneOptionen();
@@ -1005,16 +777,6 @@ export async function rechne(
     Object.assign(bericht, { nachrechnungUebersprungen: true as const });
   }
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   let fixierungBricht = false;
   if (!optionErgebnisse.some((o) => o.ergebnis !== null) && fixierungen.length > 0 && !anfrage.ohneUmkehrpunkt) {
     const ohneFilter = { ...eingabeBasis, erreichbar: () => true };
@@ -1032,15 +794,6 @@ export async function rechne(
     }
   }
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
   type Probe = { netz: Kandidatennetz; nacht: Map<string, EtappenBewertung>; lang: Map<string, EtappenBewertung> };
   let probe: Promise<Probe> | null = null;
   const holeProbe = (): Promise<Probe> => (probe ??= (async (): Promise<Probe> => {
@@ -1076,7 +829,7 @@ export async function rechne(
     const lang = await rechneTeil('lang', { ...nachtVorgaben, nachtfahrtBudget: 0, ablegenBeiDunkelheit: 'gern' });
     return { netz: erweitert, nacht, lang };
   })());
-  
+
   const probeKosten = (p: Probe, stunden: number, mitNacht: boolean): Map<string, EtappenBewertung> => {
     const passt = (b: EtappenBewertung): boolean => b.kennzahlen.totalHrs == null
       || b.kennzahlen.totalHrs <= (b.istNachtschlag ? NACHTSCHLAG_MAX_STUNDEN : stunden);
@@ -1085,7 +838,7 @@ export async function rechne(
       for (const [s, b] of kostenStufe1) {
         if (!out.has(s) && b.regime === 'gerechnet' && !b.istNachtschlag && passt(b)) out.set(s, mitEinklarieren(Number(s.split(':')[0]), b));
       }
-      
+
       for (const m of [p.lang, p.nacht]) for (const [s, b] of m) if (!b.istNachtschlag && passt(b)) out.set(s, b);
     }
     if (mitNacht) for (const [s, b] of p.nacht) if (b.istNachtschlag && passt(b)) out.set(s, b);
@@ -1094,19 +847,13 @@ export async function rechne(
 
   const keinPlanGrund = async (pflichtIndizes: readonly number[], lockerIndex: number): Promise<KeinPlanGrund> => {
     const grundErmittelt = ermittleKeinPlanGrund(netz, kosten, bericht, anfrage.gesamtFahrtage, pflichtIndizes);
-    
-    
+
     const grundRoh: KeinPlanGrund = grundErmittelt.art === 'keineKandidaten' && haefenUnbekannt
       ? { art: 'keineHaefenGeladen' } : grundErmittelt;
-    
+
     const kontingent = grundRoh.art === 'keinWetter' ? openMeteoKontingentErschoepft() : null;
     const grund = kontingent && grundRoh.art === 'keinWetter' ? { ...grundRoh, kontingent } : grundRoh;
-    
-    
-    
-    
-    
-    
+
     if (grund.art === 'unklar' || grund.art === 'zielUnerreichbar' || grund.art === 'zielOhneZufahrt') {
       const option = optionEingaben[lockerIndex]!;
       const wz = wunschzielKnotenJeOption[lockerIndex]!;
@@ -1116,7 +863,7 @@ export async function rechne(
         planung.regelmassSm,
       ).ergebnis !== null;
       let lockerung: Lockerung = { art: 'keine', stunden: planung.maxStundenProTag };
-      
+
       const staerker = async (): Promise<Lockerung | null> => {
         const p = await holeProbe();
         const basis = (stunden: number, naechte: number, kostenkarte: Map<string, EtappenBewertung>): typeof eingabeBasis => ({
@@ -1167,24 +914,20 @@ export async function rechne(
       } else if (!anfrage.ohneUmkehrpunkt && geht({ ...eingabeBasis, erreichbar: () => true }, wz, mindest)) {
         lockerung = { art: 'umkehrpunkt' };
       } else {
-        
-        
-        
-        
+
         const segelt = (knoten: readonly number[]) => rechneEineOption(
           option, knoten, eingabeBasis, () => null, praeferenzenAus(planung), reihungsKontext, null, mindest,
           planung.regelmassSm,
         ).ergebnis?.etappen.some((e) => !e.istHafentag) ?? false;
         for (const k of wz) {
           if (segelt(wz.filter((x) => x !== k))) {
-            
-            
+
             lockerung = { art: 'ohneWunsch', name: wunschzielJeKnoten.get(k)?.name ?? netz.knoten[k]?.name ?? '?' };
             break;
           }
         }
       }
-      
+
       if (lockerung.art === 'keine' && planung.maxStundenProTag < LANGE_TAGE_MAX_STUNDEN) {
         lockerung = { ...lockerung, geprueftBis: LANGE_TAGE_MAX_STUNDEN, geprueftNaechte: Math.max(nachtfahrtBudget, PROBE_NAECHTE) };
       }
@@ -1193,12 +936,6 @@ export async function rechne(
     return grund;
   };
 
-  
-  
-  
-  
-  
-  
   const grenzen = planung.grenzwerte;
   const ueberGrenze = (s: { maxWindKn: number; maxGustKn: number } | undefined): boolean =>
     s != null && (s.maxWindKn >= grenzen.mean || s.maxGustKn >= grenzen.gust);
@@ -1226,19 +963,15 @@ export async function rechne(
 
   const primaer = optionErgebnisse.find((o) => o.ergebnis !== null);
   if (!primaer?.ergebnis) {
-    
-    
-    
+
     const grund = await keinPlanGrund(wunschzielKnotenJeOption.flat(), 0);
     return { lage: 'keinPlanGefunden', grund, bericht: grund.art === 'keineHaefenGeladen' ? ohneHaefenHinweis(bericht) : bericht };
   }
-  
-  
-  
+
   if (haefenUnbekannt && !primaer.ergebnis.etappen.some((e) => !e.istHafentag)) {
     return { lage: 'keinPlanGefunden', grund: { art: 'keineHaefenGeladen' }, bericht: ohneHaefenHinweis(bericht) };
   }
-  
+
   optionErgebnisse = await Promise.all(optionErgebnisse.map(async (o, i) => (o.ergebnis !== null ? o
     : { ...o, keinPlanGrund: await keinPlanGrund(wunschzielKnotenJeOption[i]!, i) })));
 
@@ -1246,9 +979,7 @@ export async function rechne(
     .filter((e) => !e.istHafentag && istKlarierGrenze(staaten[e.vonIndex] ?? null, staaten[e.nachIndex] ?? null))
     .map((e) => ({ tag: e.tag, vonName: netz.knoten[e.vonIndex]!.name, nachName: netz.knoten[e.nachIndex]!.name }));
   const grenzFeld = grenzuebertritte.length > 0 ? { grenzuebertritte } : {};
-  
-  
-  
+
   const angelaufen = new Set(optionErgebnisse.flatMap((o) => (o.ergebnis?.etappen ?? []).flatMap((e) => [e.vonIndex, e.nachIndex])));
   const skipperGuide = [...angelaufen].flatMap((i) => {
     const k = netz.knoten[i]!;
@@ -1261,13 +992,7 @@ export async function rechne(
   });
   if (skipperGuide.length > 0) Object.assign(grenzFeld, { skipperGuide });
   if (fixierungBricht) Object.assign(grenzFeld, { fixierungBrichtUmkehrpunkt: true });
-  
-  
-  
-  
-  
-  
-  
+
   const poiBasen = await parallelMitGrenze(NEBENLAEUFIGE_ABRUFE, [...poiBasis].map(([poi, basis]) => async () => {
     const etappen = primaer.ergebnis!.etappen;
     const tag = etappen.find((e) => e.istHafentag && e.vonIndex === basis)?.tag
@@ -1285,8 +1010,7 @@ export async function rechne(
   }));
   if (poiBasen.length > 0) Object.assign(grenzFeld, { poiBasen });
   if (zufahrtErsatz.length > 0) Object.assign(grenzFeld, { zufahrtErsatz });
-  
-  
+
   const wetterHafentage = primaer.ergebnis.etappen.filter((e) => e.istHafentag && wetterTage.includes(e.tag)
     && !netz.kanten.some((k, i) => k.von === e.nachIndex && kosten.has(kostenSchluessel(i, e.tag))))
     .map((e) => {
@@ -1308,10 +1032,9 @@ export async function rechne(
       begruendung: primaer.begruendung!, bericht, umkehrpunkt: primaer.umkehrpunkt, ...grenzFeld,
     };
   }
-  
+
   const optionenFuerVergleich: Option[] = optionErgebnisse.map((o) => ({ name: o.name, plan: o.ergebnis }));
-  
-  
+
   const alsEmpfehlungsEtappen = (plan: WochenplanErgebnis | null): EmpfehlungsEtappe[] | null => plan?.etappen.map((e) => {
     const von = netz.knoten[e.vonIndex]!.ort, nach = netz.knoten[e.nachIndex]!.ort;
     return {

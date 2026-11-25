@@ -5,31 +5,25 @@ import { mitArtwort, logbuchOrtsname, ortKandidatInDerNaehe, ortGegenUmgebung, O
 import { bearingDeg, distNM } from '@/core/geo';
 import { richtungKurz } from '@/core/zielwetter';
 
-
 export async function ortsbezeichnung(punkt: Punkt, sprache: Sprache = 'de'): Promise<string | null> {
   const anker = await findAnkerplatzName(punkt);
   if (anker) {
-    const bucht = sprache === 'en' ? 'Bay' : 'Bucht'; 
-    
-    
+    const bucht = sprache === 'en' ? 'Bay' : 'Bucht';
+
     return anker.art === 'marina' ? mitArtwort('marina', 'Marina', anker.name) : mitArtwort('bucht', bucht, anker.name);
   }
   return reverseOrt(punkt);
 }
-
 
 const LIEGEPLATZ_M = 500;
 
 export async function ortsangabeLogbuch(
   punkt: Punkt, sprache: Sprache = 'de',
 ): Promise<{ name: string | null; vollstaendig: boolean; protokoll: string[] }> {
-  
-  
-  
+
   const protokoll: string[] = [];
   const [abfrage, teile] = await Promise.all([
-    
-    
+
     ankerplatzAbfrage(punkt, true).catch(() => null),
     reverseOrtFuerLogbuch(punkt, sprache),
   ]);
@@ -43,20 +37,13 @@ export async function ortsangabeLogbuch(
   let ort = teile.ortschaft ?? teile.ort;
   let ortNahe = false;
   let ortAbstand: { sm: number; richtung: string } | null = null;
-  
-  
-  
-  
-  
-  
+
   if (!insel || !ort || !anker) {
     try {
       const u = await umgebungFuerLogbuch(punkt, sprache);
       protokoll.push(`Ufer: Insel ${u.insel ?? '–'}, Landpunkt ${u.landpunkt ? 'ja' : 'nein'}, Orte ${u.orte.length}`);
       if (!insel) insel = u.insel;
-      
-      
-      
+
       if (!insel && u.landpunkt) insel = await inselAmLandpunkt(u.landpunkt, sprache);
       let k: ReturnType<typeof ortKandidatInDerNaehe> = null;
       if (!ort) {
@@ -69,8 +56,7 @@ export async function ortsangabeLogbuch(
         ort = g.ort; ortNahe = g.ortNahe; k = g.kandidat;
       }
       if (k) {
-        
-        
+
         ortAbstand = { sm: distNM(k.lat, k.lon, punkt.lat, punkt.lon), richtung: richtungKurz(bearingDeg(k.lat, k.lon, punkt.lat, punkt.lon), sprache) };
         if (!insel && ortAbstand.sm >= ORT_FERN_SM) insel = await inselAmLandpunkt({ lat: k.lat, lon: k.lon }, sprache).catch(() => null);
       }
@@ -79,12 +65,10 @@ export async function ortsangabeLogbuch(
       protokoll.push('Ufer: nicht erreichbar');
     }
   }
-  
-  
-  
+
   let hauptinsel: string | null = null;
   let g = teile.gemeinde?.trim();
-  
+
   if (insel && !g) {
     try {
       g = (await gemeindeAmPunkt(punkt))?.trim();

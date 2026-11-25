@@ -1,19 +1,14 @@
-
-
 export type Tagesurteil = 'ganztag' | 'teilweise' | 'zu';
 
 export interface OeffnungszeitenUrteil {
   urteil: Tagesurteil;
-  
+
   intervalle: string[];
 }
 
 interface Intervall { vonMin: number; bisMin: number }
 
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-
-
 
 const TAG = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
@@ -29,8 +24,8 @@ const SEGMENT_RE = new RegExp(
 );
 
 interface Regel {
-  monate: Set<number> | null; 
-  tage: Set<number> | null; 
+  monate: Set<number> | null;
+  tage: Set<number> | null;
   ganzerTagZu: boolean;
   offenIntervalle: Intervall[];
   zuIntervalle: Intervall[];
@@ -47,9 +42,7 @@ function parseListe(text: string, alphabet: readonly string[], basis1: boolean):
     const ib = alphabet.indexOf(b);
     if (ib === -1) return null;
     const bis = ib + (basis1 ? 1 : 0);
-    
-    
-    
+
     if (bis < von) return null;
     for (let i = von; i <= bis; i++) werte.add(i);
   }
@@ -71,15 +64,13 @@ function parseZeitListe(text: string): Intervall[] | null {
 function zeitZuMinuten(hhmm: string): number | null {
   const [h, m] = hhmm.split(':').map(Number);
   if (h === undefined || m === undefined || !Number.isFinite(h) || !Number.isFinite(m)) return null;
-  if (h === 24 && m === 0) return 1440; 
+  if (h === 24 && m === 0) return 1440;
   if (h < 0 || h > 23 || m < 0 || m > 59) return null;
   return h * 60 + m;
 }
 
-
 function parseRegeln(tagRoh: string): Regel[] | null {
-  
-  
+
   const ohneKommentare = tagRoh.replace(/"[^"]*"/g, '').trim();
   if (ohneKommentare.length === 0) return null;
   const segmente = ohneKommentare.split(';').map((s) => s.trim()).filter((s) => s.length > 0);
@@ -112,7 +103,6 @@ function parseRegeln(tagRoh: string): Regel[] | null {
   return regeln;
 }
 
-
 function subtrahiere(a: readonly Intervall[], b: readonly Intervall[]): Intervall[] {
   let ergebnis = a.slice();
   for (const weg of b) {
@@ -127,7 +117,6 @@ function subtrahiere(a: readonly Intervall[], b: readonly Intervall[]): Interval
   return ergebnis;
 }
 
-
 function schneide(a: readonly Intervall[], fenster: Intervall): Intervall[] {
   const ergebnis: Intervall[] = [];
   for (const stueck of a) {
@@ -141,10 +130,9 @@ function schneide(a: readonly Intervall[], fenster: Intervall): Intervall[] {
 function minutenZuText(min: number): string {
   const h = Math.floor(min / 60) % 24;
   const m = min % 60;
-  
+
   return `${String(h).padStart(2, '0')}${String(m).padStart(2, '0')}`;
 }
-
 
 export function werteOeffnungszeiten(
   tagRoh: string, wochentag: number, monat: number, fensterVonUhr: number, fensterBisUhr: number,

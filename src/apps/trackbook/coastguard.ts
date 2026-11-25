@@ -15,24 +15,18 @@ import type { Zustand } from './aufzeichnung';
 import { icon } from '@/shell/icons';
 import { funktionSchluessel } from '@/core/crewFunktion';
 
-
-
-
 const BERICHT = 'en' as const;
 
 const $ = (id: string) => document.getElementById(id);
 const wort = (schluessel: string): string => STRINGS[BERICHT][schluessel] ?? schluessel;
 
-
 const BESTAETIGUNG_MS = 4000;
-
 
 const SM = 'NM';
 
 let offen = false;
 let gesperrt = true;
 let bestaetigt: ReturnType<typeof setTimeout> | null = null;
-
 
 let toern: Toern | null = null;
 let fahrt: Fahrt | null = null;
@@ -56,24 +50,21 @@ function setz(id: string, text: string): void {
   if (el) el.textContent = text;
 }
 
-
 function beschrifte(): void {
   for (const el of document.querySelectorAll<HTMLElement>('[data-cg-label]')) {
     el.textContent = wort('coastguard.' + el.dataset['cgLabel']);
   }
 }
 
-
-
 function schiffszeile(t: Toern | null): string {
   if (!t) return '–';
   const s = t.schiff;
   const kopf = [s.name, s.typ].filter(Boolean).join(' · ');
   const masse: string[] = [];
-  
+
   if (s.laengeM) masse.push(s.breiteM ? `${nf(s.laengeM, 2, BERICHT)} × ${nf(s.breiteM, 2, BERICHT)} m` : `LOA ${nf(s.laengeM, 2, BERICHT)} m`);
   if (s.tiefgangM) masse.push(`${wort('coastguard.tiefgang')} ${nf(s.tiefgangM, 2, BERICHT)} m`);
-  
+
   const code = flaggeDesToerns(s, t.revier);
   const flagge = code ? [code, seeflagge(code)?.name.en].filter(Boolean).join(' · ') : '';
   const zeile = [kopf, masse.join(' · '), flagge ? `${wort('coastguard.flagge')} ${flagge}` : ''].filter(Boolean).join('\n');
@@ -85,7 +76,6 @@ function skipperzeile(t: Toern | null): string {
   if (!s) return '–';
   return `${s.vorname} ${s.nachname}`.trim() || '–';
 }
-
 
 function zeichneCrew(t: Toern | null): void {
   const el = $('cg-crew');
@@ -113,7 +103,6 @@ function zeichneCrew(t: Toern | null): void {
   }
 }
 
-
 function zeichneMotorstunden(): void {
   const feld = $('cg-motorstunden') as HTMLInputElement | null;
   const neben = $('cg-motorstunden-neben');
@@ -132,22 +121,19 @@ function zeichneMotorstunden(): void {
   }
   const teile = [wort('coastguard.motorGelesen').replace('{d}', datumUhr(letzte.t))];
   const laufzeit = laufzeitSeitBeginn(ablesungen);
-  
-  
+
   if (laufzeit !== null) {
     teile.unshift(wort('coastguard.motorSeitBeginn').replace('{h}', nf(laufzeit, 1, BERICHT)));
   }
   neben.textContent = teile.join(' · ');
 }
 
-
-
 interface Stand {
   position: { lat: number; lon: number } | null;
   streckeNM: number;
   auswertung: SpurAuswertung | null;
   eintraege: LogEintrag[];
-  
+
   t: number;
 }
 
@@ -156,8 +142,6 @@ function zeichneStand(st: Stand): void {
   setz('cg-position', st.position ? positionText(st.position.lat, st.position.lon, BERICHT) : '–');
   setz('cg-strecke', st.auswertung || st.streckeNM ? `${nf(st.streckeNM, 1, BERICHT)} ${SM}` : '–');
 
-  
-  
   const maschine = $('cg-maschine');
   if (maschine) {
     if (!st.auswertung) {
@@ -167,8 +151,7 @@ function zeichneStand(st: Stand): void {
         st.auswertung.punkte, wechselAusEintraegen(st.eintraege), st.auswertung.luecken,
       );
       const teile = [`${dauer(b.motorS)} · ${nf(b.motorNM, 1, BERICHT)} ${SM}`];
-      
-      
+
       if (b.offenS >= 60) teile.push(wort('coastguard.ohneAngabe').replace('{d}', dauer(b.offenS)));
       maschine.textContent = teile.join('\n');
     }
@@ -199,8 +182,6 @@ function standAusAblage(): Stand {
   };
 }
 
-
-
 function zeichneSperre(): void {
   $('tb-coastguard')?.classList.toggle('gesperrt', gesperrt);
   const sperreKnopf = $('btn-cg-sperre');
@@ -208,14 +189,12 @@ function zeichneSperre(): void {
     sperreKnopf.innerHTML = icon(gesperrt ? 'schlossOffen' : 'schloss')
       + `<span>${wort(gesperrt ? 'coastguard.entsperren' : 'coastguard.sperren')}</span>`;
   }
-  
-  
+
   for (const id of ['cg-ziel', 'cg-motorstunden']) {
     const feld = $(id) as HTMLInputElement | null;
     if (feld) feld.disabled = gesperrt;
   }
-  
-  
+
   const ziel = $('cg-ziel') as HTMLInputElement | null;
   if (ziel) ziel.placeholder = gesperrt ? '–' : wort('coastguard.zielLeer');
   zeichneMotorstunden();
@@ -229,15 +208,12 @@ function verwerfeBestaetigung(): void {
   $('btn-cg-weg')?.classList.remove('wirklich');
 }
 
-
-
 export function coastguardOffen(): boolean {
   return offen;
 }
 
 async function ladeAblage(laeuft: boolean): Promise<void> {
-  
-  
+
   toern = (await aktuellerToern()) ?? (await alleToerne())[0] ?? null;
   fahrt = (await laufendeFahrt()) ?? (await alleFahrten())[0] ?? null;
   startOrt = null;
@@ -245,10 +221,9 @@ async function ladeAblage(laeuft: boolean): Promise<void> {
 
   if (fahrt) {
     const marken = await ortsmarken(fahrt.id);
-    
-    
+
     const start = marken.find((m) => m.art === 'start');
-    
+
     startOrt = start?.name ? ortsnameAufEnglisch(start.name) : (start ? positionText(start.lat, start.lon, BERICHT) : null);
 
     if (!laeuft) {
@@ -262,10 +237,9 @@ async function ladeAblage(laeuft: boolean): Promise<void> {
   }
 }
 
-
 function zeichneKopf(): void {
   setz('cg-schiff', schiffszeile(toern));
-  
+
   const flaggeSvg = seeflaggeSvg(flaggeDesToerns(toern?.schiff, toern?.revier), 16, 'en');
   if (flaggeSvg) $('cg-schiff')?.insertAdjacentHTML('afterbegin', `${flaggeSvg} `);
   setz('cg-skipper', skipperzeile(toern));
@@ -281,8 +255,7 @@ function zeichneKopf(): void {
 export async function oeffneCoastguard(z: Zustand | null): Promise<void> {
   await ladeAblage(z?.laeuft ?? false);
   offen = true;
-  
-  
+
   gesperrt = true;
   zeichneKopf();
   zeichneSperre();
@@ -296,14 +269,11 @@ export function schliesseCoastguard(): void {
   $('tb-coastguard')?.setAttribute('hidden', '');
 }
 
-
 export function aktualisiereCoastguard(z: Zustand, a: SpurAuswertung): void {
   if (!offen) return;
   zeichneKopf();
   zeichneStand(z.laeuft ? standAusZustand(z, a) : standAusAblage());
 }
-
-
 
 export function initCoastguard(zustand: () => Zustand | null): void {
   beschrifte();
@@ -319,9 +289,7 @@ export function initCoastguard(zustand: () => Zustand | null): void {
       schliesseCoastguard();
       return;
     }
-    
-    
-    
+
     if (bestaetigt) {
       schliesseCoastguard();
       return;
@@ -331,9 +299,6 @@ export function initCoastguard(zustand: () => Zustand | null): void {
     bestaetigt = setTimeout(verwerfeBestaetigung, BESTAETIGUNG_MS);
   });
 
-  
-  
-  
   const ziel = $('cg-ziel') as HTMLInputElement | null;
   ziel?.addEventListener('change', () => {
     if (!fahrt) return;
@@ -342,10 +307,6 @@ export function initCoastguard(zustand: () => Zustand | null): void {
     void setzeFahrtZiel(fahrt.id, wert);
   });
 
-  
-  
-  
-  
   const motor = $('cg-motorstunden') as HTMLInputElement | null;
   motor?.addEventListener('change', () => {
     void (async () => {

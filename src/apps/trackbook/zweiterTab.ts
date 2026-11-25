@@ -1,12 +1,9 @@
-
 export const TAB_SPERRE = 'sail-suite-trackbook-tab';
 
 type Locks = LockManager | undefined;
 const locks = (): Locks => (navigator as Navigator & { locks?: LockManager }).locks;
 
-
 const halten = (): Promise<void> => new Promise<void>(() => {});
-
 
 export async function besitzeTab(beiFreigabe: () => void): Promise<boolean> {
   const l = locks();

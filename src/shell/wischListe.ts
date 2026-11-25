@@ -2,10 +2,7 @@ import { wischStufe, type WischStufe } from '@/core/logbuchBearbeiten';
 import { escapeHtml } from '@/core/html';
 import { icon } from './icons';
 
-
-
 export const WISCH_KNOPF_PX = 64;
-
 
 export function wischZeile(id: string, inhalt: string, loeschen: string, klasse = ''): string {
   return `<div class="wisch-zeile${klasse ? ` ${klasse}` : ''}" data-id="${escapeHtml(id)}">`
@@ -14,12 +11,11 @@ export function wischZeile(id: string, inhalt: string, loeschen: string, klasse 
 }
 
 export interface Wischliste {
-  
+
   beschaeftigt(): boolean;
-  
+
   schliesse(): void;
 }
-
 
 export function macheWischbar(
   liste: HTMLElement, loesche: (id: string, knopf: HTMLButtonElement) => boolean | Promise<boolean>,
@@ -41,8 +37,7 @@ export function macheWischbar(
   const knopfVon = (z: HTMLElement) => z.querySelector<HTMLButtonElement>('.wisch-loeschen');
   const fuehreAus = (id: string, knopf: HTMLButtonElement) => {
     const r = loesche(id, knopf);
-    
-    
+
     if (typeof r === 'boolean') { if (!r) schliesse(); else if (offen && !liste.contains(offen)) offen = null; return; }
     fragt = true;
     void r.then((ja) => { if (!ja) schliesse(); }).finally(() => { fragt = false; });
@@ -117,7 +112,7 @@ export function macheWischbar(
       if (id) fuehreAus(id, knopf);
       return;
     }
-    
+
     if ((ev as PointerEvent).pointerType === 'touch') return;
     const z = ziel.closest<HTMLElement>('.wisch-zeile');
     if (!z || !liste.contains(z)) return;
@@ -129,7 +124,7 @@ export function macheWischbar(
   });
 
   return {
-    
+
     beschaeftigt: () => fragt || zeile !== null || (offen !== null && liste.contains(offen)),
     schliesse,
   };

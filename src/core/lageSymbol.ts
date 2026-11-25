@@ -1,10 +1,8 @@
-
 export type Lage = 'motor' | 'segel' | 'angelegt' | 'treibend' | 'ankernd' | 'liegeplatz';
 
 type Eintrag = { art: string; t: number; liegeart?: string | undefined };
 
 const LIEGE_ARTEN = ['anlegen', 'ankern', 'treiben', 'liegeplatz', 'ankerplatz'];
-
 
 function juengstesLiegen(eintraege: readonly Eintrag[]): Eintrag | null {
   let liegen: Eintrag | null = null;
@@ -24,7 +22,6 @@ function ausLiegen(e: Eintrag | null): Lage {
   return 'angelegt';
 }
 
-
 export function lageNachTag(eintraege: readonly Eintrag[]): Lage {
   return ausLiegen(juengstesLiegen(eintraege));
 }
@@ -39,11 +36,10 @@ export function lage(z: {
   if (z.betriebsart === 'pausiert-anker') return 'ankernd';
   const liegen = juengstesLiegen(z.eintraege);
   if (z.betriebsart === 'pausiert') return ausLiegen(liegen);
-  
+
   if (!z.abgelegt) return liegen ? ausLiegen(liegen) : 'liegeplatz';
   return z.antrieb === 'motor' ? 'motor' : 'segel';
 }
-
 
 export function festmachart(eintraege: readonly Eintrag[]): 'heck' | 'bug' | 'laengsseits' | 'boje' | null {
   const l = juengstesLiegen(eintraege)?.liegeart;

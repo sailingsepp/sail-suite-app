@@ -1,4 +1,3 @@
-
 import { relAngle, toRad } from './geo';
 import { vmgOptimum } from './vmg';
 import { polarSpeed, FARR_BAVARIA_50, type BoatPolar } from './polar';
@@ -6,13 +5,12 @@ import { polarSpeed, FARR_BAVARIA_50, type BoatPolar } from './polar';
 export interface RevierRandbedingungen {
   boat: BoatPolar;
   crewFactor: number;
-  
+
   vorherrschenderWindDeg: number;
   vorherrschenderWindKn: number;
-  
+
   motorSpeedKn: number;
 }
-
 
 export function referenzfahrtKn(bearing: number, revier: RevierRandbedingungen): number {
   const { boat, crewFactor, vorherrschenderWindDeg, vorherrschenderWindKn, motorSpeedKn } = revier;
@@ -26,11 +24,10 @@ export function referenzfahrtKn(bearing: number, revier: RevierRandbedingungen):
   return Math.max(segelKn, motorSpeedKn);
 }
 
-
 export function vorgabeRevier(vorherrschenderWindDeg: number, vorherrschenderWindKn = 15): RevierRandbedingungen {
   return {
     boat: FARR_BAVARIA_50,
-    crewFactor: 0.75, 
+    crewFactor: 0.75,
     vorherrschenderWindDeg,
     vorherrschenderWindKn,
     motorSpeedKn: 6,

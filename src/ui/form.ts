@@ -15,11 +15,7 @@ function el<T extends HTMLElement>(id: string): T {
 
 export function syncSpeedModel(): void {
   const polar = el<HTMLSelectElement>('in-speedmodel').value === 'polar';
-  
-  
-  
-  
-  
+
   el('group-constant').style.display = polar ? 'none' : 'block';
   el('group-boat').style.display = polar ? '' : 'none';
   el('group-motorspeed').style.display = polar ? '' : 'none';
@@ -29,13 +25,9 @@ export function syncSpeedModel(): void {
   el('group-sailpref').style.display = polar ? '' : 'none';
 }
 
-
 export function alsProzent(x: number): string {
   return `${Math.round(x * 100)} %`;
 }
-
-
-
 
 export function initSliders(): void {
   const sailpref = el<HTMLInputElement>('in-sailpref');
@@ -57,26 +49,12 @@ export function initSliders(): void {
   });
 }
 
-
-
-
-
-
-
-
-
-
-
-
 export function fuelleBootsauswahl(): void {
   const sel = el<HTMLSelectElement>('in-boat');
   const vorher = sel.value;
   sel.innerHTML = '';
   const en = aktuelleSprache() === 'en';
-  
-  
-  
-  
+
   const NAME_EN: Record<string, string> = {
     'fahrtenyacht-39-45ft': 'Cruising monohull 39–45 ft',
     'fahrtenyacht-45-50ft': 'Cruising monohull 45–50 ft',
@@ -107,29 +85,13 @@ export function fuelleBootsauswahl(): void {
   sel.value = (vorher && [...sel.options].some((o) => o.value === vorher)) ? vorher : FARR_BAVARIA_50.id;
 }
 
-
-
-
-
-
-
 const TAGE = 6;
-
-
-
-
-
-
-
-
-
 
 export const AB_JETZT = 'ab-jetzt';
 
 export const AB_JETZT_STUNDEN = 24;
 
 export const UNTERWEGS = 'unterwegs';
-
 
 let revierZone: string | null = null;
 export function setzeRevierZeitzone(zone: string | null): boolean {
@@ -152,13 +114,13 @@ export function fuelleTagesauswahl(): void {
   const vorher = sel.value;
   sel.innerHTML = '';
   const heute = heuteImRevier();
-  
+
   const jetzt = document.createElement('option');
   jetzt.value = AB_JETZT;
   jetzt.textContent = en ? `From now · next ${AB_JETZT_STUNDEN} h` : `Ab jetzt · nächste ${AB_JETZT_STUNDEN} h`;
   jetzt.dataset['tag'] = '0';
   sel.appendChild(jetzt);
-  
+
   const unterwegs = document.createElement('option');
   unterwegs.value = UNTERWEGS;
   unterwegs.textContent = en ? 'Underway · from now, no departure search' : 'Unterwegs · ab jetzt, ohne Ablegezeit';
@@ -174,9 +136,8 @@ export function fuelleTagesauswahl(): void {
     sel.appendChild(o);
   }
   if (vorher && [...sel.options].some((o) => o.value === vorher)) sel.value = vorher;
-  else sel.selectedIndex = 2; 
+  else sel.selectedIndex = 2;
 }
-
 
 export function initAnkunft(): void {
   const zeit = el<HTMLInputElement>('in-ankunft');
@@ -184,7 +145,7 @@ export function initAnkunft(): void {
   const tag = el<HTMLSelectElement>('in-date');
   const p = (n: number) => String(n).padStart(2, '0');
   const iso = (d: Date) => `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}`;
-  
+
   const grenzen = () => {
     const heute = heuteImRevier();
     datum.min = iso(heute);
@@ -208,9 +169,6 @@ export function initAnkunft(): void {
 export interface EingabeFehler {
   message: string;
 }
-
-
-
 
 function imBereich(x: number, lo: number, hi: number): boolean {
   return !isNaN(x) && x >= lo && x <= hi;
@@ -269,15 +227,15 @@ export interface Suchfenster {
   dateStr: string;
   daemmerung: Daemmerungsstufe;
   stepMin: number;
-  
+
   abJetzt: boolean;
-  
+
   unterwegs: boolean;
-  
+
   tageVoraus: number;
-  
+
   ankunft: string | null;
-  
+
   ankunftDatum: string | null;
 }
 
@@ -287,7 +245,7 @@ export function leseSuchfenster(): Suchfenster | EingabeFehler {
   const unterwegs = dateSel.value === UNTERWEGS;
   const s: Suchfenster = {
     sampleStep: parseFloat(el<HTMLInputElement>('in-samplestep').value),
-    
+
     dateStr: abJetzt || unterwegs ? ([...dateSel.options].find((o) => o.value !== AB_JETZT && o.value !== UNTERWEGS)?.value ?? '') : dateSel.value,
     abJetzt,
     unterwegs,

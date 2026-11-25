@@ -1,25 +1,22 @@
-
 export type Pkt = [number, number];
 export interface KachelBox { s: number; w: number; n: number; o: number }
 export interface LandAusKueste {
-  
+
   ringe: number[][];
-  
+
   hintergrund: 'gemischt' | null;
-  
+
   fehler?: string;
 }
 
 const EPS = 1e-7;
 const schluessel = (p: Pkt) => `${p[0].toFixed(6)},${p[1].toFixed(6)}`;
 
-
 export function flaeche(r: readonly Pkt[]): number {
   let a = 0;
   for (let k = 0; k < r.length - 1; k++) a += r[k]![1] * r[k + 1]![0] - r[k + 1]![1] * r[k]![0];
   return a / 2;
 }
-
 
 export function verbinde(stuecke: readonly Pkt[][]): Pkt[][] {
   const nachAnfang = new Map<string, number>();
@@ -51,7 +48,6 @@ export function verbinde(stuecke: readonly Pkt[][]): Pkt[][] {
 function amRand(p: Pkt, b: KachelBox): boolean {
   return Math.abs(p[0] - b.s) < EPS || Math.abs(p[0] - b.n) < EPS || Math.abs(p[1] - b.w) < EPS || Math.abs(p[1] - b.o) < EPS;
 }
-
 
 function randLage(p: Pkt, b: KachelBox): number {
   const B = b.o - b.w, H = b.n - b.s;
@@ -101,7 +97,6 @@ export function landAusKueste(stuecke: readonly Pkt[][], b: KachelBox): LandAusK
   }
   return { ringe, hintergrund: 'gemischt' };
 }
-
 
 export function kachelRing(b: KachelBox): number[] {
   return [b.s, b.w, b.s, b.o, b.n, b.o, b.n, b.w, b.s, b.w];

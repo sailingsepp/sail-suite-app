@@ -2,9 +2,6 @@ import { distNM } from './geo';
 import { nf } from './time';
 import type { Sprache } from './types';
 
-
-
-
 export const TANKSTELLE_NAH_M = 30;
 
 export const TANKSTELLE_SUCHE_M = 80;
@@ -27,7 +24,6 @@ export interface Tankstelle {
   abstandM: number;
 }
 
-
 export function naechsteTankstelle(
   elemente: readonly { lat: number; lon: number; tags?: Tags }[],
   punkt: { lat: number; lon: number },
@@ -43,10 +39,9 @@ export function naechsteTankstelle(
   return beste;
 }
 
-
 export interface TankMerker {
   fahrt: string;
-  
+
   t: number;
   lat: number;
   lon: number;
@@ -54,11 +49,9 @@ export interface TankMerker {
   abstandM: number;
 }
 
-
 export const TANKSTOPP_STILL_MIN = 3;
 export const TANKSTOPP_STILL_M = 25;
 export const TANKSTOPP_WEG_M = 80;
-
 
 export function liegtStill(
   fixe: readonly { t: number; lat: number; lon: number; acc?: number }[],
@@ -66,7 +59,7 @@ export function liegtStill(
   minuten = TANKSTOPP_STILL_MIN,
   radiusM = TANKSTOPP_STILL_M,
 ): { seit: number; lat: number; lon: number } | null {
-  
+
   const gut = (f: { acc?: number }) => !(typeof f.acc === 'number' && f.acc > 30);
   let i = fixe.length - 1;
   while (i >= 0 && !gut(fixe[i]!)) i--;
@@ -82,11 +75,10 @@ export function liegtStill(
     sLat += f.lat; sLon += f.lon; n++;
     seit = f.t;
   }
-  
+
   if (!weg || letzter.t - seit < minuten * 60_000) return null;
   return { seit, lat: sLat / n, lon: sLon / n };
 }
-
 
 export function sollTankstoppFragen(m: TankMerker | null, fahrtId: string | null, jetzt: number): boolean {
   if (!m || !fahrtId || m.fahrt !== fahrtId) return false;
@@ -101,7 +93,6 @@ export function istTankMerker(x: unknown): x is TankMerker {
     && typeof o['lon'] === 'number' && (o['name'] === null || typeof o['name'] === 'string')
     && typeof o['abstandM'] === 'number';
 }
-
 
 export function tankstoppText(liter: number, ort: string | null, sprache: Sprache): string {
   const l = `${nf(liter, Number.isInteger(liter) ? 0 : 1, sprache)} l ${sprache === 'de' ? 'Diesel' : 'diesel'}`;

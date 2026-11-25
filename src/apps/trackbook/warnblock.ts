@@ -5,7 +5,6 @@ import { STRINGS } from './strings';
 import { oeffneSeewetter } from './seewetter';
 import { uhrLtVon } from '@/core/time';
 
-
 export interface Warnlage { seewetter: boolean; treffer: WarnTreffer[]; geprueft: number }
 
 const $ = (id: string) => document.getElementById(id);
@@ -54,7 +53,6 @@ function zeichne(): void {
   q.textContent = `${wort('warnblock.stand').replace('{uhr}', zeit)}${lage.treffer.length ? ` ${warnQuelle(sprache)}` : ''}`;
   box.appendChild(q);
 }
-
 
 export function initWarnblock(): void {
   aufSprachwechsel(zeichne);

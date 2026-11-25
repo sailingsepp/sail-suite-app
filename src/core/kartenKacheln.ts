@@ -1,7 +1,6 @@
 import { vereinfache } from './kuestenKacheln';
 import type { Box } from './landumfahrung';
 
-
 export const KARTE_KACHEL_GRAD = 0.5;
 export const KARTE_FAKTOR = 1_000_000;
 
@@ -16,9 +15,9 @@ export interface KartenIndex {
   erstellt: string;
   kachelGrad: number;
   faktor: number;
-  
+
   gebiete: [number, number, number, number][];
-  
+
   kacheln: string[];
 }
 
@@ -49,7 +48,6 @@ export function karteGedeckt(index: Pick<KartenIndex, 'gebiete'>, lat: number, l
   return index.gebiete.some(([w, s, o, n]) => lon >= w && lon < o && lat >= s && lat < n);
 }
 
-
 export function kodiereRing(ring: readonly number[], toleranzM: number, faktor = KARTE_FAKTOR): number[] {
   const v = vereinfacheMitRand(ring, toleranzM);
   if (v.length < 8) return [];
@@ -59,12 +57,10 @@ export function kodiereRing(ring: readonly number[], toleranzM: number, faktor =
   return aus;
 }
 
-
 function aufKante(v: number): boolean {
   const q = v / KARTE_KACHEL_GRAD;
   return Math.abs(q - Math.round(q)) < 1e-9;
 }
-
 
 function vereinfacheMitRand(ring: readonly number[], toleranzM: number): Float64Array {
   const halt: number[] = [0];
@@ -78,7 +74,6 @@ function vereinfacheMitRand(ring: readonly number[], toleranzM: number): Float64
   return Float64Array.from(aus);
 }
 
-
 export function dekodiereRing(k: readonly number[], faktor = KARTE_FAKTOR): Float64Array {
   const p = new Float64Array(k.length);
   let lat = 0, lon = 0;
@@ -88,7 +83,6 @@ export function dekodiereRing(k: readonly number[], faktor = KARTE_FAKTOR): Floa
   }
   return p;
 }
-
 
 export function anLand(ringe: readonly Float64Array[], lat: number, lon: number): boolean {
   let innen = false;

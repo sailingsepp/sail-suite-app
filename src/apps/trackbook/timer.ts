@@ -4,7 +4,6 @@ import { ausSpeicher, laeuft, mmss, neuerTimer, setzeDauer, stand, starte, stopp
 import { stoppeTimerton, timerton } from './ton';
 import { STRINGS } from './strings';
 
-
 const SCHLUESSEL = 'sail-suite:nav-timer';
 const wort = (k: string) => STRINGS[aktuelleSprache()][k] ?? k;
 const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
@@ -32,7 +31,6 @@ function schreibe(): void {
 
 export function timerOffen(): boolean { return offen; }
 
-
 export function schalteTimer(): void {
   if (offen) { schliesse(); return; }
   offen = true;
@@ -53,7 +51,7 @@ function schliesse(): void {
 
 function aktion(a: string): void {
   const jetzt = Date.now();
-  
+
   stoppeTimerton();
   if (a === 'waehlen') { if (!laeuft(z)) waehlt = !waehlt; }
   else if (a === 'start') { waehlt = false; z = starte(z, jetzt); }
@@ -62,7 +60,6 @@ function aktion(a: string): void {
   schreibe();
   zeichne();
 }
-
 
 function takt(): void {
   const s = stand(z, Date.now());
@@ -76,8 +73,6 @@ function takt(): void {
   const zeit = el?.querySelector('.tb-timer-zeit');
   if (zeit) zeit.textContent = mmss(s.restS);
 }
-
-
 
 const zwei = (n: number) => String(n).padStart(2, '0');
 function rad(art: 'm' | 's', wert: number): string {
@@ -133,7 +128,7 @@ function zeichne(): void {
   if (s.abgelaufen) { z = s.z; schreibe(); }
   const l = laeuft(z);
   if (l) waehlt = false;
-  
+
   const knopf = (a: string, bild: string, text: string, extra = '') =>
     `<button type="button" class="tb-timer-k" data-t="${a}" aria-label="${esc(text)}" title="${esc(text)}"${extra}>${bild}</button>`;
   el.hidden = false;
@@ -141,15 +136,15 @@ function zeichne(): void {
   el.classList.toggle('abgelaufen', z.abgelaufen);
   el.classList.toggle('waehlt', waehlt);
   el.setAttribute('aria-label', wort('timer.titel'));
-  
+
   el.innerHTML = `<button type="button" class="tb-timer-zeit" data-t="waehlen" aria-expanded="${waehlt}"`
     + ` title="${esc(wort('timer.einstellen'))}"${l ? ' disabled' : ''}>${mmss(s.restS)}</button>`
     + (waehlt ? `<div class="tb-raeder">${rad('m', Math.floor(z.dauerS / 60))}<span aria-hidden="true">:</span>${rad('s', z.dauerS % 60)}</div>` : '')
     + `<div class="tb-timer-knoepfe">`
     + knopf('start', icon('start'), wort('timer.start'), l || z.dauerS <= 0 ? ' disabled' : '')
-    
+
     + knopf('stopp', icon('stop'), wort('timer.stopp'), !l && z.restS >= z.dauerS && !z.abgelaufen ? ' disabled' : '')
-    
+
     + knopf('wiederholen', icon('wiederholen'), wort('timer.wiederholen'), z.dauerS <= 0 ? ' disabled' : '')
     + '</div>';
   if (waehlt) bindeRaeder();
@@ -157,15 +152,11 @@ function zeichne(): void {
   platziere();
 }
 
-
-
 type Kasten = { l: number; t: number; r: number; b: number };
 
 const HINDERNISSE = '#tb-eb-menue, #btn-mob, #tb-nav-werkzeuge, #tb-nav-log-baum, #tb-nav-chrono-baum, .leaflet-top.leaflet-left, #tb-nav-hinweis, #tb-nav-kopf-griff';
 
-
 function platziere(): void { if (el) platziereAufKarte(el); }
-
 
 export function platziereAufKarte(el: HTMLElement, weitere = ''): void {
   if (el.hidden) return;
@@ -174,14 +165,14 @@ export function platziereAufKarte(el: HTMLElement, weitere = ''): void {
   const w = wrap.getBoundingClientRect();
   const breite = el.offsetWidth, hoehe = el.offsetHeight;
   const rand = 8;
-  
+
   const kaesten: Kasten[] = [...document.querySelectorAll<HTMLElement>(weitere ? `${HINDERNISSE}, ${weitere}` : HINDERNISSE)]
     .filter((e) => e !== el && !e.hidden && e.offsetWidth > 0 && getComputedStyle(e).visibility !== 'hidden')
     .map((e) => { const r = e.getBoundingClientRect(); return { l: r.left - w.left, t: r.top - w.top, r: r.right - w.left, b: r.bottom - w.top }; })
     .filter((k) => k.b > 0 && k.t < w.height && k.r > 0 && k.l < w.width);
   const oben = [rand, ...kaesten.map((k) => k.b + rand)].filter((t) => t + hoehe < w.height).sort((a, b) => a - b);
   for (const t of oben) {
-    
+
     const belegt = kaesten.filter((k) => k.b > t && k.t < t + hoehe).map((k) => [k.l - rand, k.r + rand] as const).sort((a, b) => a[0] - b[0]);
     const frei: [number, number][] = [];
     let x = rand;
@@ -196,7 +187,6 @@ export function platziereAufKarte(el: HTMLElement, weitere = ''): void {
   el.style.left = `${Math.round(Math.max(rand, (w.width - breite) / 2))}px`;
   el.style.top = `${rand}px`;
 }
-
 
 export function initTimer(aenderung: () => void): void {
   geaendert = aenderung;
@@ -213,15 +203,13 @@ export function initTimer(aenderung: () => void): void {
     if (k && !k.disabled) aktion(k.dataset['t']!);
   });
   lies();
-  
-  
+
   if (z.endeUm !== null && Date.now() >= z.endeUm && Date.now() - z.endeUm < 60_000) timerton();
   zeichne();
   aufSprachwechsel(zeichne);
   if (typeof ResizeObserver === 'function') new ResizeObserver(() => platziere()).observe(wrap);
-  
+
   document.addEventListener('visibilitychange', () => { if (!document.hidden && laeuft(z)) takt(); });
 }
-
 
 export function timerPlatzNeu(): void { platziere(); }

@@ -1,4 +1,3 @@
-
 export interface BoatPolar {
   id: string;
   name: string;
@@ -7,10 +6,9 @@ export interface BoatPolar {
   twa: readonly number[];
   speed: readonly (readonly number[])[];
   sourceNote: string;
-  
+
   extended?: boolean;
 }
-
 
 const POLAR_TWS = [4, 6, 8, 10, 12, 14, 16, 18, 20, 25, 30, 35];
 const POLAR_TWA = [30, 33, 36, 39, 42, 45, 50, 60, 70, 80, 90, 100, 110, 120, 130, 135, 140, 150, 160, 170, 180];
@@ -27,12 +25,6 @@ export const FARR_BAVARIA_50: BoatPolar = {
   speed: POLAR_SPEED,
 };
 
-
-
-
-
-
-
 export const STEEP_SEA = 1 / 25;
 
 export const STEEP_SEA_SEHR = 1 / 17;
@@ -44,33 +36,16 @@ export function steilStufe(steilheit: number): 0 | 1 | 2 | 3 {
   return x <= Math.round(1 / STEEP_SEA_EXTREM) ? 3 : x <= Math.round(1 / STEEP_SEA_SEHR) ? 2 : 1;
 }
 
-
-
 export const MIN_STEIL_HS = 0.3;
 
-
-
-
-
 const MAST_HEIGHT_M = 19, WIND_SHEAR_ALPHA = 0.11;
-export const MAST_FACTOR = Math.pow(MAST_HEIGHT_M / 10, WIND_SHEAR_ALPHA); 
-
-
+export const MAST_FACTOR = Math.pow(MAST_HEIGHT_M / 10, WIND_SHEAR_ALPHA);
 
 const SHEAR_REF_HOEHE_M = 80;
 
-
-
 const SHEAR_MIN_WIND_KN = 3;
 
-
-
-
-
-
-
 const SHEAR_ALPHA_MIN = 0.04, SHEAR_ALPHA_MAX = 0.35;
-
 
 export function mastFaktorEffektiv(speed10: number, speed80: number | null): number {
   if (speed80 == null || speed10 < SHEAR_MIN_WIND_KN) return MAST_FACTOR;
@@ -79,7 +54,6 @@ export function mastFaktorEffektiv(speed10: number, speed80: number | null): num
   const alphaC = Math.min(SHEAR_ALPHA_MAX, Math.max(SHEAR_ALPHA_MIN, alpha));
   return Math.pow(MAST_HEIGHT_M / 10, alphaC);
 }
-
 
 export function polarSpeed(tws: number, twa: number, crewFactor: number, boat: BoatPolar = FARR_BAVARIA_50): number {
   const twaArr = boat.twa, twsArr = boat.tws, speedArr = boat.speed;
@@ -97,11 +71,6 @@ export function polarSpeed(tws: number, twa: number, crewFactor: number, boat: B
   const v0 = v00 + (v01 - v00) * fs;
   const v1 = v10 + (v11 - v10) * fs;
   const v = (v0 + (v1 - v0) * fa) * crewFactor;
-  
-  
-  
-  
-  
-  
+
   return tws < twsMin ? v * Math.max(0, tws / twsMin) : v;
 }

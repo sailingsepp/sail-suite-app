@@ -1,22 +1,19 @@
 import { distNM } from './geo';
 
-
-
 export interface UferWay {
   id: number;
   geometry: readonly { lat: number; lon: number }[];
-  
+
   tags?: Record<string, string> | undefined;
 }
 
 export interface InselRelation {
   name: string;
-  
+
   wayIds: readonly number[];
 }
 
 const INSEL_PLACES = ['island', 'islet'];
-
 
 export function abstandZurLinieNM(p: { lat: number; lon: number }, linie: readonly { lat: number; lon: number }[]): number {
   if (linie.length === 0) return Infinity;
@@ -35,7 +32,6 @@ export function abstandZurLinieNM(p: { lat: number; lon: number }, linie: readon
   }
   return best;
 }
-
 
 export function landpunktAmUfer(
   p: { lat: number; lon: number }, ways: readonly UferWay[], abstandM = 40,
@@ -59,12 +55,11 @@ export function landpunktAmUfer(
   }
   if (!best) return null;
   const l = Math.hypot(best.dx, best.dy);
-  
+
   const lx = best.x + (-best.dy / l) * abstandM;
   const ly = best.y + (best.dx / l) * abstandM;
   return { lat: p.lat + ly / M_JE_GRAD, lon: p.lon + lx / (k * M_JE_GRAD) };
 }
-
 
 export function inselDesNaechstenUfers(
   p: { lat: number; lon: number }, ways: readonly UferWay[], inseln: readonly InselRelation[],

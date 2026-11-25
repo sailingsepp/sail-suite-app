@@ -1,10 +1,8 @@
-
 import type { Punkt } from './types';
 import { distNM, bearingDeg } from './geo';
 import { referenzfahrtKn, type RevierRandbedingungen } from './referenzfahrt';
 
 export { referenzfahrtKn, vorgabeRevier, type RevierRandbedingungen } from './referenzfahrt';
-
 
 export const WUNSCHZIELE_MAX = 8;
 
@@ -14,15 +12,14 @@ export interface Wunschziel {
   ort: Punkt;
   name: string;
   art: WunschzielArt;
-  
+
   ungenauerOrt?: boolean;
 }
-
 
 export interface Endziel {
   ort: Punkt;
   name: string;
-  
+
   ungenauerOrt?: boolean;
 }
 
@@ -33,10 +30,10 @@ export interface MachbarkeitEingabe {
   zielName: string;
   wunschziele: Wunschziel[];
   endziel: Endziel | null;
-  
+
   verfuegbareFahrtage: number;
   regelmassSm: number;
-  
+
   obergrenzeSm: number | null;
   maxStundenProTag: number;
   revier: RevierRandbedingungen;
@@ -65,11 +62,11 @@ export interface MachbarkeitGrund {
 
 export interface MachbarkeitErgebnis {
   befund: MachbarkeitBefund;
-  
+
   reihenfolge: string[];
   gesamtSm: number;
   mindestFahrtage: number;
-  
+
   reserveTage: number;
   etappen: EtappenLaenge[];
   zuLangeEtappen: EtappenLaenge[];
@@ -78,7 +75,6 @@ export interface MachbarkeitErgebnis {
 }
 
 interface Knoten { ort: Punkt; name: string }
-
 
 const GLEICH_SM = 1e-9;
 
@@ -162,7 +158,6 @@ function rechneKernwerte(
   return { kette, gesamtSm, etappen, mindestFahrtage };
 }
 
-
 function berechneTeurenWunsch(eingabe: MachbarkeitEingabe, mitAllenMindestFahrtage: number): TeurerWunsch | null {
   if (eingabe.wunschziele.length < 1) return null;
   let teuerster: TeurerWunsch | null = null;
@@ -176,7 +171,6 @@ function berechneTeurenWunsch(eingabe: MachbarkeitEingabe, mitAllenMindestFahrta
   }
   return teuerster;
 }
-
 
 export function pruefeMachbarkeit(eingabe: MachbarkeitEingabe): MachbarkeitErgebnis {
   const anzahl = eingabe.wunschziele.length + (eingabe.endziel ? 1 : 0);
@@ -192,9 +186,7 @@ export function pruefeMachbarkeit(eingabe: MachbarkeitEingabe): MachbarkeitErgeb
 
   let befund: MachbarkeitBefund;
   if (reserveTage < 0) befund = 'gehtNicht';
-  
-  
-  
+
   else if (reserveTage === 0) befund = 'gehtKnapp';
   else befund = 'gehtMitLuft';
 
@@ -215,7 +207,6 @@ export function pruefeMachbarkeit(eingabe: MachbarkeitEingabe): MachbarkeitErgeb
     grund,
   };
 }
-
 
 export function mindestFahrtageMitWunschzielen(
   start: Punkt, startName: string, ziel: Punkt, zielName: string,

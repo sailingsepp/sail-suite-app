@@ -3,13 +3,9 @@ import { REVIERWISSEN } from './revierwissen';
 import { distNM } from './geo';
 import { meeresgebietAm } from './meeresgebiete';
 
-
-
-
 function inBox(lat: number, lon: number, swLat: number, neLat: number, swLon: number, neLon: number): boolean {
   return lat >= swLat && lat <= neLat && lon >= swLon && lon <= neLon;
 }
-
 
 const REVIER_BOXEN: Record<Revier, [swLat: number, neLat: number, swLon: number, neLon: number]> = {
   aegaeis: [34.5, 41.5, 22.5, 30.0],
@@ -18,7 +14,6 @@ const REVIER_BOXEN: Record<Revier, [swLat: number, neLat: number, swLon: number,
   bonifacio: [41.1, 41.6, 8.6, 9.7],
   westmed: [38.5, 44.5, 1.0, 10.5],
 };
-
 
 export function revierVonPunkt(lat: number, lon: number): Revier | null {
   if (inBox(lat, lon, ...REVIER_BOXEN.aegaeis)) return 'aegaeis';
@@ -29,7 +24,6 @@ export function revierVonPunkt(lat: number, lon: number): Revier | null {
   return null;
 }
 
-
 const REVIER_NAMEN: Record<Revier, { de: string; en: string }> = {
   aegaeis: { de: 'Ägäis', en: 'Aegean' },
   adria: { de: 'Adria', en: 'Adriatic' },
@@ -38,14 +32,12 @@ const REVIER_NAMEN: Record<Revier, { de: string; en: string }> = {
   westmed: { de: 'Westliches Mittelmeer', en: 'Western Mediterranean' },
 };
 
-
 export function toernRevierText(
   land: string | null | undefined, lat: number, lon: number, sprache: 'de' | 'en' = 'de',
 ): string | null {
   const teile = [land?.trim() || null, seegebietName(lat, lon, sprache)].filter(Boolean);
   return teile.length ? teile.join(' · ') : null;
 }
-
 
 export function seegebietName(lat: number, lon: number, sprache: 'de' | 'en' = 'de'): string | null {
   const revier = revierVonPunkt(lat, lon);
@@ -55,13 +47,11 @@ export function seegebietName(lat: number, lon: number, sprache: 'de' | 'en' = '
   return revier ? REVIER_NAMEN[revier][sprache] : null;
 }
 
-
 export function seegebietSchluessel(lat: number, lon: number): string | null {
   const revier = revierVonPunkt(lat, lon);
   if (revier && revier !== 'westmed') return revier;
   return meeresgebietAm(lat, lon)?.id ?? revier;
 }
-
 
 export function revierNachgezogen(
   revier: string | null | undefined,
@@ -84,15 +74,12 @@ export function revierNachgezogen(
   return neu.join(REVIER_PFEIL);
 }
 
-
 export const REVIER_PFEIL = ' → ';
-
 
 export function startRevierTeil(revier: string | null | undefined): string | null {
   const teil = revier?.split(REVIER_PFEIL)[0]?.trim();
   return teil || null;
 }
-
 
 export function toernRevierStrecke(
   startText: string | null,
@@ -110,7 +97,6 @@ export function toernRevierStrecke(
   return `${startText}${REVIER_PFEIL}${zielText}`;
 }
 
-
 export type Wirkungsart = 'beziffert' | 'ausschluss' | 'schutz' | 'modellblind' | 'information';
 
 export function wirkungsart(e: RevierwissenEintrag): Wirkungsart {
@@ -123,7 +109,6 @@ export function wirkungsart(e: RevierwissenEintrag): Wirkungsart {
   }
 }
 
-
 export function eintraegeFuerName(name: string): RevierwissenEintrag[] {
   const gesucht = name.trim().toLowerCase();
   return REVIERWISSEN.filter((e) => {
@@ -133,7 +118,6 @@ export function eintraegeFuerName(name: string): RevierwissenEintrag[] {
     return false;
   });
 }
-
 
 export function eintraegeFuerPunkt(lat: number, lon: number): RevierwissenEintrag[] {
   const revier = revierVonPunkt(lat, lon);
@@ -145,9 +129,7 @@ export function eintraegeFuerPunkt(lat: number, lon: number): RevierwissenEintra
   });
 }
 
-
 export const PUNKT_TOLERANZ_SM = 0.5;
-
 
 export function eintraegeFuerNahenPunkt(
   lat: number, lon: number, toleranzSm = PUNKT_TOLERANZ_SM,
@@ -158,7 +140,6 @@ export function eintraegeFuerNahenPunkt(
     return distNM(lat, lon, o.lat, o.lon) <= toleranzSm;
   });
 }
-
 
 export function eintraegeFuerStrecke(von: string, nach: string): RevierwissenEintrag[] {
   const a = von.trim().toLowerCase(), b = nach.trim().toLowerCase();

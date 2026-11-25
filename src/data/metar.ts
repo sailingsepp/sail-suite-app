@@ -1,6 +1,5 @@
 import { API_BASIS } from '@/shell/api';
 
-
 export interface MetarAntwort {
   metar: { id: string; roh: string; zeit: string; name: string | null } | null;
   erreichbar: boolean;

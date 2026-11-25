@@ -3,7 +3,6 @@ import { vtgInBox } from '@/core/messinaVtg';
 import { ladeSeekartenObjekte, verkehrJetzt, type Verkehrsweg } from '@/data/seekartenObjekte';
 import { istNacht } from './seekarte';
 
-
 export const FAEHREN_AB_ZOOM = 8;
 export const VTG_AB_ZOOM = 9;
 const PANE = 'verkehrswege';
@@ -18,7 +17,6 @@ export function verkehrswegeAuf(karte: L.Map, netz: () => boolean = () => naviga
     L.polyline(punkte, { renderer: leinwand, interactive: false, pane: PANE, ...stil }).addTo(gruppe);
   }
 
-  
   function pfeil(w: Verkehrsweg, farbe: string): void {
     const n = w.p.length / 2;
     if (n < 2) return;

@@ -1,27 +1,26 @@
-
 import { beurteile, type Urteil, type Optionen } from './motorerkennung';
 import { OBERTON_MIN } from './motorklang';
 import type { BoatPolar } from './polar';
 
 export interface KlangMessung {
-  
+
   treffer: number;
-  
+
   h: number;
-  
+
   f0: number;
-  
+
   pegel: number;
 }
 
 export interface KlangLage {
-  
+
   klang: KlangMessung | null;
-  
+
   sog: number | null;
-  
+
   cog: number | null;
-  
+
   wind?: { aus: number; kn: number; kn80?: number | null } | null;
   boot?: BoatPolar;
   abstandStartNM?: number | null;
@@ -38,18 +37,17 @@ export interface KlangBefund {
 }
 
 export const KLANG = {
-  
+
   stummDbfs: -90,
-  
+
   stillMaxTreffer: 1,
-  
+
   motorFahrtKn: 0.8,
-  
+
   segelFahrtKn: 1.5,
-  
+
   taktMs: 5000,
 } as const;
-
 
 export const EINSPRUCH: Optionen = {
   fahrtMinKn: KLANG.segelFahrtKn,
@@ -63,7 +61,6 @@ export const EINSPRUCH: Optionen = {
   manoeverKn: 0,
   hafenNM: 0,
 };
-
 
 export const KLANG_HALTEN: Optionen = {
   halteMinutenMotor: 1,
@@ -82,7 +79,6 @@ export function beurteileKlang(l: KlangLage): KlangBefund {
   }
   if (k.treffer > KLANG.stillMaxTreffer) return { urteil: 'unklar', grund: 'grenzfall' };
 
-  
   if (l.sog === null || l.sog < KLANG.segelFahrtKn) return { urteil: 'unklar', grund: 'langsam' };
   if (l.wind && l.cog !== null) {
     const b = beurteile({

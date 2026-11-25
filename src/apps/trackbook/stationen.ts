@@ -13,7 +13,6 @@ import { warnungText } from '@/core/ansagen';
 import { aktuellerZustand } from './aufzeichnung';
 import { SCHLUESSEL } from '@/shell/speicherschluessel';
 
-
 const ABRUF_MS = 10 * 60_000;
 const FEHLER_RUHE_MS = 2 * 60_000;
 const NEU_AB_SM = 10;
@@ -56,7 +55,6 @@ export function wetterwarnungStufe(jetzt = Date.now()): 3 | 4 | null {
   return alarm || see ? 3 : null;
 }
 
-
 export function wetterwarnungAktiv(jetzt = Date.now()): boolean {
   return (warnSee && jetzt - warnSeeBei <= WARN_GILT_MS) || (warnAlarm && jetzt - warnAlarmBei <= WARN_GILT_MS);
 }
@@ -64,7 +62,6 @@ export function wetterwarnungAktiv(jetzt = Date.now()): boolean {
 const $ = (id: string) => document.getElementById(id);
 const wort = (schluessel: string): string => STRINGS[aktuelleSprache()][schluessel] ?? schluessel;
 const ruhig = (): boolean => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-
 
 export function laufbandAn(): boolean {
   try { return localStorage.getItem(SCHLUESSEL.laufbandAus) !== '1'; } catch { return true; }
@@ -84,8 +81,7 @@ export function initStationen(lage: () => Lage | null): void {
   }
   const band = $('tb-laufband');
   band?.addEventListener('click', (e) => {
-    
-    
+
     if ((e.target as Element).closest('#tb-laufband-fest')) { oeffneSeewetter(); return; }
     if (ruhig()) { einzeln++; zeichne(true); return; }
     const an = band.getAttribute('aria-pressed') !== 'true';
@@ -93,13 +89,11 @@ export function initStationen(lage: () => Lage | null): void {
     band.classList.toggle('pausiert', an);
   });
   aufSprachwechsel(() => zeichne(true));
-  
-  
+
   document.querySelector('.tb-laufband-spur')?.addEventListener('animationiteration', () => {
     if (wartend) uebernimm(wartend.teile, wartend.quellen, wartend.zeile);
   });
 }
-
 
 export function pruefeStationen(): void {
   const lage = holeLage?.();
@@ -144,7 +138,7 @@ function pruefeWarnung(lage: Lage): void {
     warnGeprueftBei = lage;
     const aktiv = wetterwarnungAktiv(jetzt);
     zeigeWarnblock(aktiv ? { seewetter: warnSee, treffer: warnAlarm ? warnTreffer : [], geprueft: jetzt } : null);
-    
+
     const ersteSicht = !warnBasis;
     if (w.seewetter !== null || w.meteoalarm !== null) warnBasis = true;
     if (aktiv && !vorher && !ersteSicht && aktuellerZustand().betriebsart === 'laeuft') {
@@ -163,7 +157,6 @@ function verstecke(): void {
 let letzterSchluessel = '';
 
 let wartend: { teile: LaufbandTeil[][]; quellen: string; zeile: string } | null = null;
-
 
 function setzeTeile(el: HTMLElement, teile: readonly (readonly LaufbandTeil[])[], quellen: string): void {
   const knoten: (Node | string)[] = [];
@@ -193,26 +186,25 @@ function zeichne(sofort: boolean): void {
   const frisch = stationen.filter((s) => jetzt - Date.parse(s.zeit) <= (s.boje ? MAX_ALTER_BOJE_MS : MAX_ALTER_MS));
   const warnung = wetterwarnungAktiv(jetzt) ? wort('stationen.warnung') : '';
   if (frisch.length === 0 && !warnung) { verstecke(); return; }
-  
+
   if (!laufbandAn() && !warnung) { verstecke(); letzterSchluessel = ''; return; }
   const sprache = aktuelleSprache();
   const eintraege = laufbandEintraege(frisch, lage, jetzt, sprache);
   const teile = laufbandTeile(frisch, lage, jetzt, sprache);
   const quellen = frisch.length ? laufbandQuellen(frisch, sprache) : '';
-  
+
   band.classList.toggle('gruen', !warnung && alleUnauffaellig(teile));
   band.classList.toggle('warnung', !!warnung);
-  
+
   const stufe = warnung ? wetterwarnungStufe(jetzt) : null;
   band.classList.toggle('warnung-rot', stufe === 4);
   band.classList.toggle('warnung-orange', stufe === 3);
-  
-  
+
   if (fest && fest.textContent !== warnung) {
     fest.textContent = warnung;
     fest.hidden = !warnung;
     fest.title = warnung ? wort('stationen.warnungTitel') : '';
-    
+
     requestAnimationFrame(() => band.style.setProperty('--fest-breite', warnung ? `${fest.offsetWidth}px` : '0px'));
   }
   const srText = `${wort('stationen.titel')}: ${[warnung, ...eintraege, quellen].filter(Boolean).join('. ')}`;
@@ -226,21 +218,17 @@ function zeichne(sofort: boolean): void {
     kopie.textContent = '';
   } else {
     band.classList.remove('ruhig');
-    
-    
+
     const zeile = frisch.length ? [...eintraege, quellen].join(TRENNER) + ENDE : '';
     const schluessel = zeile + JSON.stringify(teile.map((t) => t.map((x) => x.stufe)));
     if (schluessel === letzterSchluessel && !sofort) return;
     letzterSchluessel = schluessel;
-    
-    
-    
+
     if (!band.hidden && letzterText && !sofort) wartend = { teile, quellen, zeile };
     else uebernimm(teile, quellen, zeile);
   }
   if (band.hidden) { band.hidden = false; document.body.classList.add('mit-laufband'); }
 }
-
 
 function uebernimm(teile: LaufbandTeil[][], quellen: string, zeile: string): void {
   wartend = null;
@@ -248,10 +236,10 @@ function uebernimm(teile: LaufbandTeil[][], quellen: string, zeile: string): voi
   if (!band || !text || !kopie) return;
   setzeTeile(text, teile, quellen);
   setzeTeile(kopie, teile, quellen);
-  
+
   if (zeile.length !== letzterText.length) {
     const setze = () => band.style.setProperty('--laufband-dauer', `${Math.max(20, text.scrollWidth / PX_JE_S)}s`);
-    
+
     if (text.scrollWidth > 0) setze(); else requestAnimationFrame(setze);
   }
   letzterText = zeile;

@@ -5,7 +5,7 @@ import { aufKachelrand } from '@/core/seekartenObjekte';
 import { ausschnittStand, bereiteZellen, kartenIndex, ladeLandImGebiet, landRingeJetzt, stufeFuerZoom } from '@/data/landKacheln';
 import { ladeSeekartenObjekte, ortsflaechenJetzt, pistenJetzt, stegeJetzt, strassenJetzt, type Steg } from '@/data/seekartenObjekte';
 import { ORTE_AB_ZOOM, STRASSEN_AB_ZOOM, type StrassenKlasse } from '@/core/seekartenObjekte';
-import { FLACH, RELIEF_NACHT, RELIEF_TAG, linienFuerZoom, reliefPunkt } from '@/core/hoehen';
+import { FLACH, HOEHEN_GLAETTEN_MAX_M, RELIEF_NACHT, RELIEF_TAG, linienFuerZoom, reliefPunkt } from '@/core/hoehen';
 import { bereiteHoehenBilder, hoehenJetzt, ladeHoehenImGebiet } from '@/data/hoehenKacheln';
 import {
   FLAECHEN_AB_ZOOM, GLAETTEN_AB_ZOOM, HAFEN_PUFFER_M, LINIE_AB_ZOOM, TIEFEN_NACHT, TIEFEN_TAG, ZAHL_NEU_AB_GRAD, aufrechterWinkel, bandFarbe,
@@ -421,16 +421,33 @@ function zeichneTiefenzahlen(ctx: CanvasRenderingContext2D, x0: number, y0: numb
   ctx.restore();
 }
 
+const hoehenGeglaettet = new WeakMap<Float64Array, Float64Array>();
+function hoehenZug(p: Float64Array, zelle: Zelle): Float64Array {
+  let g = hoehenGeglaettet.get(p);
+  if (!g) {
+    g = glaetteTiefenzug(p, false, zelle, HOEHEN_GLAETTEN_MAX_M);
+    hoehenGeglaettet.set(p, g);
+  }
+  return g;
+}
+
 function zeichneHoehenlinien(ctx: CanvasRenderingContext2D, x0: number, y0: number, z: number, box: Box, nacht: boolean): void {
   const art = linienFuerZoom(z);
   if (!art) return;
   const duenn = new Path2D(), kraeftig = new Path2D();
+  const verschiebung = kannAddPath ? new DOMMatrix([1, 0, 0, 1, -x0, -y0]) : null;
   for (const k of landKachelnFuerBox(box)) {
     const d = hoehenJetzt(k.name, reliefStufe(z));
     if (!d) continue;
+    const g = KARTE_KACHEL_GRAD, zelle: Zelle = { s: k.i * g, w: k.j * g, n: (k.i + 1) * g, o: (k.j + 1) * g };
     for (const l of d.linien) {
       if (l.hoeheM % art.abstand || l.n < box.swLat || l.s > box.neLat || l.o < box.swLon || l.w > box.neLon) continue;
       const pfad = l.hoeheM % art.zaehl ? duenn : kraeftig;
+      if (verschiebung && z >= GLAETTEN_AB_ZOOM) {
+
+        pfad.addPath(tiefenPfad(hoehenZug(l.p, zelle), z, false, zelle), verschiebung);
+        continue;
+      }
       for (let i = 0; i < l.p.length; i += 2) {
         const [x, y] = px(l.p[i]!, l.p[i + 1]!, z);
         if (i === 0) pfad.moveTo(x - x0, y - y0); else pfad.lineTo(x - x0, y - y0);

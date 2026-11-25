@@ -1,5 +1,3 @@
-
-
 export type Form =
   | { r: [number, number, number, number]; f: string }
   | { p: [number, number][]; f: string }
@@ -8,7 +6,7 @@ export type Form =
 export interface Seeflagge {
   name: { de: string; en: string };
   formen: Form[];
-  
+
   vereinfacht?: boolean;
 }
 
@@ -51,9 +49,8 @@ const stern = (cx: number, cy: number, r: number, f: string, winkel = 0): Form =
 const ROT = '#C8102E';
 const WEISS = '#FFFFFF';
 
-
 function union(b: number, h: number): Form[] {
-  const d = 1.2; 
+  const d = 1.2;
   const diag = (f: string, s: number): Form[] => [
     { p: [[0, 0], [s, 0], [b, h - s * (h / b)], [b, h], [b - s, h], [0, s * (h / b)]], f },
     { p: [[b, 0], [b, s * (h / b)], [s, h], [0, h], [0, h - s * (h / b)], [b - s, 0]], f },
@@ -65,7 +62,6 @@ function union(b: number, h: number): Form[] {
     { r: [b / 2 - h / 10, 0, h / 5, h], f: ROT }, { r: [0, h * 0.4, b, h / 5], f: ROT },
   ];
 }
-
 
 export const SEEFLAGGEN: Record<string, Seeflagge> = {
   AT: { name: { de: 'Österreich', en: 'Austria' }, formen: quer(['#C8102E', WEISS, '#C8102E']) },
@@ -152,7 +148,6 @@ export const SEEFLAGGEN: Record<string, Seeflagge> = {
   HU: { name: { de: 'Ungarn', en: 'Hungary' }, formen: quer(['#CE2939', WEISS, '#477050']) },
 };
 
-
 export function normLandcode(x: string | null | undefined): string | null {
   const c = (x ?? '').trim().toUpperCase();
   return /^[A-Z]{2}$/.test(c) ? c : null;
@@ -164,7 +159,6 @@ export function seeflagge(code: string | null | undefined): Seeflagge | null {
 }
 
 const zahl = (x: number) => String(Math.round(x * 100) / 100);
-
 
 export function seeflaggeSvg(code: string | null | undefined, hoehe = 16, sprache: 'de' | 'en' = 'de'): string | null {
   const fl = seeflagge(code);
@@ -178,7 +172,6 @@ export function seeflaggeSvg(code: string | null | undefined, hoehe = 16, sprach
   return `<svg class="seeflagge" viewBox="0 0 ${FLAGGE_B} ${FLAGGE_H}" width="${zahl((hoehe * FLAGGE_B) / FLAGGE_H)}" height="${hoehe}" role="img" aria-label="${titel}">`
     + `<title>${titel}</title>${teile}<rect x=".25" y=".25" width="${FLAGGE_B - 0.5}" height="${FLAGGE_H - 0.5}" fill="none" stroke="#888" stroke-width=".5"/></svg>`;
 }
-
 
 const NAMEN: Record<string, string> = {
   kroatien: 'HR', croatia: 'HR', hrvatska: 'HR',
@@ -203,7 +196,6 @@ const NAMEN: Record<string, string> = {
   irland: 'IE', ireland: 'IE',
 };
 
-
 export function landcodeAusRevier(revier: string | null | undefined): string | null {
   for (const teil of (revier ?? '').split(/[·,/]/)) {
     const c = NAMEN[teil.trim().toLowerCase()];
@@ -211,7 +203,6 @@ export function landcodeAusRevier(revier: string | null | undefined): string | n
   }
   return null;
 }
-
 
 export function flaggeDesToerns(schiff: { flagge?: string } | null | undefined, revier: string | null | undefined): string | undefined {
   return normLandcode(schiff?.flagge) ?? landcodeAusRevier(revier) ?? undefined;

@@ -1,40 +1,30 @@
-
-
-
-
 const UMSCHRIFT: Record<string, string> = {
-  
+
   'č': 'c', 'Č': 'C', 'ć': 'c', 'Ć': 'C', 'đ': 'd', 'Đ': 'D',
-  
+
   'ğ': 'g', 'Ğ': 'G', 'ı': 'i', 'İ': 'I', 'ş': 's', 'Ş': 'S',
-  
+
   'ā': 'a', 'ē': 'e', 'ī': 'i', 'ō': 'o', 'ū': 'u',
   'ł': 'l', 'Ł': 'L', 'ń': 'n', 'ś': 's', 'ź': 'z', 'ż': 'z',
-  
+
   '→': '–', '←': '–', '⟶': '–', '☾': '', '⚓': '', '⛵': '', '⚙': '',
-  
-  
-  
+
   '−': '-', '≈': '~', '≥': '>=', '≤': '<=', '′': "'", '″': '"',
   '\u00a0': ' ', '\u202f': ' ', '\u2009': ' ', '\u2011': '-',
 };
 
-
 const ERLAUBT = '€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿'
   + 'ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ';
-
 
 export function sicher(text: string): string {
   let raus = '';
   for (const z of text) {
     if (z in UMSCHRIFT) { raus += UMSCHRIFT[z]; continue; }
-    
-    
+
     if (z.charCodeAt(0) < 128 || ERLAUBT.includes(z)) raus += z;
   }
   return raus;
 }
-
 
 export function briefingDateiname(titel: string, datum: Date): string {
   const tag = `${datum.getUTCFullYear()}-${String(datum.getUTCMonth() + 1).padStart(2, '0')}-`
@@ -54,16 +44,13 @@ export function briefingDateiname(titel: string, datum: Date): string {
   return `Briefing_${tag}${orte ? `_${orte}` : ''}.pdf`;
 }
 
-
 export function sicherUnicode(text: string): string {
   return text
-    
-    
+
     .replace(/(?![©®™])\p{Extended_Pictographic}/gu, '')
     .replace(/[☀-➿️]/g, '')
     .replace(/[\u{10000}-\u{10FFFF}]/gu, '');
 }
-
 
 export function briefingTextFuerPdf(html: string): string {
   return html
@@ -75,12 +62,10 @@ export function briefingTextFuerPdf(html: string): string {
     .split('\n').map((z) => z.trim()).filter(Boolean).join('\n');
 }
 
-
 export const PDF_COPYRIGHT: Record<'de' | 'en', string> = {
   de: '© 2026 Sail-Suite · Alle Rechte vorbehalten. Entwickelt von Sepp · Österreich',
   en: '© 2026 Sail-Suite · All rights reserved. Developed by Sepp · Austria',
 };
-
 
 const URL_TEIL = String.raw`https?:\/\/[^\s<>"“”„]+[^\s<>"“”„.,;:!?)\]]`;
 
@@ -88,16 +73,13 @@ export const ADRESS_ENDUNGEN = ['com', 'org', 'net', 'de', 'at', 'ch', 'hr', 'gr
 const DOMAIN_TEIL = String.raw`(?<![@\w./-])(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:${ADRESS_ENDUNGEN.join('|')})\b(?:\/[^\s<>"“”„]*[^\s<>"“”„.,;:!?)\]])?`;
 const URL_MUSTER = new RegExp(`${URL_TEIL}|${DOMAIN_TEIL}`, 'gi');
 
-
 function ziel(adresse: string): string {
   return /^https?:\/\//i.test(adresse) ? adresse : `https://${adresse}`;
 }
 
-
 export function adressenIn(text: string): { start: number; ende: number; url: string }[] {
   return [...text.matchAll(URL_MUSTER)].map((m) => ({ start: m.index, ende: m.index + m[0].length, url: ziel(m[0]) }));
 }
-
 
 export function linkStellenJeZeile(zeilen: readonly string[], quelle: string): { zeile: number; start: number; ende: number; url: string }[] {
   const adressen = adressenIn(quelle);

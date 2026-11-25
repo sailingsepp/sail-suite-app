@@ -1,8 +1,6 @@
-
 import { polarSpeed, FARR_BAVARIA_50, MAST_FACTOR } from './polar';
 import type { BoatPolar } from './polar';
 import { ORC_BOATS } from './boatPolars';
-
 
 const LAENGE_FT: Record<string, number> = {
   'bavaria-38-match': 38, bavaria32: 32, bavaria33: 33, bavaria34: 34, bavaria38: 38,
@@ -13,7 +11,7 @@ const LAENGE_FT: Record<string, number> = {
   'first-47-7': 47.7, gibsea442: 44.2, hanse400: 40, jeanneau41: 41,
   oceanis37: 37, swan391: 39.1, swan40: 40, swan44: 44, swan45: 45,
   swan46: 46, swan46cb: 46, swan60: 60,
-  
+
 };
 
 interface Klasse { id: string; name: string; lo: number; hi: number }
@@ -21,9 +19,6 @@ const KLASSEN: Klasse[] = [
   { id: 'fahrtenyacht-39-45ft', name: 'Fahrtenyacht Monohull 39–45 ft', lo: 39, hi: 45 },
   { id: 'fahrtenyacht-45-50ft', name: 'Fahrtenyacht Monohull 45–50 ft', lo: 45, hi: 50 },
 ];
-
-
-
 
 const FARR_ALS_10M: BoatPolar = {
   ...FARR_BAVARIA_50,
@@ -36,10 +31,6 @@ function decktAb(b: BoatPolar, tws: number, twa: number): boolean {
   return tws >= b.tws[0]! && tws <= b.tws[b.tws.length - 1]!
     && twa >= b.twa[0]! && twa <= b.twa[b.twa.length - 1]!;
 }
-
-
-
-
 
 const TWA_RASTER = [30, 52, 60, 75, 90, 110, 120, 135, 150, 180];
 const TWS_RASTER = [6, 8, 10, 12, 14, 16, 20, 25, 30];

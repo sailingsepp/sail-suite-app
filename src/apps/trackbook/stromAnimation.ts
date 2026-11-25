@@ -2,8 +2,6 @@ import L from 'leaflet';
 import { stromImGitter, type StromGitter } from '@/core/messinaStrom';
 import { hex, stromFarbe } from '@/core/wetterkarte';
 
-
-
 const PX_JE_KN = 7;
 const LEBEN_S: [number, number] = [3, 7];
 const PX_JE_PARTIKEL = 700;
@@ -27,7 +25,6 @@ function gitterGrenzen(g: StromGitter): L.LatLngBounds {
   return L.latLngBounds([g.lat0, g.lon0], [g.lat0 + (g.zeilen - 1) * g.dLat, g.lon0 + (g.spalten - 1) * g.dLon]);
 }
 
-
 function sichtFeld(): L.LatLngBounds | null {
   if (!karte || !gitter) return null;
   const s = karte.getBounds(), b = gitterGrenzen(gitter);
@@ -48,7 +45,6 @@ function neuerPartikel(f: L.LatLngBounds): Partikel | null {
   }
   return null;
 }
-
 
 function neuAufsetzen(): void {
   if (!karte || !leinwand) return;
@@ -111,7 +107,6 @@ function schritt(jetzt: number): void {
 
 const beiBeginn = () => { ruht = true; if (leinwand) leinwand.style.visibility = 'hidden'; };
 const beiEnde = () => { ruht = false; neuAufsetzen(); if (leinwand) leinwand.style.visibility = ''; };
-
 
 export function zeigeStromAnimation(k: L.Map, pane: string, g: StromGitter | null): void {
   if (!g || ruhigeBewegung()) { stromAnimationAus(); return; }

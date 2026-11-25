@@ -3,7 +3,6 @@ import { dekodiereLinie, type HoehenLinie } from '@/core/hoehen';
 import type { Box } from '@/core/landumfahrung';
 import { API_BASIS } from '@/shell/api';
 
-
 const DB_NAME = 'sail-suite-tiefen';
 const STORE = 'kacheln';
 const INDEX_SCHLUESSEL = '_index';
@@ -129,7 +128,6 @@ function holeZelle(name: string, idx: TiefenIndex, netz: boolean, basis: string)
   return lauf;
 }
 
-
 export async function ladeTiefenImGebiet(b: Box, netz: boolean, basis = API_BASIS): Promise<boolean> {
   const idx = await tiefenIndex(netz, basis);
   if (!idx) return false;
@@ -139,11 +137,9 @@ export async function ladeTiefenImGebiet(b: Box, netz: boolean, basis = API_BASI
   return neu.some(Boolean);
 }
 
-
 export function tiefenJetzt(landName: string): { linien: TiefenZug[]; flaechen: TiefenZug[] } | null {
   return zellen.get(tName(landName)) ?? null;
 }
-
 
 export function _vergessen(): void {
   db = null; offen = null; index = null; zellen.clear(); unterwegs.clear();

@@ -14,10 +14,7 @@ import { zeichneUeberstellung, passeAusschnittAn } from './karte';
 import { OPTION_SCHLUESSEL_1 } from './rechnerProtokoll';
 import { istOffeneUeberstellung } from './wunschliste';
 
-
-
 const STUNDE = 3_600_000;
-
 
 function zeitText(t: number): string {
   const d = new Date(t);
@@ -35,8 +32,6 @@ function haltText(x: { halt: keyof typeof HALT_SCHLUESSEL; ruhetage?: number }):
   return x.halt === 'ruhetag' && (x.ruhetage ?? 1) > 1 ? wort('ueb.haltRuhetage', { n: String(x.ruhetage) }) : wort(HALT_SCHLUESSEL[x.halt]);
 }
 
-
-
 function engeText(x: UeberstellungsSchlag): string | null {
   const d = x.enge;
   if (!d) return null;
@@ -44,12 +39,12 @@ function engeText(x: UeberstellungsSchlag): string | null {
   const strom = d.mitlaufend
     ? wort(d.strom === 'montante' ? 'ueb.engeNordstrom' : 'ueb.engeSuedstrom', { kn: nf(Math.max(1, d.kn), 0, sp) })
     : wort('ueb.engeStauwasser');
-  
+
   const name = sp === 'en' && d.name === 'Straße von Messina' ? 'Strait of Messina' : d.name;
   const teile = [`${name} ${zeitText(d.zeit)} ${strom}`];
   if (d.wartenMs >= 10 * 60_000) {
     teile.push(wort('ueb.engeWarten', { dauer: fmtDur(d.wartenMs / STUNDE) }));
-    
+
     if (d.langsamKn != null) {
       teile.push(wort('ueb.engeLangsam', {
         ab: zeitText(x.abfahrt - d.wartenMs), sm: nf(d.vorlaufSm, 0, sp), kn: nf(d.langsamKn, 1, sp),
@@ -62,7 +57,6 @@ function engeText(x: UeberstellungsSchlag): string | null {
 function neueEtappeId(): string {
   return `etappe-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
-
 
 export async function ueberstellungVorschlagen(karte: L.Map | null, ebenen: L.LayerGroup | null): Promise<boolean> {
   const toern = app.toern;
@@ -77,7 +71,7 @@ export async function ueberstellungVorschlagen(karte: L.Map | null, ebenen: L.La
   const p = planungJetzt();
   const cfg = standardSchiffConfig(toern);
   const fahrtKn = p.ueberstellungFahrtKn || cfg.motorSpeed || 6;
-  
+
   const kraft = tankVorschlag(toern, fahrtKn);
   const tankSm = p.tankReichweiteSm ?? kraft?.reichweiteSm ?? null;
   if (status) status.textContent = wort('ueb.rechnet');
@@ -127,7 +121,7 @@ export async function ueberstellungVorschlagen(karte: L.Map | null, ebenen: L.La
           ...(engeText(x) ? [engeText(x)!] : [])].join(' · '))}</span>
       </div></div>`;
     }).join('');
-    
+
     const dieselText = kraft
       ? [tankZeile(kraft.angabe, fahrtKn, sp),
         bedarfSatz(kraft.angabe, plan.motorSm, fahrtKn, sp, r.vorhersageBis != null && plan.ankunft > r.vorhersageBis),
@@ -146,7 +140,6 @@ export async function ueberstellungVorschlagen(karte: L.Map | null, ebenen: L.La
         + `<div class="vp-woche-liste" role="list">${zeilen}</div>`;
     }
 
-    
     const schlagPunkte = plan.schlaege.map((x) => {
       const von = r.halte[x.vonIndex]!, nach = r.halte[x.nachIndex]!;
       return [von.ort, ...wegStueck(r.weg, von.s, nach.s), nach.ort];
@@ -166,13 +159,12 @@ export async function ueberstellungVorschlagen(karte: L.Map | null, ebenen: L.La
       if (karte) passeAusschnittAn(karte, ebenen);
     }
 
-    
     const token = liesSitzungsToken();
     let gespeichert = false;
     if (token && !app.nurLesen) {
       const etappen: NeueEtappeDaten[] = plan.schlaege.map((x, i) => ({
         id: neueEtappeId(), nummer: i, gewaehlt: false, datum: datumStr(x.abfahrt),
-        
+
         abfahrtZeit: new Date(x.abfahrt).toISOString().slice(11, 16),
         ankunftDatum: datumStr(x.ankunft) !== datumStr(x.abfahrt) ? datumStr(x.ankunft) : null,
         ankunftZeit: new Date(x.ankunft).toISOString().slice(11, 16),

@@ -1,6 +1,5 @@
 import type { Ablegezeit } from './types';
 
-
 export const MAX_SCHRITTE = 12;
 
 export function ablegenFuerAnkunft(ziel: Date, rechne: (t: Date) => Ablegezeit, schaetzungH: number): Ablegezeit {
@@ -20,7 +19,6 @@ export function ablegenFuerAnkunft(ziel: Date, rechne: (t: Date) => Ablegezeit, 
   return r;
 }
 
-
 export function ankunftsZeitpunkt(dateStr: string, hhmm: string, abJetzt: boolean, jetzt: Date): Date | null {
   const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm.trim());
   if (!m || Number(m[1]) > 23 || Number(m[2]) > 59) return null;
@@ -28,7 +26,6 @@ export function ankunftsZeitpunkt(dateStr: string, hhmm: string, abJetzt: boolea
   if (Number.isNaN(z.getTime())) return null;
   return abJetzt && z <= jetzt ? new Date(z.getTime() + 86_400_000) : z;
 }
-
 
 export function noetigeFahrt(r: Ablegezeit, ziel: Date): number | null {
   const stunden = (ziel.getTime() - r.departure.getTime()) / 3_600_000 - r.manHrs - (r.haltHrs ?? 0);

@@ -1,6 +1,5 @@
 import type L from 'leaflet';
 
-
 export function einFingerScrollt(karte: L.Map, ausserdem: () => boolean = () => true): () => void {
   const schmal = matchMedia('(max-width: 899px)');
   const beruehrung = () => matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;

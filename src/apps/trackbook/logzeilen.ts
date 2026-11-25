@@ -12,8 +12,6 @@ import { ortsangabeLogbuch } from '@/data/places';
 import { loescheBild, type LogEintrag } from '@/data/logdb';
 import { bearbeiteEintrag, loescheEintragVonHand } from './aufzeichnung';
 
-
-
 const RUECKGAENGIG_MS = 6000;
 
 const wort = (schluessel: string): string =>
@@ -34,7 +32,6 @@ function schliesseOffene(): void {
   offeneZeile.classList.remove('tb-offen-klick', 'tb-voll-rot');
   offeneZeile = null;
 }
-
 
 export function macheBedienbar(li: HTMLLIElement, e: LogEintrag): void {
   const inhalt = document.createElement('div');
@@ -67,7 +64,6 @@ export function macheBedienbar(li: HTMLLIElement, e: LogEintrag): void {
     void loesche(e);
   });
 
-  
   inhalt.addEventListener('click', (ev) => {
     const pe = ev as PointerEvent;
     if (pe.pointerType === 'touch' || pe.pointerType === 'pen') return;
@@ -77,8 +73,6 @@ export function macheBedienbar(li: HTMLLIElement, e: LogEintrag): void {
     offeneZeile = li;
   });
 
-  
-  
   let startX = 0, startY = 0, basis = 0, richtung: 'offen' | 'waagrecht' | 'senkrecht' = 'offen';
   let stufe: WischStufe = 'zu';
   let dx = 0;
@@ -135,14 +129,12 @@ export function macheBedienbar(li: HTMLLIElement, e: LogEintrag): void {
   inhalt.addEventListener('pointercancel', ende);
 }
 
-
-
 let rueckgaengig: (() => Promise<void>) | null = null;
 let rueckgaengigTimer: ReturnType<typeof setTimeout> | null = null;
 let bildNachFrist: string | null = null;
 
 async function loesche(e: LogEintrag): Promise<void> {
-  
+
   beendeFrist();
   try {
     rueckgaengig = await loescheEintragVonHand(e);
@@ -161,13 +153,10 @@ function beendeFrist(): void {
   rueckgaengig = null;
   const leiste = document.getElementById('tb-rueckgaengig');
   if (leiste) leiste.hidden = true;
-  
-  
+
   if (bildNachFrist) void loescheBild(bildNachFrist).catch(() => {});
   bildNachFrist = null;
 }
-
-
 
 let aktuell: LogEintrag | null = null;
 let modal: ReturnType<typeof initModal> | null = null;
@@ -189,7 +178,7 @@ function oeffneBearbeiten(e: LogEintrag): void {
   const de = aktuelleSprache() === 'de';
   const art = document.getElementById('tb-bearbeiten-art');
   if (art) art.textContent = eintragArtName(e.art, de ? 'de' : 'en', e.liegeart);
-  
+
   const wahlBox = document.getElementById('tb-bearbeiten-artwahl');
   const wahl = document.getElementById('in-bearbeiten-art') as HTMLSelectElement | null;
   const jetzt = artWahlVon(e);
@@ -222,7 +211,7 @@ export function initLogBearbeiten(): void {
   const el = modalEl();
   if (el) modal = initModal(el, schliesseBearbeiten);
   document.getElementById('btn-bearbeiten-weg')?.addEventListener('click', schliesseBearbeiten);
-  
+
   document.getElementById('in-bearbeiten-art')?.addEventListener('change', (ev) => {
     const e = aktuell;
     const w = artWahlAusWert((ev.target as HTMLSelectElement).value);
@@ -235,8 +224,7 @@ export function initLogBearbeiten(): void {
     if (!e) return;
     const zeit = document.getElementById('in-bearbeiten-zeit') as HTMLInputElement | null;
     const text = document.getElementById('in-bearbeiten-text') as HTMLTextAreaElement | null;
-    
-    
+
     let t = e.t;
     if (zeit && zeit.value && zeit.value !== uhrzeitFeld(e.t)) t = mitUhrzeit(e.t, zeit.value) ?? e.t;
     const wahl = document.getElementById('in-bearbeiten-art') as HTMLSelectElement | null;
@@ -253,8 +241,7 @@ export function initLogBearbeiten(): void {
     if (protokoll) { protokoll.hidden = false; protokoll.textContent = wort('bearbeiten.ortSucht'); }
     void ortsangabeLogbuch({ lat: e.lat, lon: e.lon }, aktuelleSprache()).then((r) => {
       if (aktuell !== e) return;
-      
-      
+
       const uebernehmen = !!r.name && (r.vollstaendig || !text?.value.trim());
       if (uebernehmen && text && r.name) text.value = r.name;
       if (protokoll) {
@@ -266,11 +253,11 @@ export function initLogBearbeiten(): void {
   });
   document.getElementById('btn-rueckgaengig')?.addEventListener('click', () => {
     const r = rueckgaengig;
-    bildNachFrist = null; 
+    bildNachFrist = null;
     beendeFrist();
     if (r) void r();
   });
-  
+
   document.addEventListener('pointerdown', (ev) => {
     if (offeneZeile && !offeneZeile.contains(ev.target as Node)) schliesseOffene();
   });

@@ -1,4 +1,3 @@
-
 export const STANDORT_ABSTAND_MS = 20 * 60_000;
 
 const IMMER: ReadonlySet<string> = new Set([
@@ -6,9 +5,8 @@ const IMMER: ReadonlySet<string> = new Set([
   'ankerwache', 'antrieb', 'tagesende', 'hand', 'foto',
 ]);
 
-
 export function streamLogAuswahl<T extends { t: number; art: string }>(eintraege: readonly T[], abstandMs = STANDORT_ABSTAND_MS): T[] {
-  
+
   const behalten = new Set<T>();
   let letzter = -Infinity;
   for (const e of [...eintraege].filter((x) => x.art === 'standort').sort((a, b) => a.t - b.t)) {

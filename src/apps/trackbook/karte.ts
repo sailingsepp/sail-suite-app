@@ -20,15 +20,10 @@ import { kuesteFuer, beiKuesteGeladen } from './vorausKueste';
 import { luftbildAuf, type Luftbild } from '@/map/luftbild';
 import { radarAuf, type RadarEbene } from '@/map/radar';
 
-
-
 let karte: L.Map | null = null;
 let drehung: Drehung | null = null;
 let regelZiehen: () => void = () => {};
 let spurLinien: L.Polyline[] = [];
-
-
-
 
 export { SPURFARBE };
 let lueckenLinien: L.Polyline[] = [];
@@ -43,73 +38,53 @@ let aufFolgeWechsel: (folgt: boolean) => void = () => {};
 
 let selbstGesetzt = false;
 
-
 const STANDARD: L.LatLngTuple = [44.0, 14.5];
 
 export function initKarte(behaelter: HTMLElement, meldeFolge: (folgt: boolean) => void): void {
   aufFolgeWechsel = meldeFolge;
-  
-  
-  
-  
-  
+
   const flaeche = document.createElement('div');
   flaeche.className = 'tb-karte-flaeche';
   behaelter.appendChild(flaeche);
   karte = L.map(flaeche, { zoomControl: true, attributionControl: true }).setView(STANDARD, 9);
   drehung = macheDrehbar(karte, behaelter);
   zweizeiligeNamensnennung(karte);
-  
-  
+
   regelZiehen = einFingerScrollt(karte, () => !document.documentElement.classList.contains('nav-an'));
 
-  
-  
-  
   seekarte = seekarteAuf(karte, () => navigator.onLine, () => drehung?.winkel() ?? 0);
   seekarte.ebene.on('load', keineKarteAnzeigen(karte, behaelter));
-  
-  
+
   if (!karte.getPane('tbSeezeichen')) karte.createPane('tbSeezeichen').style.zIndex = '250';
   seezeichen = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
     maxZoom: 19, crossOrigin: 'anonymous', attribution: '&copy; OpenSeaMap', pane: 'tbSeezeichen',
   });
   if (seezeichenGemerkt()) seezeichen.addTo(karte);
-  
+
   luftbild = luftbildAuf(karte, { speicher: 'sail-suite:nav-luftbild', nennungsFeld: true });
-  
-  
-  
+
   try { localStorage.removeItem('sail-suite:nav-radar'); } catch {  }
   radar = radarAuf(karte, { pane: 'tbRadar', zIndex: 230, feld: true });
-  
-  
+
   if (typeof ResizeObserver === 'function') new ResizeObserver(() => drehung?.neuMessen()).observe(behaelter);
-  
-  
-  
+
   addScaleControl(karte);
   massstabNebenLeiste(behaelter);
-  
+
   addVtgEbene(karte, { pfeile: false });
-  
+
   verkehrswegeAuf(karte);
 
-  
-  
-  
-  
   karte.createPane('tbVoraus').style.zIndex = '410';
-  
+
   if (!karte.getPane('tbNamen')) karte.createPane('tbNamen').style.zIndex = '650';
   vorausEbene = L.layerGroup().addTo(karte);
-  
+
   karte.on('zoomend', zeichneVoraus);
   beiKuesteGeladen(zeichneVoraus);
   karte.on('dragstart', loeseFolgen);
   karte.on('zoomstart', () => { if (!selbstGesetzt) loeseFolgen(); });
 }
-
 
 export function folgeNicht(): void { loeseFolgen(); }
 
@@ -118,7 +93,6 @@ function loeseFolgen(): void {
   folgt = false;
   aufFolgeWechsel(false);
 }
-
 
 function ansicht(mitte: L.LatLngExpression): void {
   if (!karte) return;
@@ -132,11 +106,9 @@ export function zentriere(): void {
   aufFolgeWechsel(true);
   const ziel = schiff?.getLatLng();
   if (ziel) ansicht(ziel);
-  
+
   if (modus === 'kurs') dreheAuf(obenKurs ?? 0);
 }
-
-
 
 export type Ausrichtung = 'nord' | 'kurs';
 
@@ -145,7 +117,6 @@ let modus: Ausrichtung = 'nord';
 let obenKurs: number | null = null;
 let aufDrehung: (bearing: number) => void = () => {};
 let animation = 0;
-
 
 export function alsKartenelement(el: HTMLElement): void {
   if (!karte) return;
@@ -158,7 +129,6 @@ export function alsKartenelement(el: HTMLElement): void {
   new Element({ position: 'topleft' }).addTo(karte);
 }
 
-
 export function setzeDrehRueckruf(cb: (bearing: number) => void): void {
   aufDrehung = cb;
   cb(drehung?.winkel() ?? 0);
@@ -170,18 +140,15 @@ export function ausrichtung(): Ausrichtung {
 
 export function setzeAusrichtung(neu: Ausrichtung): void {
   modus = neu;
-  
-  
+
   if (neu === 'kurs') drehung?.setzeVergroessert(true);
   dreheAuf(neu === 'kurs' ? (obenKurs ?? 0) : 0);
 }
-
 
 export function setzeKurs(kurs: number | null): void {
   obenKurs = naechsteAusrichtung(obenKurs, kurs);
   if (modus === 'kurs' && folgt && obenKurs !== null) dreheAuf(obenKurs);
 }
-
 
 function dreheAuf(kurs: number): void {
   if (!drehung) return;
@@ -194,7 +161,7 @@ function dreheAuf(kurs: number): void {
     aufDrehung(w);
   };
   const fertig = (): void => {
-    
+
     if (modus === 'nord' && Math.abs(((d.winkel() % 360) + 360) % 360) < 0.5) { setze(0); d.setzeVergroessert(false); }
   };
   if (Math.abs(weg) < 0.5) { fertig(); return; }
@@ -204,14 +171,12 @@ function dreheAuf(kurs: number): void {
   const t0 = performance.now();
   const schritt = (jetzt: number): void => {
     const a = Math.min(1, (jetzt - t0) / DAUER_MS);
-    const e = a < 0.5 ? 2 * a * a : 1 - (-2 * a + 2) ** 2 / 2; 
+    const e = a < 0.5 ? 2 * a * a : 1 - (-2 * a + 2) ** 2 / 2;
     setze(start + weg * e);
     if (a < 1) animation = requestAnimationFrame(schritt); else fertig();
   };
   animation = requestAnimationFrame(schritt);
 }
-
-
 
 export function kartenWinkel(): number {
   return drehung?.winkel() ?? 0;
@@ -221,7 +186,6 @@ export function sichtPolster(px: number): L.Point {
   return drehung?.sichtPolster(px) ?? L.point(px, px);
 }
 
-
 export function karteZiehenNeu(): void {
   regelZiehen();
 }
@@ -230,17 +194,9 @@ export function karteNeuMessen(): void {
   drehung?.neuMessen();
 }
 
-
 export function zeichneSpur(punkte: SpurPunkt[], luecken: Luecke[], wechsel: readonly AntriebWechsel[] = []): void {
   if (!karte) return;
 
-  
-  
-  
-  
-  
-  
-  
   const stuecke: SpurPunkt[][] = [[]];
   const sehnen: [L.LatLngTuple, L.LatLngTuple][] = [];
   for (let i = 0; i < punkte.length; i++) {
@@ -254,8 +210,6 @@ export function zeichneSpur(punkte: SpurPunkt[], luecken: Luecke[], wechsel: rea
     stuecke[stuecke.length - 1]!.push(p);
   }
 
-  
-  
   for (const l of spurLinien) l.remove();
   spurLinien = [];
   for (const stueck of stuecke) {
@@ -267,19 +221,16 @@ export function zeichneSpur(punkte: SpurPunkt[], luecken: Luecke[], wechsel: rea
     }
   }
 
-  
-  
   for (const l of lueckenLinien) l.remove();
   lueckenLinien = sehnen.map((s) =>
     L.polyline(s, { color: SPURFARBE.offen, weight: 2, opacity: 0.7, dashArray: '6 8', className: 'tb-vergangenheit' }).addTo(karte!));
 }
 
-
 export function setzePosition(lat: number, lon: number, cog: number | null = null): void {
   if (!karte) return;
   const kurs = cog === null ? null : Math.round(cog);
   if (!schiff) {
-    
+
     if (!karte.getPane('tbSchiff')) karte.createPane('tbSchiff').style.zIndex = '660';
     schiff = L.marker([lat, lon], { interactive: false, keyboard: false, zIndexOffset: 900, pane: 'tbSchiff' }).addTo(karte);
   } else {
@@ -298,14 +249,12 @@ export function setzePosition(lat: number, lon: number, cog: number | null = nul
   if (folgt) ansicht([lat, lon]);
 }
 
-
 const VORAUSFARBE = KURSLINIENFARBE;
 
 const LAND_FREI_PX = 60;
 
 const KDW_PX = 70;
 const ZUKUNFT = 'tb-zukunft';
-
 
 export function setzeVorauslinie(lat: number, lon: number, cog: number | null, sog: number | null, kdw: number | null = null): void {
   voraus = { lat, lon, cog, sog, kdw };
@@ -323,8 +272,7 @@ function zeichneVoraus(): void {
   if (!voraus || voraus.cog === null || voraus.sog === null) return;
   const { lat, lon, cog, sog, kdw } = voraus;
   const p0 = karte.latLngToLayerPoint([lat, lon]);
-  
-  
+
   if (kdw !== null) {
     const [hl, ho] = destPoint(lat, lon, kdw, 0.1);
     const ph = karte.latLngToLayerPoint([hl, ho]);
@@ -337,7 +285,7 @@ function zeichneVoraus(): void {
   const pxJeMin = p0.distanceTo(karte.latLngToLayerPoint([la1, lo1]));
   const voll = vorauslinie(lat, lon, cog, sog, pxJeMin);
   if (!voll) return;
-  
+
   const kueste = kuesteFuer({ lat, lon }, { lat: voll.ende[0], lon: voll.ende[1] });
   const t = kueste ? landquerung({ lat, lon }, { lat: voll.ende[0], lon: voll.ende[1] }, kueste) : null;
   const landMin = t === null ? null : t * VORAUS_MIN;
@@ -345,7 +293,7 @@ function zeichneVoraus(): void {
   L.polyline([[lat, lon], v.ende], { color: KONTUR, weight: 4, opacity: 0.6, interactive: false, className: `${ZUKUNFT} tb-kurs-kontur`, pane: 'tbVoraus' }).addTo(vorausEbene);
   L.polyline([[lat, lon], v.ende], { color: VORAUSFARBE, weight: 2, opacity: 0.9, interactive: false, className: `${ZUKUNFT} tb-kurs`, pane: 'tbVoraus' }).addTo(vorausEbene);
   const pe = karte.latLngToLayerPoint(v.ende);
-  
+
   const pv = karte.latLngToLayerPoint(voll.ende);
   const laenge = p0.distanceTo(pv) || 1;
   const qx = (-(pv.y - p0.y) / laenge) * 7, qy = ((pv.x - p0.x) / laenge) * 7;
@@ -354,9 +302,9 @@ function zeichneVoraus(): void {
     const a = karte.layerPointToLatLng(L.point(p.x - qx, p.y - qy));
     const b = karte.layerPointToLatLng(L.point(p.x + qx, p.y + qy));
     L.polyline([a, b], { color: VORAUSFARBE, weight: 2, opacity: 0.9, interactive: false, className: `${ZUKUNFT} tb-kurs`, pane: 'tbVoraus' }).addTo(vorausEbene);
-    
+
     if (st.beschriftet && !(landMin !== null && p.distanceTo(pe) < LAND_FREI_PX)) {
-      
+
       const r = qx < 0 || (qx === 0 && qy < 0) ? -1 : 1;
       const ort = karte.layerPointToLatLng(L.point(p.x + r * qx * 1.6, p.y + r * qy * 1.6));
       L.marker(ort, {
@@ -379,12 +327,10 @@ function zeichneVoraus(): void {
   }
 }
 
-
 export function schiffPosition(): { lat: number; lon: number } | null {
   const p = schiff?.getLatLng();
   return p ? { lat: p.lat, lon: p.lng } : null;
 }
-
 
 function zweizeiligeNamensnennung(k: L.Map): void {
   const ctl = k.attributionControl as (L.Control.Attribution & {
@@ -394,15 +340,13 @@ function zweizeiligeNamensnennung(k: L.Map): void {
   ctl._update = function (this: typeof ctl) {
     if (!this || !this._container) return;
     const quellen = Object.keys(this._attributions ?? {}).filter((x) => this._attributions![x]);
-    
-    
+
     const zeilen = [...(quellen[0] ?? '').split(', '), quellen.slice(1).join(', ')].filter(Boolean);
     this._container.innerHTML = zeilen.join('<br>');
   };
   ctl.getContainer()?.classList.add('tb-namen-zweizeilig');
   ctl._update.call(ctl);
 }
-
 
 function massstabNebenLeiste(behaelter: HTMLElement): void {
   const leiste = document.getElementById('tb-nav-werkzeuge');
@@ -430,17 +374,14 @@ function massstabNebenLeiste(behaelter: HTMLElement): void {
   bald();
 }
 
-
 export function karteObjekt(): L.Map | null {
   return karte;
 }
-
 
 let seekarte: Seekarte | null = null;
 export function seekarteObjekt(): Seekarte | null {
   return seekarte;
 }
-
 
 const SEEZEICHEN_KEY = 'sail-suite:nav-seezeichen';
 function seezeichenGemerkt(): boolean {
@@ -455,12 +396,10 @@ export function setzeSeezeichen(an: boolean): void {
   try { localStorage.setItem(SEEZEICHEN_KEY, an ? '1' : '0'); } catch {  }
 }
 
-
 let luftbild: Luftbild | null = null;
 export function luftbildObjekt(): Luftbild | null {
   return luftbild;
 }
-
 
 let radar: RadarEbene | null = null;
 export function radarObjekt(): RadarEbene | null {
@@ -471,21 +410,18 @@ export function folgtDerSpur(): boolean {
   return folgt;
 }
 
-
-
 let aisEbene: L.LayerGroup | null = null;
 
 export interface AisMarke {
   lat: number;
   lon: number;
-  
+
   cog?: number;
-  
+
   text: string;
-  
+
   stufe: 'fern' | 'nah' | 'eng';
 }
-
 
 export function setzeAisZiele(marken: AisMarke[]): void {
   if (!karte) return;
@@ -496,8 +432,6 @@ export function setzeAisZiele(marken: AisMarke[]): void {
     fern: '#89A3AF', nah: '#F2A93B', eng: '#E1584B',
   };
 
-  
-  
   for (const m of marken) {
     const f = farbe[m.stufe];
     if (m.cog === undefined) {
@@ -506,11 +440,7 @@ export function setzeAisZiele(marken: AisMarke[]): void {
       }).bindTooltip(escapeHtml(m.text), { direction: 'top' }).addTo(aisEbene);
       continue;
     }
-    
-    
-    
-    
-    
+
     const icon = L.divIcon({
       className: 'tb-ais-marke karte-mitdrehen',
       html: `<span style="transform:rotate(${Math.round(m.cog)}deg); border-bottom-color:${f}"></span>`,
@@ -523,23 +453,16 @@ export function setzeAisZiele(marken: AisMarke[]): void {
   }
 }
 
-
 export function leereAisZiele(): void {
   aisEbene?.clearLayers();
 }
 
-
 export function sichtbarerAusschnitt(): { sued: number; west: number; nord: number; ost: number } | null {
-  
-  
-  
-  
+
   if (!karte) return null;
   const b = karte.getBounds();
   return { sued: b.getSouth(), west: b.getWest(), nord: b.getNorth(), ost: b.getEast() };
 }
-
-
 
 let ankerKreis: L.Circle | null = null;
 let ankerMitteMarke: L.Marker | null = null;
@@ -547,7 +470,6 @@ let ankerRandMarke: L.Marker | null = null;
 
 let ankerPeilung = 90;
 let aufAnkerAenderung: (lat: number, lon: number, radiusM: number) => void = () => {};
-
 
 export function zeichneAnkerkreis(lat: number, lon: number, radiusM: number): void {
   if (!karte) return;
@@ -558,11 +480,6 @@ export function zeichneAnkerkreis(lat: number, lon: number, radiusM: number): vo
     radius: radiusM, color: WERKZEUGFARBE, weight: 2, fillColor: WERKZEUGFARBE, fillOpacity: 0.12,
   }).addTo(karte);
 
-  
-  
-  
-  
-  
   ankerMitteMarke = L.marker([lat, lon], {
     draggable: true, autoPanOnFocus: false,
     icon: L.divIcon({
@@ -582,8 +499,7 @@ export function zeichneAnkerkreis(lat: number, lon: number, radiusM: number): vo
     if (!ankerKreis || !ankerRandMarke) return;
     const m = ankerMitteMarke!.getLatLng();
     ankerKreis.setLatLng(m);
-    
-    
+
     const [rl, ro] = destPoint(m.lat, m.lng, ankerPeilung, ankerKreis.getRadius() / 1852);
     ankerRandMarke.setLatLng([rl, ro]);
     melde();
@@ -594,9 +510,7 @@ export function zeichneAnkerkreis(lat: number, lon: number, radiusM: number): vo
     const r = ankerRandMarke!.getLatLng();
     const neuerRadiusM = distNM(m.lat, m.lng, r.lat, r.lng) * 1852;
     ankerKreis.setRadius(neuerRadiusM);
-    
-    
-    
+
     ankerPeilung = bearingDeg(m.lat, m.lng, r.lat, r.lng);
     melde();
   });
@@ -608,11 +522,9 @@ export function zeichneAnkerkreis(lat: number, lon: number, radiusM: number): vo
   }
 }
 
-
 export function setzeAnkerAenderung(cb: (lat: number, lon: number, radiusM: number) => void): void {
   aufAnkerAenderung = cb;
 }
-
 
 let schwojLinie: L.Polyline | null = null;
 let schwojLetzter: L.CircleMarker | null = null;
@@ -634,7 +546,6 @@ export function entferneAnkerkreis(): void {
   ankerRandMarke?.remove(); ankerRandMarke = null;
 }
 
-
 function keineKarteAnzeigen(k: L.Map, behaelter: HTMLElement): () => void {
   const hinweis = document.createElement('div');
   hinweis.className = 'tb-keine-karte';
@@ -647,13 +558,13 @@ function keineKarteAnzeigen(k: L.Map, behaelter: HTMLElement): () => void {
   const pruefe = () => {
     const b = k.getBounds();
     const box = { swLat: b.getSouth(), swLon: b.getWest(), neLat: b.getNorth(), neLon: b.getEast() };
-    
+
     hinweis.hidden = !kartenIndexJetzt() ? false : bereiteZellen(box).length > 0;
   };
   let uhr = 0;
   k.on('movestart', () => { window.clearTimeout(uhr); });
   k.on('moveend', () => { window.clearTimeout(uhr); uhr = window.setTimeout(pruefe, 2500); });
-  
+
   window.setTimeout(pruefe, 8000);
   return pruefe;
 }

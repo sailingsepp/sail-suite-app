@@ -1,16 +1,10 @@
 import { mitNetzlage } from './netz';
 
-
-
-
 export const MAX_KACHELN = 2500;
-
 
 const GLEICHZEITIG = 4;
 
-
 const PAUSE_MS = 120;
-
 
 export const ZOOM_VON = 9;
 export const ZOOM_BIS = 13;
@@ -26,15 +20,11 @@ export interface Fortschritt {
   geladen: number;
   gesamt: number;
   fehlgeschlagen: number;
-  
+
   bytes: number;
 }
 
-
-
-
 const KACHEL_CACHE = 'trackbook-kacheln-v1';
-
 
 export async function vorladePlan(
   a: Ausschnitt, von = ZOOM_VON, bis = ZOOM_BIS,
@@ -51,17 +41,14 @@ export async function vorladePlan(
   }
 }
 
-
 export function kachelX(lon: number, z: number): number {
   return Math.floor(((lon + 180) / 360) * 2 ** z);
 }
-
 
 export function kachelY(lat: number, z: number): number {
   const r = (lat * Math.PI) / 180;
   return Math.floor(((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2) * 2 ** z);
 }
-
 
 export function kachelZahl(a: Ausschnitt, von = ZOOM_VON, bis = ZOOM_BIS): number {
   let summe = 0;
@@ -75,7 +62,6 @@ export function kachelZahl(a: Ausschnitt, von = ZOOM_VON, bis = ZOOM_BIS): numbe
   return summe;
 }
 
-
 export function kachelListe(a: Ausschnitt, von = ZOOM_VON, bis = ZOOM_BIS): string[] {
   const raus: string[] = [];
   for (let z = von; z <= bis; z++) {
@@ -85,7 +71,7 @@ export function kachelListe(a: Ausschnitt, von = ZOOM_VON, bis = ZOOM_BIS): stri
     const y2 = Math.max(kachelY(a.nord, z), kachelY(a.sued, z));
     for (let x = x1; x <= x2; x++) {
       for (let y = y1; y <= y2; y++) {
-        
+
         raus.push(`https://tiles.openseamap.org/seamark/${z}/${x}/${y}.png`);
       }
     }
@@ -95,11 +81,9 @@ export function kachelListe(a: Ausschnitt, von = ZOOM_VON, bis = ZOOM_BIS): stri
 
 let abbrechen = false;
 
-
 export function brichVorladenAb(): void {
   abbrechen = true;
 }
-
 
 export async function ladeRevierVor(
   liste: readonly string[],
@@ -112,10 +96,7 @@ export async function ladeRevierVor(
   for (let i = 0; i < liste.length && !abbrechen; i += GLEICHZEITIG) {
     await Promise.all(liste.slice(i, i + GLEICHZEITIG).map(async (url) => {
       try {
-        
-        
-        
-        
+
         let antwort: Response;
         try {
           antwort = await mitNetzlage(() => fetch(url, { mode: 'cors', cache: 'no-store' }));

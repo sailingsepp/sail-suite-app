@@ -12,21 +12,17 @@ import { fetchWindForPoints } from '@/data/openMeteo';
 import { MESSINA_ENGE, messinaPlaner, naivNachUtc, langsameFahrt } from '@/core/messinaStrom';
 import type { EngenDurchfahrt } from '@/core/ueberstellungsplan';
 
-
-
-
 export const WIND_PROBE_SM = 30;
-
 
 export const HALT_MAX_ABSTAND_SM = 50;
 
 export interface UeberstellungsAnfrage {
   start: { ort: Punkt; name: string };
   ziel: { ort: Punkt; name: string };
-  
+
   abfahrtIso: string;
   vorgaben: UeberstellungsVorgaben;
-  
+
   minSegelKn?: number;
 }
 
@@ -34,15 +30,13 @@ export interface UeberstellungsErgebnis {
   plan: UeberstellungsPlan | null;
   halte: UeberstellungsHalt[];
   weg: Punkt[];
-  
+
   wegGerade: boolean;
-  
+
   vorhersageBis: number | null;
 }
 
-
 const ENGE_ABSTAND_SM = 2;
-
 
 function punktBei(weg: readonly Punkt[], s: number): Punkt {
   let lauf = 0;
@@ -53,7 +47,6 @@ function punktBei(weg: readonly Punkt[], s: number): Punkt {
   }
   return weg[weg.length - 1]!;
 }
-
 
 function messinaEnge(weg: readonly Punkt[], startNaiv: number, fahrtKn: number): ((vonS: number, bisS: number, abfahrt: number) => EngenDurchfahrt | null) | null {
   const lage = aufDemWeg(MESSINA_ENGE, weg);
@@ -79,9 +72,8 @@ function messinaEnge(weg: readonly Punkt[], startNaiv: number, fahrtKn: number):
   };
 }
 
-
 async function holeWindProben(weg: readonly Punkt[]): Promise<WindProbe[] | null> {
-  
+
   const alle = sampleRoute([...weg], WIND_PROBE_SM);
   const punkte = alle.filter((p, i) => i === 0 || Math.floor(p.cum / WIND_PROBE_SM) > Math.floor(alle[i - 1]!.cum / WIND_PROBE_SM));
   const hole = () => fetchWindForPoints(punkte);
@@ -99,7 +91,6 @@ async function holeWindProben(weg: readonly Punkt[]): Promise<WindProbe[] | null
   }
 }
 
-
 export function naivAlsZeit(iso: string): number {
   const [d, z = '10:00'] = iso.split('T');
   const [j, m, t] = d!.split('-').map(Number);
@@ -107,21 +98,19 @@ export function naivAlsZeit(iso: string): number {
   return Date.UTC(j!, m! - 1, t!, h ?? 10, min ?? 0);
 }
 
-
 export const SEEWEG_RAENDER_SM = [150, 300, 450] as const;
-
 
 export async function suchSeeweg(von: Punkt, nach: Punkt): Promise<Punkt[] | null> {
   const { kuestenlinienRueckfall } = await import('@/data/kuestenlinienFallback');
   const { KUESTE_OSM_BOX: abdeckung } = await import('@/core/kuestenlinienOsm');
   for (const rand of SEEWEG_RAENDER_SM) {
-    
+
     const b = boxUm([von, nach], rand);
     const kueste = await kuestenlinienRueckfall(Math.max(b.swLat, abdeckung.s), Math.max(b.swLon, abdeckung.w),
       Math.min(b.neLat, abdeckung.n), Math.min(b.neLon, abdeckung.e));
     if (!kueste) return null;
     const weg = seeweg(von, nach, kueste, rand, 0.5, true);
-    
+
     if (weg) return wegOhneVtg(weg, kueste) ?? weg;
   }
   return null;
@@ -143,7 +132,7 @@ export async function rechneUeberstellung(a: UeberstellungsAnfrage): Promise<Ueb
     kandidaten.push({ name: k.name, ort: { lat: k.lat, lon: k.lon }, art: k.art, s: lage.s, abstandSm: lage.abstandSm });
   }
   kandidaten.sort((x, y) => x.s - y.s);
-  
+
   const ausgeduennt: UeberstellungsHalt[] = [];
   for (const k of kandidaten) {
     const vorige = ausgeduennt[ausgeduennt.length - 1];
@@ -159,7 +148,7 @@ export async function rechneUeberstellung(a: UeberstellungsAnfrage): Promise<Ueb
     ...ausgeduennt,
     { name: a.ziel.name, ort: a.ziel.ort, art: 'marina', s: L, abstandSm: 0 },
   ];
-  
+
   const proben = a.vorgaben.tankReichweiteSm != null && a.minSegelKn != null && gefunden ? await holeWindProben(weg) : null;
   const vorgaben: UeberstellungsVorgaben = proben
     ? { ...a.vorgaben, motoranteil: motoranteilAusWind(proben, a.vorgaben.fahrtKn, a.minSegelKn!) }
@@ -169,7 +158,6 @@ export async function rechneUeberstellung(a: UeberstellungsAnfrage): Promise<Ueb
   const vorhersageBis = proben ? Math.min(...proben.map((p) => p.zeit[p.zeit.length - 1] ?? 0)) : null;
   return { plan: planeUeberstellung(halte, naivAlsZeit(a.abfahrtIso), vorgaben), halte, weg, wegGerade: !gefunden, vorhersageBis };
 }
-
 
 export function wegStueck(weg: readonly Punkt[], von: number, bis: number): Punkt[] {
   const out: Punkt[] = [];

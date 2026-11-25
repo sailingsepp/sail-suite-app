@@ -7,8 +7,6 @@ import { XTE_AUF_KURS_SM, ANKUNFT_SM, type Gefahr, type NavRoute, type NavWegpun
 import { KONTUR, ROUTENFARBE, WERKZEUGFARBE } from './kartenfarben';
 import { schenkelMitte } from '@/core/routeBearbeiten';
 
-
-
 const ROT = '#E05A4F';
 const ZUKUNFT = 'tb-zukunft';
 
@@ -36,7 +34,7 @@ function karte(): L.Map | null {
   if (k && !ebene) {
     k.createPane(ROUTE_EBENE).style.zIndex = '395';
     if (!k.getPane(NAMEN_EBENE)) k.createPane(NAMEN_EBENE).style.zIndex = '650';
-    
+
     if (!k.getPane('tbMessText')) k.createPane('tbMessText').style.zIndex = '670';
     ebene = L.layerGroup().addTo(k);
     gefahrEbene = L.layerGroup().addTo(k);
@@ -47,7 +45,7 @@ function karte(): L.Map | null {
     mobEbene = L.layerGroup().addTo(k);
     griffEbene = L.layerGroup().addTo(k);
     k.on('click', (e: L.LeafletMouseEvent) => { if (klickArt === 'tipp') klick?.({ lat: e.latlng.lat, lon: e.latlng.lng }); });
-    
+
     k.on('zoomend', () => { if (zuletztRoute) zeichneAktiveRoute(zuletztRoute.route, zuletztRoute.boot); });
   }
   return k;
@@ -55,9 +53,7 @@ function karte(): L.Map | null {
 
 let zuletztRoute: { route: NavRoute; boot: Punkt | null } | null = null;
 
-
 const KORRIDOR_AB_PX = 18;
-
 
 function korridorPx(m: L.Map, lat: number): number {
   const meterJePx = (40_075_016.686 * Math.cos((lat * Math.PI) / 180)) / (256 * 2 ** m.getZoom());
@@ -66,8 +62,6 @@ function korridorPx(m: L.Map, lat: number): number {
 
 const ll = (p: Punkt): L.LatLngTuple => [p.lat, p.lon];
 
-
-
 export function setzeKartenklick(cb: ((p: Punkt) => void) | null, art: 'tipp' | 'punkt' = 'tipp'): void {
   const k = karte();
   klick = cb;
@@ -75,13 +69,11 @@ export function setzeKartenklick(cb: ((p: Punkt) => void) | null, art: 'tipp' | 
   k?.getContainer().classList.toggle('tb-nav-zielt', !!cb && art === 'punkt');
 }
 
-
 export function kartenLangDruck(p: Punkt): boolean {
   if (!klick || klickArt !== 'punkt') return false;
   klick(p);
   return true;
 }
-
 
 export function zeichneAktiveRoute(route: NavRoute | null, boot: Punkt | null): void {
   if (!karte() || !ebene) return;
@@ -94,15 +86,14 @@ export function zeichneAktiveRoute(route: NavRoute | null, boot: Punkt | null): 
     L.polyline(wp.slice(0, i).map(ll), { ...R, color: ROUTENFARBE, weight: 2, opacity: 0.45, dashArray: '4 6', className: `${ZUKUNFT} tb-route` }).addTo(ebene);
   }
   const rest = wp.slice(i - 1).map(ll);
-  
-  
+
   const breite = korridorPx(karte()!, wp[i]?.lat ?? wp[0]!.lat);
   if (breite >= KORRIDOR_AB_PX) {
     for (const [anteil, deckung] of [[1, 0.07], [0.75, 0.08]] as const) {
       L.polyline(rest, { ...R, color: ROUTENFARBE, weight: breite * anteil, opacity: deckung, lineCap: 'round', lineJoin: 'round', className: `${ZUKUNFT} tb-route-korridor` }).addTo(ebene);
     }
   }
-  
+
   L.polyline(rest, { ...R, color: KONTUR, weight: 9, opacity: 0.7, className: `${ZUKUNFT} tb-route-kontur` }).addTo(ebene);
   L.polyline(rest, { ...R, color: ROUTENFARBE, weight: 6, opacity: 0.95, className: `${ZUKUNFT} tb-route` }).addTo(ebene);
   wp.forEach((p, k) => {
@@ -114,7 +105,7 @@ export function zeichneAktiveRoute(route: NavRoute | null, boot: Punkt | null): 
       className: `${ZUKUNFT} ${aktiv ? 'tb-route-wp-aktiv' : 'tb-route-wp'}`,
     }).bindTooltip(escapeHtml(p.name), { className: 'tb-nav-tip', pane: NAMEN_EBENE, permanent: aktiv, ...(aktiv ? namensLage(wp, k, boot) : { direction: 'top' }) }).addTo(ebene!);
   });
-  
+
   const nw = wp[i];
   if (nw?.radiusSm !== undefined && nw.radiusSm > ANKUNFT_SM) {
     L.circle(ll(nw), { ...R, radius: nw.radiusSm * 1852, color: ROUTENFARBE, weight: 1.5, opacity: 0.8, fillOpacity: 0.06, dashArray: '4 4', className: `${ZUKUNFT} tb-route-kreis` }).addTo(ebene);
@@ -124,7 +115,6 @@ export function zeichneAktiveRoute(route: NavRoute | null, boot: Punkt | null): 
     L.polyline([ll(boot), ll(naechster)], { ...R, color: ROUTENFARBE, weight: 2, dashArray: '2 6', className: `${ZUKUNFT} tb-route` }).addTo(ebene);
   }
 }
-
 
 function namensLage(wp: readonly NavWegpunkt[], k: number, boot: Punkt | null) {
   const m = karte()!;
@@ -141,11 +131,10 @@ function namensLage(wp: readonly NavWegpunkt[], k: number, boot: Punkt | null) {
   return tooltipLage(freieRichtung(meiden), 10);
 }
 
-
 export function zeichnePlan(punkte: readonly NavWegpunkt[] | null): void {
   if (!karte() || !planEbene) return;
   planEbene.clearLayers();
-  
+
   if (punkte?.length === 1) {
     L.circleMarker(ll(punkte[0]!), { ...R, radius: 8, color: ROUTENFARBE, weight: 3, fillColor: '#FFFFFF', fillOpacity: 1, className: 'tb-route-wp' }).addTo(planEbene);
     return;
@@ -162,10 +151,9 @@ export interface GriffAktionen {
   einfuegen(nach: number, p: Punkt): void;
 }
 
-
 export function zeichneGriffe(punkte: readonly NavWegpunkt[] | null, fest: number, gewaehlt: number | null, a: GriffAktionen | null): void {
   if (!karte() || !griffEbene) return;
-  
+
   if (ziehtGerade) return;
   const schluessel = punkte && a ? `${fest}|${gewaehlt}|${punkte.map((q) => `${q.lat},${q.lon}`).join(';')}` : '';
   if (schluessel === griffSchluessel) return;
@@ -206,11 +194,10 @@ export function zeichneGefahren(gefahren: readonly Gefahr[], name: (g: Gefahr) =
   gefahrEbene.clearLayers();
   for (const g of gefahren) {
     L.circleMarker(ll(g), { radius: 8, color: ROT, weight: 2, fillColor: ROT, fillOpacity: 0.15 })
-      
+
       .bindTooltip(escapeHtml(name(g)), { direction: 'top', className: 'tb-nav-tip', pane: NAMEN_EBENE }).addTo(gefahrEbene);
   }
 }
-
 
 export function zeichneUntiefe(u: { lat: number; lon: number; text: string } | null): void {
   if (!karte() || !untiefeEbene) return;
@@ -222,22 +209,20 @@ export function zeichneUntiefe(u: { lat: number; lon: number; text: string } | n
   }).addTo(untiefeEbene);
 }
 
-
 export interface MessZiehen {
-  
+
   ersterFest: boolean;
-  
+
   text: (a: Punkt, b: Punkt) => string;
-  
+
   summe: (kette: readonly Punkt[]) => string;
-  
+
   beginn: () => void;
   gezogen: (i: number, p: Punkt, fertig: boolean) => void;
 }
 
 let messZieht = false;
 let messSchluessel = '';
-
 
 export function zeichneMessung(kette: readonly Punkt[], z: MessZiehen | null = null): void {
   if (!karte() || !messEbene || messZieht) return;
@@ -258,7 +243,7 @@ export function zeichneMessung(kette: readonly Punkt[], z: MessZiehen | null = n
   const etiketten = z ? punkte.slice(1).map((_, k) => L.marker(mitte(punkte[k]!, punkte[k + 1]!), {
     pane: 'tbMessText', interactive: false, keyboard: false, icon: textIcon(schenkelText(k)),
   }).addTo(messEbene!)) : [];
-  
+
   const summe = z && kette.length > 2
     ? L.marker(punkte.at(-1)!, { pane: 'tbMessText', interactive: false, keyboard: false, icon: textIcon(z.summe(kette), ' summe') }).addTo(messEbene)
     : null;
@@ -300,23 +285,21 @@ export function zeichneMob(mob: Punkt | null, boot: Punkt | null): void {
   }).addTo(mobEbene);
 }
 
-
 export function zeichneAnkerVorschau(mitte: Punkt | null, radiusM: number): void {
   if (!karte() || !ankerEbene) return;
   ankerEbene.clearLayers();
   if (mitte) L.circle(ll(mitte), { radius: radiusM, color: WERKZEUGFARBE, weight: 2, dashArray: '6 6', fill: false, interactive: false }).addTo(ankerEbene);
 }
 
-
 export function zeigePunkte(punkte: readonly Punkt[], untenPx = 0, linksPx = 0): void {
   const k = karte();
   if (!k || punkte.length < 1) return;
   karteNeuMessen();
   if (punkte.length === 1) { k.setView(ll(punkte[0]!), Math.max(k.getZoom(), 13), { animate: false }); return; }
-  
+
   const rand = sichtPolster(40);
   k.fitBounds(L.latLngBounds(punkte.map(ll)), {
-    
+
     paddingTopLeft: L.point(rand.x + linksPx, rand.y), paddingBottomRight: L.point(rand.x, rand.y + untenPx), maxZoom: 15, animate: false,
   });
 }

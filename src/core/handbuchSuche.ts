@@ -1,9 +1,7 @@
-
-
 export interface SeitenText {
-  
+
   handbuch: string;
-  
+
   seite: number;
   text: string;
 }
@@ -29,12 +27,12 @@ export interface Treffer {
   handbuch: string;
   seite: number;
   punkte: number;
-  
+
   abgedeckt: number;
-  
+
   begriffe: number;
   auszug: Ausschnitt[];
-  
+
   markiere: string[];
 }
 
@@ -44,7 +42,6 @@ export const GEWICHT = { gleich: 1, anfang: 0.85, stamm: 0.8, synonym: 0.75, ent
 export const NAEHE_WOERTER = 12;
 export const NAEHE_FAKTOR = 1.3;
 export const AUSZUG_ZEICHEN = 220;
-
 
 export function normalisiere(s: string): string {
   return s.toLowerCase().replace(/ß/g, 'ss').normalize('NFKD').replace(/\p{M}/gu, '');
@@ -56,13 +53,11 @@ function gueltig(w: string): boolean {
   return w.length >= 2 || /^\d$/.test(w);
 }
 
-
 export function woerter(text: string): string[] {
   const raus: string[] = [];
   for (const m of normalisiere(text).matchAll(WORT)) if (gueltig(m[0])) raus.push(m[0]);
   return raus;
 }
-
 
 export function seitenText(stuecke: ReadonlyArray<{ str?: string; hasEOL?: boolean }>): string {
   let t = '';
@@ -77,7 +72,6 @@ export function seitenText(stuecke: ReadonlyArray<{ str?: string; hasEOL?: boole
     .trim();
 }
 
-
 const FUELLWOERTER = new Set([
   'der', 'die', 'das', 'den', 'dem', 'des', 'ein', 'eine', 'einen', 'einem', 'einer', 'und', 'oder',
   'ist', 'im', 'in', 'am', 'an', 'auf', 'aus', 'mit', 'von', 'zu', 'zum', 'zur', 'fur', 'wie', 'was',
@@ -85,7 +79,6 @@ const FUELLWOERTER = new Set([
   'the', 'a', 'an', 'and', 'or', 'of', 'to', 'on', 'for', 'with', 'by', 'at', 'from', 'is', 'are', 'be',
   'how', 'what', 'do', 'does', 'can', 'my', 'your', 'it', 'this', 'that', 'into',
 ]);
-
 
 export const SYNONYME: readonly (readonly string[])[] = [
   ['kanal', 'channel'],
@@ -144,7 +137,6 @@ export const SYNONYME: readonly (readonly string[])[] = [
   ['position', 'standort', 'location'],
 ];
 
-
 export function stamm(w: string): string {
   for (const end of ['ungen', 'ung', 'en', 'er', 'es', 'e', 's', 'n']) {
     if (w.endsWith(end) && w.length - end.length >= 4) return w.slice(0, -end.length);
@@ -164,7 +156,6 @@ function synonymeVon(w: string): string[] {
   }
   return [...raus];
 }
-
 
 export function suchbegriffe(anfrage: string): string[] {
   const alle = woerter(anfrage);
@@ -192,7 +183,6 @@ export function baueIndex(seiten: readonly SeitenText[]): Suchindex {
   return { doks, woerter: index, mittelLaenge: doks.length ? summe / doks.length : 0 };
 }
 
-
 export function varianten(index: Suchindex, begriff: string): Map<string, number> {
   const raus = new Map<string, number>();
   const setze = (w: string, g: number) => { if ((raus.get(w) ?? 0) < g) raus.set(w, g); };
@@ -210,7 +200,7 @@ export function varianten(index: Suchindex, begriff: string): Map<string, number
 }
 
 export interface SuchOptionen {
-  
+
   handbuecher?: ReadonlySet<string>;
   max?: number;
 }
@@ -254,7 +244,6 @@ export function suche(index: Suchindex, anfrage: string, opt: SuchOptionen = {})
     (abgedeckt.get(b)! - abgedeckt.get(a)!) || (punkte.get(b)! - punkte.get(a)!) || (a - b);
   const kandidaten = [...punkte.keys()].sort(ordne);
 
-  
   if (begriffe.length > 1) {
     for (const d of kandidaten.slice(0, 80)) {
       if ((abgedeckt.get(d) ?? 0) < 2) continue;
@@ -278,7 +267,6 @@ export function suche(index: Suchindex, anfrage: string, opt: SuchOptionen = {})
   });
 }
 
-
 function naheBeieinander(ws: string[], jeBegriff: Map<string, number>[]): boolean {
   const zuBegriff = ws.map((w) => jeBegriff.findIndex((m) => m.has(w)));
   const vorhanden = new Set(zuBegriff.filter((i) => i >= 0));
@@ -298,7 +286,6 @@ function naheBeieinander(ws: string[], jeBegriff: Map<string, number>[]): boolea
   return false;
 }
 
-
 export function auszug(text: string, markiere: ReadonlySet<string>): Ausschnitt[] {
   const flach = text.replace(/\s+/g, ' ').trim();
   if (!flach) return [];
@@ -307,7 +294,7 @@ export function auszug(text: string, markiere: ReadonlySet<string>): Ausschnitt[
     const w = normalisiere(m[0]);
     stellen.push({ von: m.index!, bis: m.index! + m[0].length, treffer: markiere.has(w) });
   }
-  
+
   let bester = 0, besteZahl = -1;
   for (let i = 0; i < stellen.length; i++) {
     if (!stellen[i]!.treffer) continue;
@@ -320,7 +307,7 @@ export function auszug(text: string, markiere: ReadonlySet<string>): Ausschnitt[
   const mitte = besteZahl >= 0 ? stellen[bester]!.von : 0;
   let von = Math.max(0, mitte - Math.round(AUSZUG_ZEICHEN * 0.25));
   let bis = Math.min(flach.length, von + AUSZUG_ZEICHEN);
-  
+
   if (von > 0) { const l = flach.lastIndexOf(' ', von); von = l >= 0 ? l + 1 : 0; }
   if (bis < flach.length) { const r = flach.indexOf(' ', bis); bis = r >= 0 ? r : flach.length; }
 
@@ -345,12 +332,10 @@ export function auszug(text: string, markiere: ReadonlySet<string>): Ausschnitt[
   return raus;
 }
 
-
 export function ohneTextAnteil(seiten: readonly { text: string }[]): number {
   if (!seiten.length) return 1;
   return seiten.filter((s) => woerter(s.text).length < 5).length / seiten.length;
 }
-
 
 export function titelAusDateiname(name: string): string {
   return name.replace(/\.pdf$/i, '').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim() || name;

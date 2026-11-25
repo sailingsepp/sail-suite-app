@@ -13,10 +13,7 @@ import { schengenGrenze } from '@/core/grenzen';
 import { SCHLUESSEL } from '@/shell/speicherschluessel';
 import type { Zustand } from './aufzeichnung';
 
-
-
 const $ = (id: string) => document.getElementById(id);
-
 
 const PRUEF_TAKT_MS = 2 * 60_000;
 
@@ -31,7 +28,6 @@ let naechstePruefungAb = 0;
 let letzteWarnungMs = 0;
 
 let unterwegs = false;
-
 
 function liesZuletzt(): string | null {
   try { return localStorage.getItem(SCHLUESSEL.seegrenzeZuletzt) || null; } catch { return null; }
@@ -50,17 +46,15 @@ function merkeZuletzt(staat: string | null): void {
   try {
     if (staat) localStorage.setItem(SCHLUESSEL.seegrenzeZuletzt, staat);
   } catch {
-    
+
   }
 }
-
 
 function zoneAus(a: Awaited<ReturnType<typeof fetchSeegebiet>>): Zone | undefined {
   const staat = hoheitAusAntwort(a, hoheitsStaat);
   if (staat === undefined || !a) return undefined;
   return staat ? { staat, ...(a.hoheit ? { hoheit: a.hoheit } : {}) } : { staat: null, ...(a.awz ? { awz: a.awz } : {}), ...(istHoheSee(a) ? { hoheSee: true } : {}) };
 }
-
 
 async function zoneOhneNetz(lat: number, lon: number): Promise<Zone | undefined> {
   const h = await hoheitAusKacheln(lat, lon).catch(() => undefined);
@@ -69,7 +63,6 @@ async function zoneOhneNetz(lat: number, lon: number): Promise<Zone | undefined>
   const staat = hoheitsStaat(h.zone.name);
   return staat ? { staat, hoheit: h.zone.name } : undefined;
 }
-
 
 let hoheitGeladen: { lat: number; lon: number; t: number } | null = null;
 function ladeHoheitUm(pos: { lat: number; lon: number }): void {
@@ -82,15 +75,12 @@ function ladeHoheitUm(pos: { lat: number; lon: number }): void {
     .then((ok) => { if (!ok) hoheitGeladen = null; }).catch(() => { hoheitGeladen = null; });
 }
 
-
 export async function zoneAn(p: { lat: number; lon: number }): Promise<Zone | undefined> {
   const a = await fetchSeegebiet(p.lat, p.lon);
-  
-  
+
   if (!a) throw new Error('Marine Regions ohne Antwort');
   return zoneAus(a);
 }
-
 
 export function zonenText(z: Zone, en = aktuelleSprache() === 'en'): string {
   const name = (n: string) => (en ? n : eindeutschen(n));
@@ -98,7 +88,6 @@ export function zonenText(z: Zone, en = aktuelleSprache() === 'en'): string {
   if (z.hoheSee) return en ? 'high seas' : 'Hohe See';
   return `${en ? 'international waters' : 'internationale Gewässer'}${z.awz ? ` (${name(z.awz)})` : ''}`;
 }
-
 
 export function grenzLogText(von: Zone, nach: Zone): string {
   return `${aktuelleSprache() === 'en' ? 'Sea border' : 'Seegrenze'}: ${zonenText(von)} → ${zonenText(nach)}`;
@@ -109,7 +98,6 @@ let eintragen: ((e: Omit<LogEintrag, 'fahrt'>) => void) | null = null;
 let zuletztGeloggt: { schluessel: string; t: number } | null = null;
 const LOG_RUHE_MS = 30 * 60_000;
 
-
 export function loggeGrenze(von: Zone, nach: Zone, pos: { lat: number; lon: number }, t = Date.now()): void {
   const schluessel = `${von.staat ?? 'int'}>${nach.staat ?? 'int'}`;
   if (zuletztGeloggt && zuletztGeloggt.schluessel === schluessel && t - zuletztGeloggt.t < LOG_RUHE_MS) return;
@@ -117,14 +105,12 @@ export function loggeGrenze(von: Zone, nach: Zone, pos: { lat: number; lon: numb
   eintragen?.({ t, art: 'navigation', lat: pos.lat, lon: pos.lon, text: grenzLogText(von, nach) });
 }
 
-
 export function warneGrenzeVoraus(von: Zone, nach: Zone, minuten: number): void {
   letzteWarnungMs = Date.now();
   if (von.staat && !nach.staat) merkeVerlassen(von.staat);
   const bisher = von.staat ?? liesZuletzt();
   zeigeWarnung(von, nach, nach.staat && bisher ? schengenGrenze(bisher, nach.staat) : null, minuten);
 }
-
 
 let zoneZuletzt: Zone | null = null;
 
@@ -137,13 +123,10 @@ async function pruefeUndWarne(pos: { lat: number; lon: number }, cogDeg: number,
       fetchSeegebiet(pos.lat, pos.lon),
       fetchSeegebiet(vlat, vlon),
     ]);
-    
-    
-    
-    
+
     const zJetzt = jetzt ? zoneAus(jetzt) : await zoneOhneNetz(pos.lat, pos.lon);
     const zVoraus = voraus ? zoneAus(voraus) : await zoneOhneNetz(vlat, vlon);
-    
+
     if (zJetzt) {
       if (zoneZuletzt && (zoneZuletzt.staat ?? 'int') !== (zJetzt.staat ?? 'int')) loggeGrenze(zoneZuletzt, zJetzt, pos);
       zoneZuletzt = zJetzt;
@@ -155,7 +138,7 @@ async function pruefeUndWarne(pos: { lat: number; lon: number }, cogDeg: number,
     merkeZuletzt(urteil.zuletzt);
     if (!urteil.warnen || Date.now() - letzteWarnungMs < WARNUNG_ABSTAND_MS) return;
     if (urteil.art === 'verlassen' && staatJetzt) {
-      
+
       letzteWarnungMs = Date.now();
       merkeVerlassen(staatJetzt);
       zeigeWarnung(zJetzt, zVoraus, null);
@@ -163,13 +146,12 @@ async function pruefeUndWarne(pos: { lat: number; lon: number }, cogDeg: number,
     }
     if (!staatVoraus) return;
     letzteWarnungMs = Date.now();
-    
+
     zeigeWarnung(zJetzt, zVoraus, bisher ? schengenGrenze(bisher, staatVoraus) : null);
   } finally {
     unterwegs = false;
   }
 }
-
 
 export function pruefeSeegrenze(z: Zustand): void {
   if (unterwegs) return;
@@ -180,7 +162,6 @@ export function pruefeSeegrenze(z: Zustand): void {
   naechstePruefungAb = jetzt + PRUEF_TAKT_MS;
   void pruefeUndWarne(z.position, z.cog, z.sog);
 }
-
 
 function zeigeWarnung(von: Zone, nach: Zone, schengen: 'binnen' | 'aussen' | 'ohne' | null, minuten = VORLAUF_MIN): void {
   const textEl = $('tb-seegrenze-warnung-text');
@@ -199,7 +180,7 @@ function zeigeWarnung(von: Zone, nach: Zone, schengen: 'binnen' | 'aussen' | 'oh
   }
   $('tb-seegrenze-warnung')?.removeAttribute('hidden');
   modal?.beimOeffnen();
-  
+
   sage(grenzeText(zonenText(von, true), zonenText(nach, true), minuten, schengen), 'frage', 5 * 60_000);
 }
 
@@ -207,7 +188,6 @@ function schliesseWarnung(): void {
   $('tb-seegrenze-warnung')?.setAttribute('hidden', '');
   modal?.beimSchliessen();
 }
-
 
 export function initSeegrenze(eintrag?: (e: Omit<LogEintrag, 'fahrt'>) => void): void {
   eintragen = eintrag ?? null;

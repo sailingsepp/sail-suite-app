@@ -10,14 +10,9 @@ import { flaggeEingebettet } from './flaggen';
 import { LICHT, NOT, type Lichtfarbe } from './farben';
 import type { Sprache } from '@/core/types';
 
-
-
-
-
 export function windSee(sprache: Sprache): string {
   const t = tFuer(sprache);
-  
-  
+
   const foto = (stufe: number, name: string) => {
     const url = BEAUFORT_FOTOS[stufe];
     if (!url) return '<td></td>';
@@ -54,8 +49,6 @@ ${sprache === 'en' ? quelle(sprache, 'noaa_bft', 'metoffice', 'nws_seastate') : 
 ${sprache === 'en' ? quelle(sprache, 'wmo3700', 'wmofaq') : quelle(sprache, 'wmo3700', 'wmofaq', 'dewiki_douglas')}`;
 }
 
-
-
 interface Pf { defs: string; grau: string; akzent: string; text: string }
 
 function boot(x: number, y: number, kurs: number, art: 'sail' | 'power', windAus: number, weicht: boolean, label: string): string {
@@ -63,8 +56,8 @@ function boot(x: number, y: number, kurs: number, art: 'sail' | 'power', windAus
   const rumpf = 'M0 -20 C7 -12 8 -2 8 6 L7 16 L-7 16 L-8 6 C-8 -2 -7 -12 0 -20 Z';
   const teile = [`<path d="${rumpf}" fill="var(--bg)" stroke="${farbe}" stroke-width="2"/>`];
   if (art === 'sail') {
-    const rel = (((windAus - kurs) % 360) + 360) % 360; 
-    const seite = rel > 0 && rel < 180 ? -1 : 1; 
+    const rel = (((windAus - kurs) % 360) + 360) % 360;
+    const seite = rel > 0 && rel < 180 ? -1 : 1;
     teile.push(`<line x1="0" y1="-6" x2="${seite * 9}" y2="15" stroke="${farbe}" stroke-width="2.4" stroke-linecap="round"/>`);
     teile.push(`<circle cx="0" cy="-6" r="2" fill="${farbe}"/>`);
   } else {
@@ -80,14 +73,12 @@ function lagebild(inhalt: (p: Pf) => string, label: string, h = 190): string {
     + `<rect width="240" height="${h}" fill="var(--panel-2)"/>${inhalt(p)}</svg>`;
 }
 
-
 function sektor(cx: number, cy: number, r: number, a0: number, a1: number, fill: string, deckung: number): string {
   const [x0, y0] = aufKreis(cx, cy, r, a0);
   const [x1, y1] = aufKreis(cx, cy, r, a1);
   const gross = ((a1 - a0 + 360) % 360) > 180 ? 1 : 0;
   return `<path d="M${cx} ${cy} L${k(x0)} ${k(y0)} A${r} ${r} 0 ${gross} 1 ${k(x1)} ${k(y1)} Z" fill="${fill}" fill-opacity="${deckung}"/>`;
 }
-
 
 function kursgrenze(sprache: Sprache): string {
   const t = tFuer(sprache);
@@ -170,8 +161,6 @@ export function ausweichregeln(sprache: Sprache): string {
 </div>
 ${sprache === 'en' ? quelle(sprache, 'colregs') : quelle(sprache, 'kvr', 'kvr_text')}`;
 }
-
-
 
 const lc = (c: Lichtfarbe, text: string) => `<i class="kp-dot kp-fach" style="--c:${LICHT[c]}"></i>${text}`;
 
@@ -302,8 +291,6 @@ ${teile.join('\n')}
 ${sprache === 'en' ? quelle(sprache, 'colregs', 'kvr_text', 'seeschstro') : quelle(sprache, 'kvr', 'kvr_text', 'seeschstro')}`;
 }
 
-
-
 export function schallsignale(sprache: Sprache): string {
   const t = tFuer(sprache);
   const nebel: [string, string, string, string][] = sprache === 'en' ? [
@@ -361,8 +348,6 @@ export function schallsignale(sprache: Sprache): string {
 <div class="kp-tw"><table class="kp-data kp-schalltab"><thead><tr><th>${t('Signal', 'Signal')}</th><th>${t('Bedeutung', 'Meaning')}</th><th>${t('Regel', 'Rule')}</th></tr></thead><tbody>${mz}</tbody></table></div>
 ${sprache === 'en' ? quelle(sprache, 'colregs', 'kvr_text') : quelle(sprache, 'kvr', 'kvr_text')}`;
 }
-
-
 
 function ico(inhalt: string, label: string): string {
   return `<svg class="kp-ico" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="${esc(label)}">${inhalt}</svg>`;

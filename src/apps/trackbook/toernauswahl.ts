@@ -19,10 +19,7 @@ import { initUnterschrift, unterschriftLesen, leereUnterschrift } from './unters
 import { STRINGS } from './strings';
 import { funktionSchluessel } from '@/core/crewFunktion';
 
-
-
 const $ = (id: string) => document.getElementById(id);
-
 
 function feldZahl(v: number): string {
   return aktuelleSprache() === 'de' ? String(v).replace('.', ',') : String(v);
@@ -32,13 +29,9 @@ function wort(schluessel: string): string {
   return STRINGS[aktuelleSprache()][schluessel] ?? schluessel;
 }
 
-
-
 let toernModal: ModalHandle | null = null;
 let tankliste: Tankliste | null = null;
 let sigModal: ModalHandle | null = null;
-
-
 
 async function ladeUndZeigeAktiv(): Promise<void> {
   const keiner = $('tb-toern-keiner');
@@ -49,35 +42,25 @@ async function ladeUndZeigeAktiv(): Promise<void> {
   void zeigeLetztenBeendeten();
 
   const token = liesSitzungsToken();
-  
-  
+
   if (!token) return;
 
   const abfrage = await holeAktivenToern(token);
-  
-  
-  
-  
-  
+
   if (abfrage.lage !== 'geliefert' || !abfrage.toern) return;
 
   const serverToern = abfrage.toern;
   const echteCrew = await holeCrew(token, serverToern.id);
-  
-  
+
   const toern = (await aendereToern(serverToern.id,
     (bisherLokal) => baueLokalenToern(serverToern.id, serverToern, echteCrew, bisherLokal, true)))!;
   zeigeDetails(toern);
   aufToern(toern);
 }
 
-
 function crewEintragUebernehmen(m: CrewEintrag): CrewMitglied {
   const profil = m.profil;
-  
-  
-  
-  
+
   const vollesProfil = profil !== null && 'passnummer' in profil ? profil : null;
   const nachname = profil !== null && 'nachname' in profil ? profil.nachname : undefined;
   return {
@@ -89,11 +72,9 @@ function crewEintragUebernehmen(m: CrewEintrag): CrewMitglied {
   };
 }
 
-
 function crewMitVollemNamen(m: CrewMitglied): boolean {
   return Boolean(m.vorname && m.nachname);
 }
-
 
 function baueLokalenToern(
   serverId: string, echterToern: ToernZeile, echteCrew: CrewEintrag[] | null,
@@ -117,68 +98,50 @@ function baueLokalenToern(
   };
 }
 
-
 async function pruefeNochAktiv(vorhanden: Toern, token: string): Promise<boolean> {
   const abfrage = await holeAktivenToern(token);
   if (abfrage.lage !== 'geliefert') return true;
   if (abfrage.toern?.id === vorhanden.id) return true;
   const laufend = await laufendeFahrt();
   if (laufend && laufend.toern === vorhanden.id) {
-    
-    
-    
-    
-    
+
     const neu = abfrage.toern;
     if (!neu) return true;
     const paar = `${vorhanden.id}>${neu.id}`;
     if (wechselAbgelehnt.has(paar)) return true;
     const frage = wort('toern.wechselFrage').replace('{alt}', vorhanden.name).replace('{neu}', neu.name);
     if (!confirm(frage)) { wechselAbgelehnt.add(paar); return true; }
-    
-    
-    
+
     await beendeToern(vorhanden.id);
     location.reload();
     return false;
   }
   await beendeToern(vorhanden.id);
   aufToern(null);
-  
+
   void ladeUndZeigeAktiv();
   return false;
 }
 
-
 const wechselAbgelehnt = new Set<string>();
-
 
 async function aktualisiereLaufendenToernVomServer(vorhanden: Toern): Promise<void> {
   const token = liesSitzungsToken();
   if (!token) return;
-  
-  
-  
-  
-  
-  
+
   if (!(await pruefeNochAktiv(vorhanden, token))) return;
   const [echterToern, echteCrew] = await Promise.all([
     holeServerToern(token, vorhanden.id), holeCrew(token, vorhanden.id),
   ]);
   if (!echterToern) return;
-  
-  
+
   const toern = await aendereToern(vorhanden.id,
     (jetzt) => (jetzt ? baueLokalenToern(vorhanden.id, echterToern, echteCrew, jetzt) : null));
   if (!toern) return;
-  
-  
-  
+
   zeigeDetails(toern);
   aufToern(toern);
 }
-
 
 setInterval(() => {
   void aktuellerToern().then((t) => {
@@ -186,11 +149,7 @@ setInterval(() => {
   });
 }, 5 * 60_000);
 
-
-
-
 let angezeigteToernId: string | null = null;
-
 
 async function zeigeLetztenBeendeten(): Promise<void> {
   const knopf = $('btn-toern-letzter') as HTMLButtonElement | null;
@@ -203,8 +162,7 @@ async function zeigeLetztenBeendeten(): Promise<void> {
 }
 
 function zeigeDetails(t: Toern): void {
-  
-  
+
   if (angezeigteToernId !== null && angezeigteToernId !== t.id) return;
   angezeigteToernId = t.id;
   const keiner = $('tb-toern-keiner');
@@ -256,13 +214,11 @@ const zahl = (id: string): number | undefined => {
   return v && Number.isFinite(n) ? n : undefined;
 };
 
-
 function motorstundenLesen(t: Toern, anfang: number | undefined, jetzt: number | undefined): { reihe: Motorablesung[]; fehler: boolean } {
   const { reihe, fehler } = uebernehmeEingabe(t.motorstunden ?? [], anfang, jetzt, t.angelegt, t.beendet ?? Date.now());
   ($('t-motorstunden-fehler') as HTMLElement | null)?.toggleAttribute('hidden', !fehler);
   return { reihe, fehler };
 }
-
 
 let ungespeichert = false;
 
@@ -275,32 +231,27 @@ function speichereJetzt(): Promise<{ fehler: boolean }> {
   return lauf;
 }
 
-
 async function angezeigterToern(): Promise<Toern | null> {
   if (angezeigteToernId) return holeLokalenToern(angezeigteToernId).catch(() => null);
   return aktuellerToern();
 }
 
-
 function meldeWennLaufend(t: Toern): void {
   if (!t.beendet) aufToern(t);
 }
 
-
 async function speichereMotorstunden(): Promise<{ fehler: boolean }> {
-  
+
   const anfang = zahl('t-motorstunden');
   const jetztStand = zahl('t-motorstunden-jetzt');
   ungespeichert = false;
   const angezeigt = await angezeigterToern();
   if (!angezeigt) return { fehler: false };
-  
-  
-  
+
   const tank = tankliste?.lies();
   const dieselFehler = tank?.fehler ?? false;
   ($('t-diesel-fehler') as HTMLElement | null)?.toggleAttribute('hidden', !dieselFehler);
-  
+
   let motorFehler = false;
   const aktualisiert = await aendereToern(angezeigt.id, (t) => {
     if (!t) return null;
@@ -319,15 +270,13 @@ async function speichereMotorstunden(): Promise<{ fehler: boolean }> {
   if (!aktualisiert) return { fehler: false };
   meldeWennLaufend(aktualisiert);
   const fehler = motorFehler || dieselFehler;
-  
+
   if (fehler) ungespeichert = true;
-  
+
   const status = $('t-motor-status');
   if (status) status.textContent = fehler ? '' : wort('toern.gespeichert');
   return { fehler };
 }
-
-
 
 let unterschriften: { skipper?: string; bewerber?: string } = {};
 let sigRolle: 'skipper' | 'bewerber' = 'skipper';
@@ -367,10 +316,7 @@ async function speichereUnterschrift(bild: string): Promise<void> {
   sigModal?.beimSchliessen();
 }
 
-
-
 let aufToern: (t: Toern | null) => void = () => {};
-
 
 export function oeffneToernFenster(toernId?: string): void {
   const laden = toernId ? holeLokalenToern(toernId).catch(() => null) : aktuellerToern();
@@ -385,9 +331,8 @@ export function oeffneToernFenster(toernId?: string): void {
   });
 }
 
-
 async function schliesseToernFenster(): Promise<void> {
-  
+
   const details = $('tb-toern-details');
   if (laufendesSpeichern && (await laufendesSpeichern).fehler) return;
   if (ungespeichert && details && !details.hidden) {
@@ -400,7 +345,6 @@ async function schliesseToernFenster(): Promise<void> {
   angezeigteToernId = null;
   if (nochOhneAktiven) aufToern(null);
 }
-
 
 export async function initToernAuswahl(melde: (t: Toern | null) => void): Promise<Toern | null> {
   aufToern = melde;
@@ -423,8 +367,7 @@ export async function initToernAuswahl(melde: (t: Toern | null) => void): Promis
   });
   $('btn-toern-fertig')?.addEventListener('click', () => void schliesseToernFenster());
   $('btn-motorstunden-speichern')?.addEventListener('click', () => void speichereJetzt());
-  
-  
+
   const eingaben = (z: EventTarget | null) => z instanceof HTMLInputElement
     && (z.id === 't-motorstunden' || z.id === 't-motorstunden-jetzt' || Boolean(z.closest('#t-tankliste')));
   const details = $('tb-toern-details');
@@ -453,16 +396,12 @@ export async function initToernAuswahl(melde: (t: Toern | null) => void): Promis
   });
 
   const vorhanden = await aktuellerToern();
-  
-  
+
   if (!vorhanden) oeffneToernFenster();
   else {
-    
-    
-    
-    
+
     melde(vorhanden);
-    
+
     void aktualisiereLaufendenToernVomServer(vorhanden);
   }
   return vorhanden;

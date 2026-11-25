@@ -1,4 +1,3 @@
-
 import { vorherrschendeWindrichtung, type Windprobe } from './ausrichtung';
 import { nDate, localDateStr } from './time';
 import type { StundenWind, Tageslicht } from './types';
@@ -7,7 +6,6 @@ export interface Nachtfenster {
   von: Date;
   bis: Date;
 }
-
 
 export function nachtfenster(ankunft: Date, tageslicht: Tageslicht): Nachtfenster {
   const heuteIdx = tageslicht.time.indexOf(localDateStr(ankunft));
@@ -18,9 +16,8 @@ export function nachtfenster(ankunft: Date, tageslicht: Tageslicht): Nachtfenste
     const sunrise = nDate(tageslicht.sunrise[i]!);
     if (sunrise.getTime() > von.getTime()) return { von, bis: sunrise };
   }
-  return { von, bis: new Date(von.getTime() + 10 * 3600_000) }; 
+  return { von, bis: new Date(von.getTime() + 10 * 3600_000) };
 }
-
 
 export function nachtwindRichtung(hourly: StundenWind, fenster: Nachtfenster): number | null {
   const proben: Windprobe[] = [];

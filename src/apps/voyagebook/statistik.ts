@@ -33,8 +33,6 @@ import { lateinisch } from '@/core/umschrift';
 import { holeCrewFotos, holeCrewFotoBlob } from '@/data/crewFotos';
 import { fotoOrtText } from '@/core/standortName';
 
-
-
 const $ = (id: string) => document.getElementById(id);
 function wort(schluessel: string, werte?: Record<string, string>): string {
   let text = STRINGS[aktuelleSprache()][schluessel] ?? schluessel;
@@ -45,7 +43,6 @@ function wort(schluessel: string, werte?: Record<string, string>): string {
 const sm = () => (aktuelleSprache() === 'en' ? 'NM' : 'sm');
 
 const nf = (x: number, d: number): string => nfRoh(x, d, aktuelleSprache());
-
 
 function antriebZeile(e: { nm: number; segel: Anteil; motor: Anteil; offen: Anteil }): string | null {
   if (e.nm <= 0.05) return null;
@@ -64,7 +61,6 @@ function dauer(sekunden: number): string {
   return h > 0 ? `${h}:${String(m).padStart(2, '0')} h` : `${m}:${String(s % 60).padStart(2, '0')} min`;
 }
 
-
 function crewFuerPdf(crew: CrewEintrag[]): CrewMitglied[] {
   return crew
     .map((m) => {
@@ -76,7 +72,6 @@ function crewFuerPdf(crew: CrewEintrag[]): CrewMitglied[] {
     .filter((m) => m.vorname && m.nachname);
 }
 
-
 function startUndEnde(
   toern: ToernZeile, etappen: { vonOrt?: string; nachOrt?: string }[],
 ): { startpunkt?: string; endpunkt?: string } {
@@ -84,7 +79,6 @@ function startUndEnde(
   const ende = lateinisch(etappen[etappen.length - 1]?.nachOrt ?? toern.rueckgabe_hafen?.name);
   return { ...(start ? { startpunkt: start } : {}), ...(ende ? { endpunkt: ende } : {}) };
 }
-
 
 function crewFuerBericht(crew: CrewEintrag[]): CrewMitglied[] {
   return crew
@@ -96,7 +90,6 @@ function crewFuerBericht(crew: CrewEintrag[]): CrewMitglied[] {
     })
     .filter((m) => m.vorname || m.nachname);
 }
-
 
 function toernFuerPdf(
   toern: ToernZeile, crew: CrewEintrag[], lokal: LokalerToern | null, motor: Motordaten | null,
@@ -112,15 +105,13 @@ function toernFuerPdf(
   if (toern.von) raus.von = toern.von;
   if (toern.bis) raus.bis = toern.bis;
   if (lokal?.unterschriften) raus.unterschriften = lokal.unterschriften;
-  
-  
+
   const stunden = motor?.motorstunden.length ? motor.motorstunden : lokal?.motorstunden;
   if (stunden?.length) raus.motorstunden = stunden;
   const liter = motor?.dieselGetanktL ?? lokal?.dieselGetanktL;
   if (liter !== undefined && liter !== null) raus.dieselGetanktL = liter;
   return raus;
 }
-
 
 function mitSpurAufbauen(quellen: FahrtPayload[]): FahrtMitSpur[] {
   const raus: FahrtMitSpur[] = [];
@@ -139,9 +130,7 @@ function mitSpurAufbauen(quellen: FahrtPayload[]): FahrtMitSpur[] {
   return raus;
 }
 
-
 let lauf = 0;
-
 
 type VomServer = Map<string, GeholteSpur>;
 
@@ -155,7 +144,6 @@ function kandidatAus(q: FahrtPayload): Kandidat {
   return { fahrtId: q.fahrt.id, lokal: true, anzahl: q.fixe.length, beginn, ende };
 }
 
-
 async function fremdeBilder(token: string, g: GeholteSpur): Promise<{ id: string; blob: Blob }[]> {
   const raus: { id: string; blob: Blob }[] = [];
   for (const b of g.bilder) {
@@ -165,16 +153,13 @@ async function fremdeBilder(token: string, g: GeholteSpur): Promise<{ id: string
   return raus;
 }
 
-
 export async function ladeStatistik(token: string, toern: ToernZeile): Promise<void> {
   const ziel = $('vb-statistik');
   if (!ziel) return;
   const meinLauf = ++lauf;
   ziel.innerHTML = '';
   delete ziel.dataset['kurz'];
-  
-  
-  
+
   ziel.className = 'vb-hinweis';
 
   let fahrten: Fahrt[] = [];
@@ -182,8 +167,7 @@ export async function ladeStatistik(token: string, toern: ToernZeile): Promise<v
   let lokalerToern: LokalerToern | null = null;
   if (speicherVerfuegbar()) {
     try {
-      
-      
+
       await ordneEtappenToernZu().catch(() => 0);
       fahrten = await fahrtenZuToern(toern.id);
       quellen = await Promise.all(fahrten.map((f) => baueFahrtPayload(f)));
@@ -239,18 +223,14 @@ async function ergaenzeVomServer(
     vomServer.set(g.payload.fahrt.id, g);
   }
   quellen.sort((a, b) => a.fahrt.begonnen - b.fahrt.begonnen);
-  
-  
+
   const gleich = !vomServer.size && quellen.length === lokal.length
     && (motor?.dieselGetanktL ?? null) === (lokalMotor?.dieselGetanktL ?? null);
   if (gleich && lokalGezeichnet) return;
   if (!zeichne(ziel, token, toern, quellen, vomServer, lokalerToern, motor)) keineDaten();
 }
 
-
-
 let letzteQuellen: FahrtPayload[] = [];
-
 
 export function spurPositionUm(t: number): { lat: number; lon: number } | null {
   const RAND = 10 * 60_000;
@@ -268,11 +248,9 @@ export function spurPositionUm(t: number): { lat: number; lon: number } | null {
   return null;
 }
 
-
 export function revierZone(): string {
   return letzteQuellen.find((q) => q.fahrt.zeitzone)?.fahrt.zeitzone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
-
 
 export function tagIn(t: number, zone: string): string {
   try {
@@ -294,36 +272,31 @@ function zeichne(
   const fahrten = quellen.map((q) => q.fahrt);
   ziel.innerHTML = '';
   ziel.className = '';
-  
+
   const teile = [`${nf(b.nm, 1)} ${sm()}`,
     wort(b.fahrtage === 1 ? 'statistik.kurzTag' : 'statistik.kurzTage', { n: String(b.fahrtage) })];
   if (b.nm > 0.05) teile.push(wort('statistik.kurzSegel', { p: nf(b.segel.prozent, 0) }));
   ziel.dataset['kurz'] = `${teile.join(' · ')}: ${wort('statistik.kurzDetails')}`;
   const fahrtenNachId = new Map(fahrten.map((f) => [f.id, f]));
   const quellenNachId = new Map(quellen.map((q) => [q.fahrt.id, q]));
-  
-  
+
   const fahrtag = fahrtagNummern(b.etappen, (b.tageOhneAufzeichnung ?? []).map((t) => t.tag));
 
-  
   const tagesEingabe = async (
     fahrt: Fahrt, indizes: number[], lokal: LokalerToern | null,
   ): Promise<TagesblattEingabe> => {
     const quelle = quellenNachId.get(fahrt.id);
     if (!quelle) throw new Error('Fahrt fehlt');
     const { fixe, eintraege, orte } = quelle;
-    
-    
-    
+
     const fern = vomServer.get(fahrt.id);
     const bilder = fern
       ? await bilderFuerBlatt(fahrt.id, await fremdeBilder(token, fern))
       : await bilderFuerBlatt(fahrt.id);
-    
-    
+
     const karte = await kartenbild(fixe, KARTE_PX.breite, KARTE_PX.hoehe).catch(() => null);
     const erste = b.etappen[indizes[0]!]!;
-    
+
     const zone = fahrt.zeitzone ?? revierZone();
     const tag = tagIn(erste.von, zone);
     const liste = (await holeCrewFotos(token, toern.id)) ?? [];
@@ -337,7 +310,7 @@ function zeichne(
     const crewFotos = heute.flatMap((f) => {
       const g = gedruckt.get(f.id);
       if (!g) return [];
-      
+
       const ortText = fotoOrtText(f, sprache);
       const ort = ortText ? lateinisch(ortText) : null;
       const von = f.von ? `${f.von.vorname} ${f.von.nachname}`.trim() : null;
@@ -361,11 +334,9 @@ function zeichne(
   status.setAttribute('role', 'status');
   status.setAttribute('aria-live', 'polite');
 
-  
   const kacheln = document.createElement('div');
   kacheln.className = 'vb-bilanz';
-  
-  
+
   const werte: [string, string][] = [
     [wort('statistik.strecke'), `${nf(b.nm, 1)} ${sm()}`],
     [wort('statistik.fahrtage'), String(b.fahrtage)],
@@ -374,10 +345,7 @@ function zeichne(
     [wort('statistik.fahrzeit'), dauer(b.fahrzeitS)],
     [wort('statistik.schnitt'), nf(durchschnittKn(b), 1) + ' kn'],
   ];
-  
-  
-  
-  
+
   if (b.nm > 0.05) {
     werte.push(
       [wort('statistik.segel'), `${nf(b.segel.nm, 1)} ${sm()} (${nf(b.segel.prozent, 0)} %)`],
@@ -387,8 +355,7 @@ function zeichne(
       werte.push([wort('statistik.offen'), `${nf(b.offen.nm, 1)} ${sm()} (${nf(b.offen.prozent, 0)} %)`]);
     }
   }
-  
-  
+
   const liter = motor?.dieselGetanktL ?? undefined;
   const jeStunde = dieselJeStunde(liter, b.motor.stunden);
   if (liter !== undefined && jeStunde !== null) {
@@ -410,7 +377,6 @@ function zeichne(
   }
   ziel.appendChild(kacheln);
 
-  
   const aktionen = document.createElement('div');
   aktionen.className = 'vb-aktionen';
   const meilenKnopf = document.createElement('button');
@@ -418,7 +384,7 @@ function zeichne(
   meilenKnopf.className = 'btn';
   meilenKnopf.innerHTML = icon('dokument') + wort('statistik.meilennachweis');
   meilenKnopf.addEventListener('click', () => {
-    
+
     const tab = pdfZiel(wort('statistik.pdfLaedt'));
     void (async () => {
       status.textContent = wort('statistik.pdfLaedt');
@@ -428,7 +394,7 @@ function zeichne(
         ]);
         const blob = await toernblatt({
           toern: toernFuerPdf(toern, crew ?? [], lokal, motor), bilanz: b, sprache: aktuelleSprache(),
-          
+
           ...(fahrten.find((f) => f.zeitzone)?.zeitzone ? { zeitzone: fahrten.find((f) => f.zeitzone)!.zeitzone! } : {}),
         });
         await biete(blob, pdfDateiname('nachweis', toern.name, aktuelleSprache(), { von: toern.von ?? null, bis: toern.bis ?? null }), tab);
@@ -441,14 +407,12 @@ function zeichne(
   });
   aktionen.appendChild(meilenKnopf);
 
-  
-  
   if (toernAbgeschlossen(toern)) {
     const berichtKnopf = document.createElement('button');
     berichtKnopf.type = 'button';
     berichtKnopf.className = 'btn';
     berichtKnopf.innerHTML = icon('dokument') + wort('statistik.toernbericht');
-    
+
     const baueBericht = async (): Promise<Blob> => {
           const [crew, lokal] = await Promise.all([
             holeCrew(token, toern.id), holeLokalenToern(toern.id).catch(() => null),
@@ -456,13 +420,11 @@ function zeichne(
           const gruppen = etappenJeFahrt(b.etappen).filter((g) => fahrtenNachId.has(g.fahrt));
           const tage: TagesblattEingabe[] = [];
           for (const [k, g] of gruppen.entries()) {
-            
-            
+
             status.textContent = wort('statistik.berichtFortschritt', { n: String(k + 1), von: String(gruppen.length) });
             tage.push(await tagesEingabe(fahrtenNachId.get(g.fahrt)!, g.indizes, lokal));
           }
-          
-          
+
           status.textContent = wort('statistik.gewaesser');
           const punkte = stichprobe(tage.map((t) => t.fixe));
           const gebiete: (Awaited<ReturnType<typeof fetchSeegebiet>>)[] = [];
@@ -472,8 +434,7 @@ function zeichne(
           const gewaesser = gewaesserStaaten(gebiete, aktuelleSprache());
           status.textContent = wort('statistik.pdfLaedt');
           const alleFixe = tage.flatMap((t) => t.fixe);
-          
-          
+
           const schiffFoto = await fetch(schiffFotoUrl(toern.id), { signal: AbortSignal.timeout(15_000) })
             .then(async (r) => (r.ok ? (await bilderFuerBlatt('schiff', [{ id: 'schiff', blob: await r.blob() }]))[0] : undefined))
             .catch(() => undefined);
@@ -510,9 +471,6 @@ function zeichne(
     });
     aktionen.appendChild(berichtKnopf);
 
-    
-    
-    
     if (toern.besitzer === liesEigeneNutzerId()) {
       const sendeKnopf = document.createElement('button');
       sendeKnopf.type = 'button';
@@ -556,7 +514,6 @@ function zeichne(
   ziel.appendChild(aktionen);
   ziel.appendChild(status);
 
-  
   const h4 = document.createElement('h4');
   h4.textContent = wort('statistik.etappen');
   ziel.appendChild(h4);
@@ -573,8 +530,6 @@ function zeichne(
     zahlen.textContent = `${nf(e.nm, 1)} ${sm()} · ${dauer(e.fahrzeitS)}`;
     li.append(kopf, zahlen);
 
-    
-    
     const antrieb = antriebZeile(e);
     if (antrieb) {
       const az = document.createElement('div');
@@ -634,8 +589,6 @@ function zeichne(
     ziel.appendChild(l);
   }
 
-  
-  
   if (vomServer.size) {
     const h = document.createElement('p');
     h.className = 'vb-luecken';

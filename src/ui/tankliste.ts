@@ -4,8 +4,6 @@ import { summeLiter, sortiereTankvorgaenge, verbrauchJeIntervall, ORT_MAX, MAX_T
 import { VERBRAUCH_MIN_STUNDEN } from '@/core/dieselverbrauch';
 import './tankliste.css';
 
-
-
 const TEXTE: Record<Sprache, Record<string, string>> = {
   de: {
     titel: 'Tankvorgänge', datum: 'Datum', liter: 'Liter', ort: 'Tankstelle oder Hafen', stand: 'Motorstunden',
@@ -21,11 +19,9 @@ const TEXTE: Record<Sprache, Record<string, string>> = {
   },
 };
 
-
 function feldZahl(n: number, sprache: Sprache): string {
   return sprache === 'de' ? String(n).replace('.', ',') : String(n);
 }
-
 
 export function leseLiter(roh: string): number | undefined {
   const t = roh.trim().replace(/\s*(l|ltr|liter|litre|liters|litres)\.?$/i, '');
@@ -33,13 +29,11 @@ export function leseLiter(roh: string): number | undefined {
   return t && Number.isFinite(n) ? n : undefined;
 }
 
-
 function heute(): string {
   const d = new Date();
   const zwei = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${zwei(d.getMonth() + 1)}-${zwei(d.getDate())}`;
 }
-
 
 function position(): Promise<{ lat: number; lon: number } | null> {
   return new Promise((fertig) => {
@@ -51,7 +45,6 @@ function position(): Promise<{ lat: number; lon: number } | null> {
     );
   });
 }
-
 
 async function ortHier(sprache: Sprache): Promise<string | null> {
   const p = await position();
@@ -65,11 +58,11 @@ async function ortHier(sprache: Sprache): Promise<string | null> {
 }
 
 export interface Tankliste {
-  
+
   setze(vorgaenge: readonly Tankvorgang[]): void;
-  
+
   lies(): { vorgaenge: Tankvorgang[]; fehler: boolean };
-  
+
   sperre(gesperrt: boolean): void;
 }
 
@@ -107,13 +100,12 @@ export function baueTankliste(behaelter: HTMLElement, sprache: () => Sprache, id
     zeigeVerbrauch();
   }
 
-  
   function zeigeVerbrauch(): void {
     const reihe = [...zeilen.querySelectorAll<HTMLElement>('.tank-zeile')];
     const daten = reihe.map(zeilenWert);
     const gueltig = daten.map((d, i) => ({ d, i })).filter((x): x is { d: Tankvorgang; i: number } => x.d !== null);
     const werte = verbrauchJeIntervall(gueltig.map((x) => x.d), VERBRAUCH_MIN_STUNDEN);
-    
+
     const geordnet = sortiereTankvorgaenge(gueltig.map((x) => x.d));
     for (const z of reihe) z.querySelector('.tank-verbrauch')?.remove();
     geordnet.forEach((v, k) => {
@@ -129,7 +121,6 @@ export function baueTankliste(behaelter: HTMLElement, sprache: () => Sprache, id
     });
   }
 
-  
   function zeilenWert(z: HTMLElement): Tankvorgang | null {
     const wert = (art: string): string => (z.querySelector<HTMLInputElement>(`[data-tank="${art}"]`)?.value ?? '').trim();
     const roh = { datum: wert('datum'), liter: wert('liter'), ort: wert('ort'), stand: wert('stand') };
@@ -172,10 +163,7 @@ export function baueTankliste(behaelter: HTMLElement, sprache: () => Sprache, id
       ort.value = v.ort ?? '';
       stand.value = typeof v.motorstand === 'number' ? feldZahl(v.motorstand, sprache()) : '';
     } else {
-      
-      
-      
-      
+
       let vorbelegt = false;
       const vorbelegen = (): void => {
         if (vorbelegt || gesperrt) return;
@@ -186,10 +174,10 @@ export function baueTankliste(behaelter: HTMLElement, sprache: () => Sprache, id
         ort.placeholder = t('ortSucht');
         void ortHier(sprache()).then((name) => {
           ort.placeholder = platzhalter;
-          
+
           if (name && !ort.value) {
             ort.value = name.slice(0, ORT_MAX);
-            
+
             ort.dispatchEvent(new Event('input', { bubbles: true }));
             ort.dispatchEvent(new Event('change', { bubbles: true }));
           }
@@ -216,8 +204,7 @@ export function baueTankliste(behaelter: HTMLElement, sprache: () => Sprache, id
     const vorgaenge: Tankvorgang[] = [];
     let fehler = false;
     for (const z of zeilen.querySelectorAll<HTMLElement>('.tank-zeile')) {
-      
-      
+
       if (!(z.querySelector<HTMLInputElement>('[data-tank="liter"]')?.value ?? '').trim()) continue;
       const v = zeilenWert(z);
       if (!v) {

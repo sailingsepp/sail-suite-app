@@ -1,6 +1,3 @@
-
-
-
 export const KUESTENSTREIFEN_KM = 20;
 
 export const SCHICHTEN_M = [100, 200, 400, 700, 1000, 1500] as const;
@@ -10,13 +7,11 @@ export const FLACH = 180;
 export const SCHICHT_SCHRITT = 36;
 export const HOEHE_FAKTOR = 100_000;
 
-
 export function schichtIndex(hoeheM: number): number {
   let k = 0;
   while (k < SCHICHTEN_M.length && hoeheM >= SCHICHTEN_M[k]!) k++;
   return k;
 }
-
 
 export function streifenMaske(meer: Uint8Array, w: number, h: number, dxM: number, dyM: number, maxM: number): Uint8Array {
   const d = new Float32Array(w * h);
@@ -53,7 +48,6 @@ export function streifenMaske(meer: Uint8Array, w: number, h: number, dxM: numbe
   return aus;
 }
 
-
 export function linienFuerZoom(z: number): { abstand: number; zaehl: number } | null {
   if (z >= 13) return { abstand: 20, zaehl: 100 };
   if (z >= 12) return { abstand: 50, zaehl: 250 };
@@ -61,6 +55,7 @@ export function linienFuerZoom(z: number): { abstand: number; zaehl: number } | 
   return null;
 }
 
+export const HOEHEN_GLAETTEN_MAX_M = [8, 4] as const;
 
 export type HoehenLinie = number[];
 
@@ -85,13 +80,11 @@ export function dekodiereLinie(l: readonly number[], faktor = HOEHE_FAKTOR): { h
   return { hoeheM: l[0]!, p };
 }
 
-
 export interface ReliefFarben {
   schichten: readonly (readonly [number, number, number, number])[];
   schatten: readonly [number, number, number]; schattenMax: number;
   licht: readonly [number, number, number]; lichtMax: number;
 }
-
 
 export const RELIEF_TAG: ReliefFarben = {
   schichten: [[0, 0, 0, 0], [160, 140, 110, 0.08], [160, 140, 110, 0.15], [150, 125, 95, 0.22], [140, 115, 85, 0.29], [130, 105, 75, 0.36], [120, 95, 65, 0.43]],
@@ -104,7 +97,6 @@ export const RELIEF_NACHT: ReliefFarben = {
   schatten: [0, 0, 0], schattenMax: 0.6,
   licht: [196, 68, 44], lichtMax: 0.11,
 };
-
 
 export function reliefPunkt(rot: number, gruen: number, f: ReliefFarben, aus: Uint8ClampedArray, o: number): void {
   const s = f.schichten[Math.min(f.schichten.length - 1, Math.max(0, Math.round(gruen / SCHICHT_SCHRITT)))]!;

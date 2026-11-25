@@ -1,32 +1,25 @@
-
-
-
-
-
-
-
 export interface GezeitenStation {
   id: string;
   name: string;
-  
+
   land: string;
   lat: number;
   lon: number;
-  
+
   zeitzone: string;
-  
+
   datum: { hat: number; mhhw: number | null; mhw: number | null; mlw: number | null; mllw: number | null; lat: number };
   lizenz: string;
-  
+
   kommerziell: boolean;
   namensnennung: string;
-  
+
   epoche: [string | null, string | null];
-  
+
   guete: number | null;
-  
+
   komponenten: [string, number, number][];
-  
+
   versatzMin?: number;
 }
 

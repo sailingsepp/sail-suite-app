@@ -2,10 +2,8 @@ import L from 'leaflet';
 import { nf } from '@/core/time';
 import { aktuelleSprache, aufSprachwechsel } from '@/shell/sprache';
 
-
 const SM_IN_M = 1852;
 const MAX_BREITE_PX = 90;
-
 
 function rundeSkala(maxWert: number): number {
   if (maxWert <= 0) return 0;
@@ -19,9 +17,7 @@ function rundeSkala(maxWert: number): number {
 export function addScaleControl(map: L.Map): void {
   const ScaleControl = L.Control.extend({
     onAdd(): HTMLElement {
-      
-      
-      
+
       const wrapper = L.DomUtil.create('div', 'leaflet-control scale-line');
       wrapper.innerHTML = '<div class="scale-label"></div>'
         + '<div class="scale-bar"><span class="scale-tick links"></span><span class="scale-strich"></span><span class="scale-tick rechts"></span></div>';
@@ -43,8 +39,6 @@ export function addScaleControl(map: L.Map): void {
         label.textContent = `${nf(sm, nachkomma, sprache)} ${sprache === 'en' ? 'NM' : 'sm'}`;
       }
 
-      
-      
       map.on('zoom move', update);
       aufSprachwechsel(update);
       update();

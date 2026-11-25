@@ -1,7 +1,4 @@
-
-
 export const KACHEL_PX = 256;
-
 
 export function weltPx(lat: number, lon: number, z: number): { x: number; y: number } {
   const n = KACHEL_PX * 2 ** z;
@@ -14,13 +11,12 @@ export function weltPx(lat: number, lon: number, z: number): { x: number; y: num
 
 export interface Ausschnitt {
   z: number;
-  
+
   x0: number;
   y0: number;
   breitePx: number;
   hoehePx: number;
 }
-
 
 export function waehleAusschnitt(
   punkte: readonly { lat: number; lon: number }[],
@@ -42,7 +38,6 @@ export function waehleAusschnitt(
   return { z, x0: mx - breitePx / 2, y0: my - hoehePx / 2, breitePx, hoehePx };
 }
 
-
 export function kachelnFuer(a: Ausschnitt): { x: number; y: number; z: number; dx: number; dy: number }[] {
   const n = 2 ** a.z;
   const raus: { x: number; y: number; z: number; dx: number; dy: number }[] = [];
@@ -51,14 +46,13 @@ export function kachelnFuer(a: Ausschnitt): { x: number; y: number; z: number; d
   for (let ky = ky0; ky <= ky1; ky++) {
     if (ky < 0 || ky >= n) continue;
     for (let kx = kx0; kx <= kx1; kx++) {
-      
+
       const x = ((kx % n) + n) % n;
       raus.push({ x, y: ky, z: a.z, dx: kx * KACHEL_PX - a.x0, dy: ky * KACHEL_PX - a.y0 });
     }
   }
   return raus;
 }
-
 
 export function imBild(a: Ausschnitt, lat: number, lon: number): { x: number; y: number } {
   const w = weltPx(lat, lon, a.z);

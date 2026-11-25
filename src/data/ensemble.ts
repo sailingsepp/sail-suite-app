@@ -1,13 +1,10 @@
-
-
 const TAGE_MAX = 6;
 
 export interface WindEnsemble {
   time: string[];
-  
+
   mitglieder: (number | null)[][];
 }
-
 
 export async function fetchWindEnsemble(lat: number, lon: number, tage: number): Promise<WindEnsemble | null> {
   const url = 'https://ensemble-api.open-meteo.com/v1/ensemble'

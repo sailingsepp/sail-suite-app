@@ -1,6 +1,5 @@
 import type { Punkt } from '@/core/types';
 
-
 export function parseGpx(xml: string): Punkt[] {
   const doc = new DOMParser().parseFromString(xml, 'application/xml');
   if (doc.querySelector('parsererror')) throw new Error('Die Datei ist kein gültiges GPX/XML.');
@@ -16,7 +15,6 @@ export function parseGpx(xml: string): Punkt[] {
   if (pts.length < 2) throw new Error('In der Datei wurde keine Route mit mindestens zwei Punkten gefunden.');
   return pts;
 }
-
 
 export function buildGpx(route: Punkt[], name = 'CourseCast Route'): string {
   const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

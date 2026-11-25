@@ -1,5 +1,3 @@
-
-
 export const FENSTER = 32768;
 
 export const SPEKTRUM_BIS_HZ = 4000;
@@ -11,11 +9,9 @@ const KAMM_BIS_HZ = 1000;
 const KAMM_MAX_K = 10;
 const KAMM_MIN_K = 3;
 
-
 export const OBERTON_K = 6;
 export const OBERTON_DB = 6;
 export const OBERTON_MIN = 3;
-
 
 export interface Spektrum {
   df: number;
@@ -23,7 +19,7 @@ export interface Spektrum {
 }
 
 export interface Baender {
-  
+
   b10_60: number;
   b60_200: number;
   b200_1000: number;
@@ -31,38 +27,36 @@ export interface Baender {
 }
 
 export interface Kamm {
-  
+
   f0: number;
-  
+
   h: number;
-  
+
   k: number;
-  
+
   treffer: number;
 }
 
 export interface Merkmale {
   fs: number;
   dauerS: number;
-  
+
   pegel: number;
   baender: Baender;
   kamm: Kamm;
-  
+
   abschnitte: Kamm[];
-  
+
   f0Streuung: number;
-  
+
   linie: { f: number; h: number };
 }
-
 
 function zweierPotenz(n: number): number {
   let p = 1;
   while (p < n) p <<= 1;
   return p;
 }
-
 
 export function fft(re: Float64Array, im: Float64Array): void {
   const n = re.length;
@@ -95,7 +89,6 @@ export function fft(re: Float64Array, im: Float64Array): void {
   }
 }
 
-
 export function welch(x: ArrayLike<number>, fs: number, n = FENSTER, bisHz = SPEKTRUM_BIS_HZ): Spektrum {
   const N = zweierPotenz(n);
   const df = fs / N;
@@ -122,15 +115,13 @@ export function welch(x: ArrayLike<number>, fs: number, n = FENSTER, bisHz = SPE
     if (start + N >= x.length) break;
   }
   const db = new Float32Array(bins);
-  
-  
+
   for (let i = 0; i < bins; i++) {
     const p = (summe[i]! / anzahl) * (i === 0 ? 1 : 2) / (wSumme * N);
     db[i] = 10 * Math.log10(p + 1e-20);
   }
   return { df, db };
 }
-
 
 export function rauschgrund(db: Float32Array, halb: number): Float32Array {
   const out = new Float32Array(db.length);
@@ -145,7 +136,6 @@ export function rauschgrund(db: Float32Array, halb: number): Float32Array {
   return out;
 }
 
-
 export function hervorhebung(s: Spektrum, bisHz = KAMM_BIS_HZ + 20): Float32Array {
   const bins = Math.min(s.db.length, Math.floor(bisHz / s.df) + 1);
   const teil = s.db.subarray(0, bins);
@@ -154,7 +144,6 @@ export function hervorhebung(s: Spektrum, bisHz = KAMM_BIS_HZ + 20): Float32Arra
   for (let i = 0; i < bins; i++) out[i] = teil[i]! - grund[i]!;
   return out;
 }
-
 
 export function kamm(prom: Float32Array, df: number): Kamm {
   let best: Kamm = { f0: 0, h: 0, k: 0, treffer: 0 };
@@ -184,7 +173,6 @@ function bandPegel(s: Spektrum, von: number, bis: number): number {
   return 10 * Math.log10(p + 1e-20);
 }
 
-
 export function merkmale(x: Float32Array, fs: number): Merkmale {
   const s = welch(x, fs);
   const prom = hervorhebung(s);
@@ -199,7 +187,6 @@ export function merkmale(x: Float32Array, fs: number): Merkmale {
     if (prom[i]! > linie.h) linie = { f: i * s.df, h: prom[i]! };
   }
 
-  
   const abschnitte: Kamm[] = [];
   const lang = zweierPotenz(FENSTER) * 2;
   for (let a = 0; a + lang <= x.length; a += lang) {
@@ -229,7 +216,6 @@ export function merkmale(x: Float32Array, fs: number): Merkmale {
   };
 }
 
-
 export function klangMessung(x: Float32Array, fs: number): { treffer: number; h: number; f0: number; pegel: number } {
   const s = welch(x, fs);
   const k = kamm(hervorhebung(s), s.df);
@@ -238,31 +224,27 @@ export function klangMessung(x: Float32Array, fs: number): { treffer: number; h:
   return { treffer: k.treffer, h: k.h, f0: k.f0, pegel: 10 * Math.log10(quadrat / Math.max(1, x.length) + 1e-20) };
 }
 
-
 export function obertonRegel(k: Kamm): boolean {
   return (k.treffer ?? 0) >= OBERTON_MIN;
 }
 
-
 export function drehzahlAusZuendung(f: number, zylinder: number): number {
   return f * 120 / zylinder;
 }
-
 
 export function drehzahlAusWelle(f: number): number {
   return f * 60;
 }
 
 export interface TrennErgebnis {
-  
+
   minAn: number;
   maxAus: number;
-  
+
   schwelle: number | null;
-  
+
   abstand: number;
 }
-
 
 export function trennung(werte: { motor: boolean; h: number }[]): TrennErgebnis | null {
   const an = werte.filter((w) => w.motor).map((w) => w.h);

@@ -8,9 +8,6 @@ import {
 } from '@/data/logdb';
 import type { Fix } from '@/core/spur';
 
-
-
-
 const MERKER = 'sail-suite:zurueckgeholt2:';
 
 const DOPPELT_AB = 0.5;
@@ -20,7 +17,6 @@ const LIVE_ACC_M = 50;
 const lies = (k: string): string | null => { try { return localStorage.getItem(k); } catch { return null; } };
 const merke = (k: string, v: string): void => { try { localStorage.setItem(k, v); } catch {  } };
 
-
 export function schonAmGeraet(beginn: number, ende: number, lokale: readonly Pick<Fahrt, 'begonnen' | 'beendet'>[], jetzt = Date.now()): boolean {
   return lokale.some((f) => {
     const fe = f.beendet ?? jetzt;
@@ -29,7 +25,6 @@ export function schonAmGeraet(beginn: number, ende: number, lokale: readonly Pic
     return gemeinsam > 0 && (kuerzer <= 0 || gemeinsam / kuerzer > DOPPELT_AB);
   });
 }
-
 
 export function liveAlsFahrt(l: EigenerLive, toernId: string, weiterInPause = false): { fahrt: Fahrt; fixe: Fix[]; eintraege: LogEintrag[] } {
   const letzter = l.punkte.length ? l.punkte[l.punkte.length - 1]![0] : l.stand.t;
@@ -68,7 +63,6 @@ async function lege(fahrt: Fahrt, fixe: Fix[], eintraege: LogEintrag[], orte: Or
   }
 }
 
-
 export async function holeFahrtenZurueck(token: string, nutzerId: string): Promise<number> {
   const toern = await aktuellerToern().catch(() => null);
   if (!toern || lies(MERKER + toern.id)) return 0;
@@ -84,7 +78,7 @@ export async function holeFahrtenZurueck(token: string, nutzerId: string): Promi
     const spur = await holeSpur(token, meta);
     if (!spur) { vollstaendig = false; continue; }
     const p: FahrtPayload = spur.payload;
-    
+
     const fahrt = bereinigeFahrt(p?.fahrt);
     if (!fahrt) { vollstaendig = false; continue; }
     await lege({ ...fahrt, toern: toern.id }, Array.isArray(p.fixe) ? p.fixe : [],
@@ -98,10 +92,10 @@ export async function holeFahrtenZurueck(token: string, nutzerId: string): Promi
     vorhanden.add(meta.fahrtId);
     geholt++;
   }
-  
+
   const live = await holeEigenenLiveStand(token, toern.id);
   if (live === null) vollstaendig = false;
-  
+
   const laeuftAmGeraet = (await fahrtenZuToern(toern.id)).some((f) => f.beendet === null);
   const juengste = (live ?? []).reduce<EigenerLive | null>((a, b) => (!a || b.fahrt.begonnen > a.fahrt.begonnen ? b : a), null);
   for (const l of live ?? []) {

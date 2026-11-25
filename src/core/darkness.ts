@@ -2,9 +2,6 @@ import { sonnenhoehe } from './sun';
 import { vonRevierzeit } from './time';
 import type { Punkt } from './types';
 
-
-
-
 export interface DunkelBezug {
   lat: number;
   lon: number;
@@ -14,22 +11,21 @@ export interface DunkelBezug {
 
 export interface Dunkelphase {
   beginn: Date;
-  
+
   ende: Date | null;
-  
+
   beginnNM: number;
   endeNM: number | null;
   beginnOrt: Punkt;
   endeOrt: Punkt | null;
   stunden: number;
-  
+
   vonAnfangAn: boolean;
-  
+
   endeAmHalt?: boolean;
-  
+
   abHalt?: boolean;
 }
-
 
 export interface HaltBezug {
   an: Date;
@@ -40,19 +36,17 @@ export interface HaltBezug {
 export interface Dunkelheit {
   phasen: Dunkelphase[];
   stunden: number;
-  
+
   nm: number;
-  
+
   anteil: number;
 }
-
 
 export const NACHTFAHRT_AB_STUNDEN = 1;
 
 function lerp(a: number, b: number, s: number): number {
   return a + (b - a) * s;
 }
-
 
 function zwischen(a: DunkelBezug, b: DunkelBezug, s: number): { ort: Punkt; nm: number; zeit: Date } {
   return {
@@ -62,14 +56,12 @@ function zwischen(a: DunkelBezug, b: DunkelBezug, s: number): { ort: Punkt; nm: 
   };
 }
 
-
 function grenze(
   a: DunkelBezug, b: DunkelBezug, winkel: number, utcOffsetSeconds: number,
 ): { ort: Punkt; nm: number; zeit: Date } {
   const dunkelBei = (s: number) => {
     const z = zwischen(a, b, s);
-    
-    
+
     return sonnenhoehe(z.ort.lat, z.ort.lon, vonRevierzeit(z.zeit, utcOffsetSeconds)) < winkel;
   };
   let lo = 0, hi = 1;
@@ -81,21 +73,15 @@ function grenze(
   return zwischen(a, b, (lo + hi) / 2);
 }
 
-
 export function dunkelphasen(
   roh: DunkelBezug[], winkel: number, utcOffsetSeconds = 0, halte: readonly HaltBezug[] = [],
 ): Dunkelheit {
   const leer: Dunkelheit = { phasen: [], stunden: 0, nm: 0, anteil: 0 };
   if (roh.length < 2) return leer;
 
-  
-  
-  
-  
   const track: DunkelBezug[] = [];
-  const liegezeit: boolean[] = []; 
-  
-  
+  const liegezeit: boolean[] = [];
+
   const offeneHalte = halte.filter((x) => x.ab.getTime() > x.an.getTime());
   for (const p of roh) {
     const k = track.length ? offeneHalte.findIndex((x) => Math.abs(x.nm - p.nm) < 1e-6) : -1;
@@ -122,7 +108,7 @@ export function dunkelphasen(
 
   for (let i = 1; i < track.length; i++) {
     if (liegezeit[i]) {
-      
+
       const an = track[i - 1]!, ab = track[i]!;
       if (offen) {
         offen.ende = an.time;
@@ -158,9 +144,6 @@ export function dunkelphasen(
     }
   }
 
-  
-  
-  
   if (offen) {
     const letzt = track[track.length - 1]!;
     offen.stunden = (letzt.time.getTime() - offen.beginn.getTime()) / 3600_000;
@@ -174,11 +157,9 @@ export function dunkelphasen(
   return { phasen, stunden, nm, anteil: gesamtNM > 0 ? nm / gesamtNM : 0 };
 }
 
-
 export function istNachtfahrt(d: Dunkelheit): boolean {
   return d.stunden >= NACHTFAHRT_AB_STUNDEN;
 }
-
 
 export function dunkelMinuten(lat: number, lon: number, von: Date, bis: Date, winkel: number, utcOffsetSeconds: number): number {
   const schritt = 5 * 60_000;

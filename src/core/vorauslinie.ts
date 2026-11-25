@@ -1,8 +1,6 @@
 import { destPoint } from './geo';
 import type { Punkt } from './types';
 
-
-
 export const VORAUS_MIN = 60;
 
 export const VORAUS_MIN_SOG_KN = 0.5;
@@ -23,13 +21,11 @@ export interface Vorauslinie {
   striche: VorausStrich[];
 }
 
-
 export function strichAbstand(pxJeMin: number): number | null {
   if (!(pxJeMin > 0)) return null;
   for (const m of STRICH_MIN) if (m * pxJeMin >= STRICH_PX) return m;
   return null;
 }
-
 
 export function vorauslinie(
   lat: number, lon: number, cog: number | null, sogKn: number | null, pxJeMin: number, bisMin = VORAUS_MIN,
@@ -51,9 +47,7 @@ export function vorauslinie(
   return { ende, striche };
 }
 
-
 export const LAND_MIN_SM = 0.03;
-
 
 export function landquerung(von: Punkt, nach: Punkt, kueste: readonly (readonly [Punkt, Punkt])[], mindestSm = LAND_MIN_SM): number | null {
   const k = Math.cos((von.lat * Math.PI) / 180);

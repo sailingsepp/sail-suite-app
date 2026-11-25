@@ -5,8 +5,6 @@ import { vorleseHaeppchen } from '@/briefing/vorlesen';
 import { aktuelleSprache, aufSprachwechsel } from '@/shell/sprache';
 import { icon, type IconName } from '@/shell/icons';
 
-
-
 type VitsWeb = typeof import('@diffusionstudio/vits-web');
 
 const STIMMEN: Record<Sprache, { id: VoiceId; name: string }> = {
@@ -20,12 +18,10 @@ function ladeModul(): Promise<VitsWeb> {
   return modul;
 }
 
-
 function unterstuetzt(): boolean {
   return typeof navigator !== 'undefined' && 'storage' in navigator
     && typeof navigator.storage.getDirectory === 'function';
 }
-
 
 let generation = 0;
 let sequenzLaeuft = false;
@@ -40,7 +36,6 @@ function stoppen(): void {
   if (laufendesAudio) { laufendesAudio.pause(); laufendesAudio = null; }
 }
 
-
 let vorleseAudio: HTMLAudioElement | null = null;
 function holeAudio(): HTMLAudioElement {
   if (vorleseAudio) return vorleseAudio;
@@ -52,14 +47,12 @@ function holeAudio(): HTMLAudioElement {
     if (laufendeStimme && laufendesAudio === a) aktualisiereKnopf('pause', fortschrittsText('pause', laufendeStimme.sprache, laufendeStimme.name));
   });
   a.addEventListener('pause', () => {
-    
-    
+
     if (!a.ended && laufendeStimme && laufendesAudio === a) aktualisiereKnopf('start', fortschrittsText('weiter', laufendeStimme.sprache, laufendeStimme.name));
   });
   vorleseAudio = a;
   return a;
 }
-
 
 function stilleWav(): string {
   const n = 400, bytes = new Uint8Array(44 + n * 2), d = new DataView(bytes.buffer);
@@ -72,17 +65,15 @@ function stilleWav(): string {
   return 'data:audio/wav;base64,' + btoa(bin);
 }
 
-
 function entsperreAudio(a: HTMLAudioElement): void {
   try {
-    
+
     const nav = navigator as Navigator & { audioSession?: { type: string } };
     if (nav.audioSession) nav.audioSession.type = 'playback';
   } catch {  }
   a.src = stilleWav();
   void a.play().catch(() => {  });
 }
-
 
 function spieleAb(a: HTMLAudioElement, wav: Blob): Promise<void> {
   const url = URL.createObjectURL(wav);
@@ -122,8 +113,6 @@ function fortschrittsText(zustand: 'pause' | 'weiter', sprache: Sprache, name: s
   return `${wort} · ${name}`;
 }
 
-
-
 let letzteAbschnitte: BriefingAbschnitt[] | null = null;
 let sprachwechselGebunden = false;
 
@@ -131,13 +120,12 @@ export function initVorlesen(abschnitte: BriefingAbschnitt[]): void {
   letzteAbschnitte = abschnitte;
   if (!sprachwechselGebunden) {
     sprachwechselGebunden = true;
-    
-    
+
     aufSprachwechsel(() => { if (!sequenzLaeuft && letzteAbschnitte) initVorlesen(letzteAbschnitte); });
   }
   const btn = document.getElementById('btn-vorlesen') as HTMLButtonElement | null;
   const fehlerEl = document.getElementById('brief-audio-fehler');
-  if (!btn) return; 
+  if (!btn) return;
   aktivBtn = btn;
   aktivFehlerEl = fehlerEl;
 
@@ -174,10 +162,7 @@ export function initVorlesen(abschnitte: BriefingAbschnitt[]): void {
 
 async function klick(abschnitte: BriefingAbschnitt[]): Promise<void> {
   if (sequenzLaeuft) {
-    
-    
-    
-    
+
     if (laufendesAudio) {
       if (laufendesAudio.paused) void laufendesAudio.play();
       else laufendesAudio.pause();
@@ -185,9 +170,6 @@ async function klick(abschnitte: BriefingAbschnitt[]): Promise<void> {
     return;
   }
 
-  
-  
-  
   const sprache = aktuelleSprache();
   const stimme = STIMMEN[sprache];
   laufendeStimme = { ...stimme, sprache };
@@ -215,11 +197,8 @@ async function klick(abschnitte: BriefingAbschnitt[]): Promise<void> {
     }
     if (meineGeneration !== generation) return;
 
-    
     const haeppchen = vorleseHaeppchen(abschnitte, sprache);
-    
-    
-    
+
     for (let i = 0; i < haeppchen.length; i++) {
       if (meineGeneration !== generation) return;
       if (i === 0) aktualisiereKnopf('lautsprecher', sprache === 'en' ? 'Getting ready …' : 'Wird vorbereitet …', true);
@@ -236,22 +215,15 @@ async function klick(abschnitte: BriefingAbschnitt[]): Promise<void> {
       aktualisiereKnopf('lautsprecher', sprache === 'en' ? 'Read aloud again' : 'Nochmal vorlesen');
     }
   } catch (err) {
-    if (meineGeneration !== generation) return; 
-    
-    
-    
-    
+    if (meineGeneration !== generation) return;
+
     console.error('Sprachausgabe fehlgeschlagen', err);
     fehlerZeigen(sprache === 'en'
       ? 'Voice playback isn\'t available right now: the speech model could not be loaded or played.'
       : 'Sprachausgabe momentan nicht möglich: Sprachmodell konnte nicht geladen oder nicht abgespielt werden.');
     aktualisiereKnopf('lautsprecher', sprache === 'en' ? 'Read aloud' : 'Vorlesen');
   } finally {
-    
-    
-    
-    
-    
+
     if (meineGeneration === generation) {
       sequenzLaeuft = false;
       laufendesAudio = null;

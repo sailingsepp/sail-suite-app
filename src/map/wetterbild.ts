@@ -1,9 +1,6 @@
 import type { Sprache } from '@/core/types';
 
-
-
 export type Himmel = 'klar' | 'leichtBewoelkt' | 'bewoelkt' | 'nebel' | 'niesel' | 'regen' | 'schauer' | 'gewitter' | 'schnee';
-
 
 export function himmelAus(code: number): Himmel {
   if (code === 0) return 'klar';
@@ -19,7 +16,7 @@ export function himmelAus(code: number): Himmel {
 }
 
 const HIMMEL_TEXT: Record<Himmel, { de: [string, string]; en: [string, string] }> = {
-  
+
   klar: { de: ['Sonnig', 'Klar'], en: ['Sunny', 'Clear'] },
   leichtBewoelkt: { de: ['Teils sonnig', 'Teils bewölkt'], en: ['Partly sunny', 'Partly cloudy'] },
   bewoelkt: { de: ['Bewölkt', 'Bewölkt'], en: ['Cloudy', 'Cloudy'] },
@@ -40,11 +37,9 @@ const RICHTUNG: Record<Sprache, string[]> = {
   en: ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'],
 };
 
-
 export function richtungAusgeschrieben(grad: number, sprache: Sprache): string {
   return RICHTUNG[sprache][Math.round((((grad % 360) + 360) % 360) / 45) % 8]!;
 }
-
 
 export function bftFarbe(bft: number): string {
   if (bft <= 3) return '#2DA8A0';
@@ -52,8 +47,6 @@ export function bftFarbe(bft: number): string {
   if (bft <= 7) return '#F2A93B';
   return '#E1584B';
 }
-
-
 
 const SONNE = (x: number, y: number, r: number) => {
   const strahlen = Array.from({ length: 8 }, (_, i) => {
@@ -90,7 +83,6 @@ export function himmelBild(h: Himmel, tag: boolean): string {
   return `<svg class="st-wetter-bild" viewBox="0 0 64 64" aria-hidden="true">${inhalt}</svg>`;
 }
 
-
 export function windBild(windAus: number, bft: number, sprache: Sprache): string {
   const nach = (windAus + 180) % 360;
   const f = bftFarbe(bft);
@@ -102,7 +94,6 @@ export function windBild(windAus: number, bft: number, sprache: Sprache): string
     + `<circle cx="32" cy="32" r="30" fill="none" stroke="currentColor" stroke-opacity=".25" stroke-width="2"/>${marken}`
     + `<g transform="rotate(${Math.round(nach)} 32 32)"><path d="M32 12l9 14h-6v22h-6V26h-6z" fill="${f}" stroke="#0B1E2D" stroke-width="1"/></g></svg>`;
 }
-
 
 export function bftBalken(bft: number): string {
   return `<div class="st-wetter-bft" aria-hidden="true">${Array.from({ length: 13 }, (_, i) =>

@@ -1,10 +1,7 @@
-
-
-
 export interface Motorablesung {
-  
+
   t: number;
-  
+
   stand: number;
 }
 
@@ -16,24 +13,20 @@ function sortiert(alle: Motorablesung[]): Motorablesung[] {
   return [...alle].sort((a, b) => a.t - b.t);
 }
 
-
 export function ersteAblesung(alle: Motorablesung[]): Motorablesung | null {
   return sortiert(alle)[0] ?? null;
 }
-
 
 export function letzteAblesung(alle: Motorablesung[]): Motorablesung | null {
   const s = sortiert(alle);
   return s[s.length - 1] ?? null;
 }
 
-
 export function laufzeitSeitBeginn(alle: Motorablesung[]): number | null {
   const s = sortiert(alle);
   if (s.length < 2) return null;
   return s[s.length - 1]!.stand - s[0]!.stand;
 }
-
 
 function nachbarn(alle: Motorablesung[], t: number): { vor: Motorablesung | null; nach: Motorablesung | null } {
   const s = sortiert(alle);
@@ -46,7 +39,6 @@ function nachbarn(alle: Motorablesung[], t: number): { vor: Motorablesung | null
   return { vor, nach };
 }
 
-
 export function istPlausibel(alle: Motorablesung[], stand: number, t = Number.POSITIVE_INFINITY): boolean {
   if (!gueltig(stand)) return false;
   const { vor, nach } = nachbarn(alle, t);
@@ -55,14 +47,12 @@ export function istPlausibel(alle: Motorablesung[], stand: number, t = Number.PO
   return true;
 }
 
-
 export function ergaenzeAblesung(alle: Motorablesung[], neu: Motorablesung): Motorablesung[] {
   if (!Number.isFinite(neu.t) || !istPlausibel(alle, neu.stand, neu.t)) return alle;
   const { vor } = nachbarn(alle, neu.t);
   if (vor && vor.stand === neu.stand) return alle;
   return sortiert([...alle, neu]);
 }
-
 
 export function setzeAnfangsstand(
   alle: Motorablesung[],
@@ -76,7 +66,6 @@ export function setzeAnfangsstand(
   if (zweite && stand > zweite.stand) return alle;
   return [{ t: s[0]!.t, stand }, ...s.slice(1)];
 }
-
 
 export function uebernehmeEingabe(
   alle: Motorablesung[],
@@ -100,7 +89,6 @@ export function uebernehmeEingabe(
   }
   return { reihe, fehler };
 }
-
 
 export function korrigiereLetzte(alle: Motorablesung[], stand: number): Motorablesung[] | null {
   if (!gueltig(stand)) return null;

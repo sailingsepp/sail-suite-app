@@ -20,12 +20,9 @@ import { zeichneAnkerkreis, entferneAnkerkreis, setzeAnkerAenderung, zeichneSchw
 import { ankerwacheEintragText, ankerwacheAlarmText } from './ankerwachetext';
 import type { Zustand } from './aufzeichnung';
 
-
-
 const $ = (id: string) => document.getElementById(id);
 const wort = (schluessel: string): string =>
   STRINGS[aktuelleSprache()][schluessel] ?? schluessel;
-
 
 const STANDARD_RADIUS_M = 30;
 
@@ -59,8 +56,6 @@ let stufe: AnkerwacheStufe = 'ruhig';
 let alarmOffen = false;
 let letzteAlarmMeldung = 0;
 
-
-
 let notfallkontakt: { email: string; aktiv: boolean; bestaetigt: boolean | null } = { email: '', aktiv: false, bestaetigt: null };
 
 let kontaktLinkSeit: number | null = null;
@@ -68,7 +63,6 @@ let kontaktLinkSeit: number | null = null;
 let kontaktVersandFehler = false;
 
 const ERNEUT_SENDEN_NACH_MS = 15 * 60_000;
-
 
 let letzteWeiterleitungsMeldung: WeiterleitungsMeldung | null = ladeDrossel();
 
@@ -92,8 +86,6 @@ let einrichtungsKontext: 'neu' | 'bearbeiten' = 'neu';
 let setupModal: ModalHandle | null = null;
 let alarmModal: ModalHandle | null = null;
 
-
-
 function zahl(id: string): number | undefined {
   const el = $(id) as HTMLInputElement | null;
   const v = el?.value.trim() ?? '';
@@ -106,18 +98,16 @@ function schliesseSetup(): void {
   setupModal?.beimSchliessen();
 }
 
-
 export function oeffneAnkerwacheSetup(): void {
   const pos = holePosition();
-  if (!pos) return; 
+  if (!pos) return;
   anfangsPosition = pos;
   einrichtungsKontext = phase === 'aktiv' ? 'bearbeiten' : 'neu';
 
   for (const el of document.querySelectorAll<HTMLElement>('.tb-anker-nur-neu')) {
     el.hidden = einrichtungsKontext === 'bearbeiten';
   }
-  
-  
+
   for (const el of document.querySelectorAll<HTMLElement>('.tb-anker-nur-bearbeiten')) {
     el.hidden = einrichtungsKontext !== 'bearbeiten';
   }
@@ -131,10 +121,7 @@ export function oeffneAnkerwacheSetup(): void {
   if (einrichtungsKontext === 'neu') {
     const tiefeFeld = $('in-anker-tiefe') as HTMLInputElement | null;
     if (tiefeFeld) tiefeFeld.value = '';
-    
-    
-    
-    
+
     const laengeFeld = $('in-anker-laenge') as HTMLInputElement | null;
     if (laengeFeld) {
       const laenge = holeSchiffLaenge();
@@ -150,8 +137,6 @@ export function oeffneAnkerwacheSetup(): void {
   setupModal?.beimOeffnen();
 }
 
-
-
 async function ladeNotfallkontakt(): Promise<void> {
   const token = liesSitzungsToken();
   if (!token) return;
@@ -165,7 +150,6 @@ async function ladeNotfallkontakt(): Promise<void> {
   renderWeiterleitungsKnopf();
   zeigeKontaktStatus();
 }
-
 
 function zeigeKontaktStatus(): void {
   const el = $('tb-anker-kontakt-status');
@@ -188,7 +172,6 @@ function zeigeKontaktStatus(): void {
       || (!kontaktVersandFehler && kontaktLinkSeit !== null && Date.now() - kontaktLinkSeit < ERNEUT_SENDEN_NACH_MS);
   }
 }
-
 
 async function sendeBestaetigungErneut(): Promise<void> {
   const token = liesSitzungsToken();
@@ -213,7 +196,6 @@ function fuelleKontaktFelder(): void {
   zeigeKontaktStatus();
 }
 
-
 async function speichereKontaktAusSetup(): Promise<void> {
   const token = liesSitzungsToken();
   if (!token) return;
@@ -222,18 +204,17 @@ async function speichereKontaktAusSetup(): Promise<void> {
   const email = emailFeld?.value.trim() ?? '';
   const aktiv = (aktivFeld?.checked ?? false) && email !== '';
   const gleich = email.toLowerCase() === notfallkontakt.email.trim().toLowerCase();
-  
+
   notfallkontakt = { email, aktiv, bestaetigt: gleich ? notfallkontakt.bestaetigt : (email ? false : null) };
   if (!gleich) { kontaktVersandFehler = false; kontaktLinkSeit = null; }
   renderWeiterleitungsKnopf();
   const { ok, bestaetigungGesendet } = await schreibeNotfallkontakt(token, email || null, aktiv);
-  
+
   if (bestaetigungGesendet !== null) kontaktVersandFehler = !bestaetigungGesendet;
-  
+
   if (ok) await ladeNotfallkontakt();
   else zeigeKontaktStatus();
 }
-
 
 async function toggleWeiterleitung(): Promise<void> {
   const token = liesSitzungsToken();
@@ -246,8 +227,7 @@ async function toggleWeiterleitung(): Promise<void> {
   renderWeiterleitungsKnopf();
   const { ok } = await schreibeNotfallkontakt(token, notfallkontakt.email, neu);
   if (!ok) {
-    
-    
+
     notfallkontakt = vorher;
     renderWeiterleitungsKnopf();
   }
@@ -271,15 +251,12 @@ function berechneVorschlag(): void {
   }
 }
 
-
-
 function aktualisiereAktionsleiste(): void {
   const leiste = $('tb-anker-radius-zeile');
   if (!leiste || !pending) return;
   const de = aktuelleSprache() === 'de';
   leiste.textContent = wort('ankerwache.radiusZeile').replace('{radius}', nf(pending.radiusM, 0, de ? 'de' : 'en'));
 }
-
 
 function starteZeichnen(radiusM: number): void {
   if (!anfangsPosition) return;
@@ -294,12 +271,10 @@ function starteZeichnen(radiusM: number): void {
 function registriereZiehen(): void {
   setzeAnkerAenderung((lat, lon, radiusM) => {
     pending = { lat, lon, radiusM };
-    if (phase === 'aktiv') void aktiviereFn(pending); 
+    if (phase === 'aktiv') void aktiviereFn(pending);
     else aktualisiereAktionsleiste();
   });
 }
-
-
 
 function loeseAlarm(befund: AnkerwacheBefund, lat: number, lon: number): void {
   alarmOffen = true;
@@ -310,8 +285,6 @@ function loeseAlarm(befund: AnkerwacheBefund, lat: number, lon: number): void {
   alarmModal?.beimOeffnen();
   ankersirene();
 
-  
-  
   const fahrt = fahrtJetzt();
   if (fahrt && gezeichnetesZiel) {
     aufEintrag({
@@ -331,17 +304,12 @@ function schliesseAlarm(): void {
   alarmModal?.beimSchliessen();
 }
 
-
-
 type WeiterleitungsStatus = 'sendet' | 'gesendet' | 'fehlgeschlagen' | 'unbestaetigt' | 'inaktiv' | 'nicht-angemeldet';
 
 function zeigeWeiterleitungsErgebnis(status: WeiterleitungsStatus): void {
   const el = $('tb-anker-weiterleitung-ergebnis') as HTMLElement | null;
   if (!el) return;
-  
-  
-  
-  
+
   if (status === 'inaktiv') { el.hidden = true; return; }
   el.hidden = false;
   const schluessel: Record<Exclude<WeiterleitungsStatus, 'inaktiv'>, string> = {
@@ -353,7 +321,6 @@ function zeigeWeiterleitungsErgebnis(status: WeiterleitungsStatus): void {
   };
   el.textContent = wort(schluessel[status]);
 }
-
 
 function versucheWeiterleitung(befund: AnkerwacheBefund, lat: number, lon: number): void {
   const token = liesSitzungsToken();
@@ -376,9 +343,6 @@ function versucheWeiterleitung(befund: AnkerwacheBefund, lat: number, lon: numbe
   });
 }
 
-
-
-
 function renderWeiterleitungsKnopf(): void {
   const knopf = $('btn-anker-weiterleitung-toggle') as HTMLButtonElement | null;
   if (!knopf) return;
@@ -393,14 +357,12 @@ function renderWeiterleitungsKnopf(): void {
     knopf.classList.remove('aktiv');
     return;
   }
-  
-  
+
   const schluessel = !notfallkontakt.aktiv ? 'ankerwache.weiterleitungAus'
     : notfallkontakt.bestaetigt === false ? 'ankerwache.weiterleitungAusstehend' : 'ankerwache.weiterleitungEin';
   knopf.innerHTML = icon('brief') + `<span>${wort(schluessel)}</span>`;
   knopf.classList.toggle('aktiv', notfallkontakt.aktiv);
 }
-
 
 function zeigeOhnePosition(z: Zustand, seit: number): void {
   const textEl = $('tb-ankerwache-status-text');
@@ -425,7 +387,7 @@ function zeigeStatus(z: Zustand, letzterFixT: number | null = null): void {
   if (textEl) {
     const gps = letzter && genauigkeitZeigen(letzter, z.ankerwache.radiusM)
       ? ' ' + wort('ankerwache.genauigkeit').replace('{acc}', nf(letzter.genauigkeitM ?? 0, 0, de ? 'de' : 'en')) : '';
-    
+
     const alter = fixAlterSek(Date.now(), letzterFixT);
     const alt = alter !== null ? ' ' + wort('ankerwache.fixAlter').replace('{s}', String(alter)) : '';
     textEl.textContent = letzter
@@ -437,26 +399,13 @@ function zeigeStatus(z: Zustand, letzterFixT: number | null = null): void {
   renderWeiterleitungsKnopf();
 }
 
-
-
 let schwojGezeichnet = 0;
 
 export function pruefeAnkerwache(z: Zustand, letzterFix: Fix | undefined, fixe: readonly Fix[] = []): void {
   zeigeStatus(z, letzterFix?.t ?? null);
 
   if (z.betriebsart !== 'pausiert-anker' || !z.ankerwache) {
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     if (phase === 'aktiv' && gezeichnetesZiel) {
       phase = 'aus';
       pending = null;
@@ -479,24 +428,21 @@ export function pruefeAnkerwache(z: Zustand, letzterFix: Fix | undefined, fixe: 
   const ziel = z.ankerwache;
   if (!gezeichnetesZiel || gezeichnetesZiel.lat !== ziel.lat || gezeichnetesZiel.lon !== ziel.lon
       || gezeichnetesZiel.radiusM !== ziel.radiusM) {
-    
-    
+
     zeichneAnkerkreis(ziel.lat, ziel.lon, ziel.radiusM);
     registriereZiehen();
     $('tb-anker-aktionen')?.setAttribute('hidden', '');
     gezeichnetesZiel = ziel;
-    schwojGezeichnet = 0; 
+    schwojGezeichnet = 0;
   }
   phase = 'aktiv';
   aktivSeit ??= Date.now();
-  
+
   if (Date.now() - schwojGezeichnet > 30_000) {
     schwojGezeichnet = Date.now();
     zeichneSchwojspur(schwojSpur(fixe, ziel, Date.now()));
   }
 
-  
-  
   const ohne = ohnePositionSeit(Date.now(), letzterFix?.t ?? null, aktivSeit);
   if (ohne !== null) {
     if (ohnePositionGemeldet === null || Date.now() - ohnePositionGemeldet > ALARM_WIEDERHOLUNG_MS) {
@@ -509,7 +455,7 @@ export function pruefeAnkerwache(z: Zustand, letzterFix: Fix | undefined, fixe: 
   }
 
   if (!letzterFix) return;
-  
+
   if (!istNeuerFix(letzterFix.t, gewerteterFixT)) {
     if (stufe === 'alarm' && !alarmOffen && Date.now() - letzteAlarmMeldung > ALARM_WIEDERHOLUNG_MS) {
       const b = befunde[befunde.length - 1];
@@ -528,20 +474,14 @@ export function pruefeAnkerwache(z: Zustand, letzterFix: Fix | undefined, fixe: 
     loeseAlarm(befund, letzterFix.lat, letzterFix.lon);
   } else if (neu === 'ruhig' && stufe === 'alarm') {
     stufe = 'ruhig';
-    
-    
-    
+
     setzeDrossel(null);
     if (alarmOffen) schliesseAlarm();
   } else if (stufe === 'alarm' && !alarmOffen && Date.now() - letzteAlarmMeldung > ALARM_WIEDERHOLUNG_MS) {
-    
-    
-    
+
     loeseAlarm(befund, letzterFix.lat, letzterFix.lon);
   }
 }
-
-
 
 export function initAnkerwache(
   position: () => { lat: number; lon: number } | null,
@@ -565,9 +505,7 @@ export function initAnkerwache(
 
   $('btn-anker-vorschlag')?.addEventListener('click', berechneVorschlag);
   $('btn-anker-setup-weg')?.addEventListener('click', schliesseSetup);
-  
-  
-  
+
   $('btn-anker-beenden')?.addEventListener('click', () => {
     if (!confirm(wort('ankerwache.aufhebenFrage'))) return;
     schliesseSetup();
@@ -576,8 +514,7 @@ export function initAnkerwache(
   $('btn-anker-weiter')?.addEventListener('click', () => {
     void (async () => {
       await speichereKontaktAusSetup();
-      
-      
+
       if (einrichtungsKontext === 'bearbeiten') {
         schliesseSetup();
         return;
@@ -588,9 +525,6 @@ export function initAnkerwache(
     })();
   });
 
-  
-  
-  
   const kontaktEmailFeld = $('in-anker-kontakt-email') as HTMLInputElement | null;
   const kontaktAktivFeld = $('in-anker-kontakt-aktiv') as HTMLInputElement | null;
   kontaktEmailFeld?.addEventListener('input', () => {

@@ -24,18 +24,16 @@ import { holeBlitze } from '@/data/blitze';
 import { routeVoraus } from '@/core/blitze';
 import { blitzRadius, setzeBlitzRadius } from './blitzwache';
 
-
-
 export interface WetterAnbindung {
   boot(): Punkt | null;
-  
+
   rest(): Punkt[] | null;
-  
+
   fahrtKn(): number;
   online(): boolean;
   wort(k: string): string;
   sprache(): 'de' | 'en';
-  
+
   zeige(punkte: Punkt[]): void;
 }
 
@@ -82,7 +80,6 @@ const ruhigeBewegung = () => typeof matchMedia === 'function' && matchMedia('(pr
 let zoomGebunden = false;
 let renderer: L.Renderer | null = null;
 
-
 let blitzStand: { blitze: Blitz[]; neuester: number; box: BlitzBox } | null = null;
 let blitzFehler: 'netz' | 'dienst' | null = null;
 let blitzLaedt = false;
@@ -108,14 +105,13 @@ function karte(): L.Map | null {
   if (!zoomGebunden) {
     zoomGebunden = true;
     k.on('zoomend', () => { if (offen) zeichneKarte(); });
-    
+
     k.on('moveend', () => { if (offen && ebene === 'blitze' && !ausschnittGeladen()) void ladeBlitze(); });
-    
+
     k.on('moveend', () => { if (offen && ebene === 'strom') { zeichneKarte(); aktualisiere(); } });
   }
   return k;
 }
-
 
 export function wetterPanel(inhalt: HTMLElement, a: WetterAnbindung): void {
   an = a;
@@ -123,14 +119,13 @@ export function wetterPanel(inhalt: HTMLElement, a: WetterAnbindung): void {
     offen = true;
     void lade(true);
   } else if (!feld && !laedt && stand?.fehler === 'ohneOrt' && (a.boot() || a.rest()?.length)) {
-    
+
     void lade(true);
   }
   if (!inhalt.querySelector('.tb-wk')) baue(inhalt);
   if (ebene === 'blitze') starteBlitze();
   aktualisiere();
 }
-
 
 export function wetterkarteAus(): void {
   offen = false;
@@ -142,7 +137,6 @@ export function wetterkarteAus(): void {
   geist?.remove(); geist = null;
   geistWeg?.remove(); geistWeg = null;
 }
-
 
 let vorabLaeuft = false;
 let vorabAb = 0;
@@ -169,7 +163,7 @@ async function lade(zeigen: boolean): Promise<void> {
     stunde = Math.max(ersteIdx, Math.min(stunde, feld.zeiten.length - 1));
   }
   if (!offen) return;
-  
+
   if (zeigen && punkte.length && ebene !== 'blitze') an.zeige(punkte);
   zeichneKarte();
   aktualisiere();
@@ -214,7 +208,6 @@ function baue(inhalt: HTMLElement): void {
   regler.addEventListener('input', () => { halte(); stunde = Number(regler.value); zeichneKarte(); aktualisiere(); geistInsBild(); });
 }
 
-
 function spiele(): void {
   if (!feld) return;
   if (stunde >= letzteStunde()) stunde = ersteIdx;
@@ -252,10 +245,9 @@ function halte(): void {
   if (rahmen) cancelAnimationFrame(rahmen);
   spielt = 0;
   rahmen = 0;
-  
+
   if (geistT !== null) { geistT = null; const k = karte(); if (k && offen) zeichneGeist(k); }
 }
-
 
 function geistInsBild(): void {
   const k = karte();
@@ -274,7 +266,6 @@ function geistInsBild(): void {
 }
 
 const uhrzeit = (t: number) => datumUhrLtVon(t, loc() === 'en-GB' ? 'en' : 'de', { weekday: 'short' });
-
 
 function aktualisiere(): void {
   const box = document.querySelector<HTMLElement>('.tb-wk');
@@ -324,13 +315,12 @@ function standText(): string {
   return `${vor} · ${quelle}${zusatz}`;
 }
 
-
 function ort(): { p: Punkt; geist: ReturnType<typeof yachtNach> } | null {
   if (!feld || !an) return null;
   const rest = an.rest();
   const boot = an.boot();
   const stunden = Math.max(0, ((geistT ?? feld.zeiten[stunde]!) - Date.now()) / 3600_000);
-  
+
   const g = rest && rest.length >= 2 ? yachtNach(rest, an.fahrtKn(), stunden) : null;
   const p = g?.p ?? boot;
   return p ? { p, geist: g } : null;
@@ -360,9 +350,7 @@ function info(): string {
   return `${wer}: ${teile.join(' · ')}`;
 }
 
-
 const stromZeit = () => (feld ? feld.zeiten[stunde]! : Date.now());
-
 
 function stromBei(lat: number, lon: number, t: number): { speed: number; dir: number } | null {
   const modell = feld ? stromAn(feld, stunde, lat, lon) : null;
@@ -381,11 +369,9 @@ function stromInfo(): string {
   return `${wer}: ${w('wk.infoStrom').replace('{kn}', nf(st.speed, 1, s)).replace('{nach}', richtungAusgeschrieben(st.dir, s))}`;
 }
 
-
 const MESSINA_FELD_SM = 12;
 
 const MESSINA_FELD_GRAD = 0.004;
-
 
 function messinaImBild(): boolean {
   const k = karteObjekt();
@@ -393,7 +379,6 @@ function messinaImBild(): boolean {
   const r = MESSINA_FELD_SM / 60, c = Math.cos((MESSINA_ENGE.lat * Math.PI) / 180);
   return k.getBounds().intersects(L.latLngBounds([MESSINA_ENGE.lat - r, MESSINA_ENGE.lon - r / c], [MESSINA_ENGE.lat + r, MESSINA_ENGE.lon + r / c]));
 }
-
 
 let messinaFeld: { t: number; mitModell: boolean; landBereit: boolean; g: StromGitter } | null = null;
 let landLaedt = false;
@@ -456,8 +441,6 @@ function legende(): string {
   return `<div class="tb-wk-skala"><div class="tb-wk-verlauf" style="background:linear-gradient(90deg, ${verlauf})"></div>`
     + `<div class="tb-wk-marken">${marken}</div></div><span class="tb-wk-einheit">kn</span>`;
 }
-
-
 
 function zeichneKarte(): void {
   const k = karte();
@@ -556,7 +539,6 @@ function stromPfeil(lat: number, lon: number, kn: number, nach: number, messina:
   }).addTo(gruppe!);
 }
 
-
 const FELD_PX = 44;
 function zeichneMessinaFeld(k: L.Map, t: number): void {
   const g = messinaGitter(t);
@@ -587,7 +569,6 @@ function zeichneMessinaFeld(k: L.Map, t: number): void {
   zeigeStromAnimation(k, EBENE_PANE, g);
 }
 
-
 function zeichneStrom(k: L.Map): void {
   const t = stromZeit();
   const sicht = k.getBounds().pad(0.1);
@@ -601,7 +582,7 @@ function zeichneStrom(k: L.Map): void {
       for (let j = 0; j < m; j += schritt) {
         const lat = f.lats[i]!, lon = f.lons[j]!;
         if (!sicht.contains([lat, lon]) || istLandJetzt(lat, lon) === true) continue;
-        
+
         if (distNM(lat, lon, MESSINA_ENGE.lat, MESSINA_ENGE.lon) < MESSINA_FELD_SM) continue;
         const kk = i * m + j;
         const kn = f.reihen.strom[kk]?.[stunde], nach = f.reihen.stromNach[kk]?.[stunde];
@@ -615,7 +596,6 @@ function zeichneStrom(k: L.Map): void {
   if (messinaImBild() && k.getZoom() >= 9) zeichneMessinaFeld(k, t);
   else stromAnimationAus();
 }
-
 
 function zeichneGeist(k: L.Map): void {
   const o = ort();
@@ -640,8 +620,6 @@ function zeichneGeist(k: L.Map): void {
     geist.setIcon(ic);
   }
 }
-
-
 
 function sichtBox(): BlitzBox | null {
   const k = karteObjekt();
@@ -679,7 +657,6 @@ async function ladeBlitze(): Promise<void> {
   if (offen && ebene === 'blitze') { zeichneKarte(); aktualisiere(); }
 }
 
-
 function zeigeBlitzUmgebung(): void {
   const boot = an?.boot();
   if (!boot || !an) return;
@@ -691,7 +668,7 @@ function zeigeBlitzUmgebung(): void {
 function starteBlitze(): void {
   if (blitzTakt) return;
   zeigeBlitzUmgebung();
-  
+
   window.setTimeout(() => { if (offen && ebene === 'blitze') void ladeBlitze(); }, 400);
   blitzTakt = window.setInterval(() => { if (offen && ebene === 'blitze') void ladeBlitze(); }, BLITZ_SCHRITT_MIN * 60_000);
 }
@@ -712,7 +689,7 @@ function zeichneBlitze(): void {
     }).addTo(gruppe);
   }
   if (!blitzStand) return;
-  
+
   const zellen = new Map<string, Blitz>();
   for (const b of blitzStand.blitze) {
     const k = `${b.lat}|${b.lon}`;
@@ -720,7 +697,7 @@ function zeichneBlitze(): void {
     if (!da || b.t > da.t) zellen.set(k, b);
   }
   const sortiert = [...zellen.values()].sort((a, b) => a.t - b.t);
-  
+
   const h = BLITZ_ZELLE_GRAD / 2;
   for (const b of sortiert) {
     L.rectangle([[b.lat - h, b.lon - h], [b.lat + h, b.lon + h]], {
@@ -729,7 +706,6 @@ function zeichneBlitze(): void {
     }).addTo(gruppe);
   }
 }
-
 
 export function _zustand(): { ebene: WetterEbene; flaeche: boolean; stunde: number; feld: WetterFeld | null } {
   return { ebene, flaeche, stunde, feld };

@@ -1,7 +1,6 @@
 import type { Kurs } from '@/core/bordkasse';
 import { SCHLUESSEL } from '@/shell/speicherschluessel';
 
-
 const BASIS = 'https://api.frankfurter.dev/v2/rates';
 
 type Ablage = Record<string, Record<string, Kurs>>;
@@ -17,12 +16,11 @@ function merke(waehrung: string, gefragt: string, k: Kurs): void {
     const a = liesAblage();
     const je = a[waehrung] ?? {};
     je[gefragt] = k;
-    
+
     a[waehrung] = Object.fromEntries(Object.entries(je).sort(([x], [y]) => y.localeCompare(x)).slice(0, 60));
     localStorage.setItem(SCHLUESSEL.wechselkurse, JSON.stringify(a));
   } catch {  }
 }
-
 
 export function gemerkterKurs(waehrung: string, bis: string): Kurs | null {
   const je = liesAblage()[waehrung];
@@ -32,7 +30,6 @@ export function gemerkterKurs(waehrung: string, bis: string): Kurs | null {
 }
 
 const laufend = new Map<string, Promise<Kurs | null>>();
-
 
 export async function holeKurs(waehrung: string, datum: string): Promise<Kurs | null> {
   if (waehrung === 'EUR') return { eurJe: 1, datum };

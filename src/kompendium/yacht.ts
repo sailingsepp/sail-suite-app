@@ -3,8 +3,6 @@ import {
 } from './iso';
 import { esc, k } from './svg';
 
-
-
 export type V3 = readonly [number, number, number];
 
 export const SEE = 'var(--panel-2)';
@@ -14,7 +12,6 @@ const GELB_SEITE_DUNKEL = 'color-mix(in srgb, var(--gelb) 28%, var(--panel))';
 const GELB_DECK = 'color-mix(in srgb, var(--gelb) 52%, var(--panel))';
 export const RIGG = 'var(--muted)';
 
-
 const MARKE_SEITE = '#F6F8FA';
 const MARKE_SEITE_DUNKEL = '#DDE3E8';
 const MARKE_DECK = '#B9C4CD';
@@ -22,19 +19,16 @@ const MARKE_AUFBAU = '#E9EEF2';
 const MARKE_AUFBAU_DECK = '#D2DAE0';
 const MARKE_LINIE = '#0B1E2D';
 
-
 export function richtung(grad: number): [number, number] {
   const a = (grad * Math.PI) / 180;
   return [Math.sin(a), Math.cos(a)];
 }
-
 
 export function windZumBug(windAus: number, kurs: number): number {
   let a = (((windAus - kurs) % 360) + 360) % 360;
   if (a > 180) a -= 360;
   return a;
 }
-
 
 export function baumWinkel(windWinkel: number): number {
   const a = Math.abs(windWinkel);
@@ -43,51 +37,46 @@ export function baumWinkel(windWinkel: number): number {
 
 export interface Fahrzeug {
   x: number; y: number;
-  
+
   kurs: number;
   art: 'segel' | 'motor';
-  
+
   L?: number;
-  
+
   windAus?: number;
-  
+
   hervor?: boolean;
-  
+
   marke?: boolean;
-  
+
   schmetterling?: boolean;
-  
+
   baum?: number;
-  
+
   vorBack?: boolean;
-  
+
   ohneVorsegel?: boolean;
-  
+
   ohneSegel?: boolean;
-  
+
   baumSeite?: number;
 }
-
 
 export function imSchiff(f: Fahrzeug, lx: number, ly: number, z: number): V3 {
   const [ux, uy] = richtung(f.kurs);
   return [f.x + lx * ux - ly * uy, f.y + lx * uy + ly * ux, z];
 }
 
-
 export const tiefe = (p: { x: number; y: number }) => p.x - p.y;
-
 
 export function pz(iso: Iso, p: V3): string {
   const [a, b] = iso.p(p[0], p[1], p[2]);
   return `${k(a)},${k(b)}`;
 }
 
-
 export function flaeche(iso: Iso, pts: readonly V3[], fill: string, extra = ''): string {
   return `<polygon points="${pts.map((p) => pz(iso, p)).join(' ')}" fill="${fill}"${extra}/>`;
 }
-
 
 export function strich(iso: Iso, a: V3, b: V3, farbe: string, breite = 1.4, extra = ''): string {
   const [x1, y1] = iso.p(a[0], a[1], a[2]);
@@ -96,23 +85,19 @@ export function strich(iso: Iso, a: V3, b: V3, farbe: string, breite = 1.4, extr
     + `stroke-linecap="round"${extra}/>`;
 }
 
-
 export function kurve(iso: Iso, a: V3, c: V3, b: V3, farbe: string, breite = 2, extra = ''): string {
   return `<path d="M${pz(iso, a)} Q${pz(iso, c)} ${pz(iso, b)}" fill="none" stroke="${farbe}" stroke-width="${breite}" `
     + `stroke-linecap="round"${extra}/>`;
 }
-
 
 export function beschrift(iso: Iso, p: V3, text: string, klasse = 'kp-rr-l', anker = 'middle', dy = 0): string {
   const [x, y] = iso.p(p[0], p[1], p[2]);
   return `<text x="${k(x)}" y="${k(y + dy)}" text-anchor="${anker}" class="${klasse}">${esc(text)}</text>`;
 }
 
-
 export function wasser(iso: Iso, x0: number, x1: number, y0: number, y1: number, fill = SEE): string {
   return flaeche(iso, [[x0, y0, 0], [x1, y0, 0], [x1, y1, 0], [x0, y1, 0]], fill);
 }
-
 
 export function raster(iso: Iso, von: number, bis: number, schritt: number): string {
   const out: string[] = [];
@@ -123,11 +108,9 @@ export function raster(iso: Iso, von: number, bis: number, schritt: number): str
   return out.join('');
 }
 
-
 export function masse(L: number) {
   return { B: L * 0.32, fb: L * 0.11, mast: L * 0.12, H: L * 1.25, baum: L * 0.42, zBaum: L * 0.2 };
 }
-
 
 export function rumpf(iso: Iso, f: Fahrzeug): string {
   const L = f.L ?? 8;
@@ -153,16 +136,15 @@ export function rumpf(iso: Iso, f: Fahrzeug): string {
 export interface Rigg {
   mastFuss: V3; mastTop: V3; hals: V3; kopfVor: V3;
   baumFuss: V3; baumEnde: V3; schothornVor: V3;
-  
+
   seite: number;
 }
-
 
 export function rigg(f: Fahrzeug, baumGrad?: number): Rigg {
   const L = f.L ?? 8;
   const m = masse(L);
   const ww = windZumBug(f.windAus ?? f.kurs + 45, f.kurs);
-  const seite = f.baumSeite ?? (ww >= 0 ? 1 : -1); 
+  const seite = f.baumSeite ?? (ww >= 0 ? 1 : -1);
   const b = ((baumGrad ?? f.baum ?? baumWinkel(ww)) * Math.PI) / 180;
   const xm = m.mast;
   const vorSeite = f.schmetterling || f.vorBack ? -seite : seite;
@@ -181,12 +163,10 @@ export function rigg(f: Fahrzeug, baumGrad?: number): Rigg {
   };
 }
 
-
 export function segelFlaeche(iso: Iso, pts: readonly V3[], hervor = false, deckung = 0.34): string {
   return flaeche(iso, pts, hervor ? 'var(--gelb)' : SEGEL,
     ` fill-opacity="${hervor ? 0.5 : deckung}" stroke="${hervor ? 'var(--gelb)' : 'var(--bg)'}" stroke-width=".8" stroke-linejoin="round"`);
 }
-
 
 export function fahrzeug(iso: Iso, f: Fahrzeug): string {
   const out = [rumpf(iso, f)];
@@ -205,7 +185,7 @@ export function fahrzeug(iso: Iso, f: Fahrzeug): string {
     const rigg2 = f.marke ? MARKE_LINIE : RIGG;
     const vor = f.ohneVorsegel ? strich(iso, r.hals, r.kopfVor, rigg2, 1) : tuch([r.hals, r.kopfVor, r.schothornVor], 0.28);
     const gross = tuch([r.baumFuss, r.mastTop, r.baumEnde], 0.34);
-    
+
     const tVor = tiefe({ x: (r.hals[0] + r.schothornVor[0]) / 2, y: (r.hals[1] + r.schothornVor[1]) / 2 });
     const tGross = tiefe({ x: (r.baumFuss[0] + r.baumEnde[0]) / 2, y: (r.baumFuss[1] + r.baumEnde[1]) / 2 });
     const segel = tVor < tGross ? [vor, gross] : [gross, vor];
@@ -213,7 +193,6 @@ export function fahrzeug(iso: Iso, f: Fahrzeug): string {
   }
   return out.join('');
 }
-
 
 export function profilSegel(iso: Iso, vorliek: readonly V3[], achterliek: readonly V3[], tiefen: readonly number[],
   lee: number, lage = 0.45, farbe = SEGEL, deckung = 0.3, linien = 'var(--bg)'): string {
@@ -224,7 +203,7 @@ export function profilSegel(iso: Iso, vorliek: readonly V3[], achterliek: readon
     const cx = b[0] - a[0];
     const cy = b[1] - a[1];
     const len = Math.hypot(cx, cy) || 1;
-    
+
     let nx = -cy / len;
     let ny = cx / len;
     if (ny * lee < 0) { nx = -nx; ny = -ny; }
@@ -240,11 +219,9 @@ export function profilSegel(iso: Iso, vorliek: readonly V3[], achterliek: readon
   return out.join('');
 }
 
-
 export function zwischen(a: V3, b: V3, t: number): V3 {
   return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 }
-
 
 export function isoSvg(breite: number, hoehe: number, label: string, inhalt: string, defs = '', klasse = 'kp-iso'): string {
   return `<svg class="${klasse}" viewBox="0 0 ${breite} ${hoehe}" role="img" aria-label="${esc(label)}">${defs}`
@@ -252,7 +229,6 @@ export function isoSvg(breite: number, hoehe: number, label: string, inhalt: str
 }
 
 export { KANTE };
-
 
 export function anker(iso: Iso, bug: V3, grund: V3, farbe = 'var(--akzent)'): string {
   const [x, y] = iso.p(grund[0], grund[1], grund[2]);

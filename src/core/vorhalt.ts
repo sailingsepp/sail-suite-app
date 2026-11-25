@@ -1,21 +1,17 @@
 import type { Strom } from './types';
 
-
-
-
 export const VORHALT_MIN_FUEG = 1;
 
 export const VORHALT_MIN_FDW = 0.5;
 
 export interface Vorhalt {
-  
+
   kdw: number;
-  
+
   fdw: number;
-  
+
   winkel: number;
 }
-
 
 export function vorhaltAusStrom(kueg: number | null, fueg: number | null, strom: Strom | null): Vorhalt | null {
   if (kueg === null || fueg === null || !strom?.valid || fueg < VORHALT_MIN_FUEG) return null;

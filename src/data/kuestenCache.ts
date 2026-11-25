@@ -1,33 +1,24 @@
 import type { Punkt } from '@/core/types';
 
-
-
 export interface KuestenBox { s: number; w: number; n: number; e: number }
 
 export interface CacheEintrag {
   id: string;
   box: KuestenBox;
-  
+
   zeit: number;
 }
 
-
 export const PUFFER_GRAD = 0.1;
-
 
 export const MAX_ALTER_MS = 30 * 24 * 3600_000;
 
-
 export const MAX_EINTRAEGE = 40;
-
-
-
 
 export function enthaelt(aussen: KuestenBox, innen: KuestenBox): boolean {
   return aussen.s <= innen.s && aussen.w <= innen.w
     && aussen.n >= innen.n && aussen.e >= innen.e;
 }
-
 
 export function erweitert(box: KuestenBox, grad: number): KuestenBox {
   return {
@@ -42,7 +33,6 @@ function flaeche(b: KuestenBox): number {
   return Math.max(0, b.n - b.s) * Math.max(0, b.e - b.w);
 }
 
-
 export function findeTreffer(
   eintraege: CacheEintrag[], box: KuestenBox, jetzt: number, maxAlterMs = MAX_ALTER_MS,
 ): CacheEintrag | null {
@@ -55,23 +45,19 @@ export function findeTreffer(
   return beste;
 }
 
-
 export function zuVerdraengen(
   eintraege: CacheEintrag[], jetzt: number, maxAnzahl = MAX_EINTRAEGE, maxAlterMs = MAX_ALTER_MS,
 ): CacheEintrag[] {
   const abgelaufen = eintraege.filter((e) => jetzt - e.zeit > maxAlterMs);
   const frisch = eintraege.filter((e) => jetzt - e.zeit <= maxAlterMs)
-    .sort((a, b) => b.zeit - a.zeit); 
+    .sort((a, b) => b.zeit - a.zeit);
   return [...abgelaufen, ...frisch.slice(maxAnzahl)];
 }
 
-
-
 const DB_NAME = 'leinen-los';
 const DB_VERSION = 1;
-const STORE_INDEX = 'kueste-index';   
-const STORE_LINIEN = 'kueste-linien'; 
-
+const STORE_INDEX = 'kueste-index';
+const STORE_LINIEN = 'kueste-linien';
 
 function idbVerfuegbar(): boolean {
   return typeof indexedDB !== 'undefined';
@@ -106,7 +92,6 @@ function alsPromise<T>(anfrage: IDBRequest<T>): Promise<T | null> {
   });
 }
 
-
 let index: CacheEintrag[] | null = null;
 
 async function ladeIndex(): Promise<CacheEintrag[]> {
@@ -130,7 +115,6 @@ async function ladeIndex(): Promise<CacheEintrag[]> {
   return index;
 }
 
-
 export async function ausCache(box: KuestenBox): Promise<[Punkt, Punkt][] | null> {
   const eintraege = await ladeIndex();
   const treffer = findeTreffer(eintraege, box, Date.now());
@@ -146,7 +130,6 @@ export async function ausCache(box: KuestenBox): Promise<[Punkt, Punkt][] | null
   }
 }
 
-
 export async function inCache(box: KuestenBox, linien: [Punkt, Punkt][]): Promise<void> {
   const db = await oeffne();
   if (!db) return;
@@ -161,14 +144,12 @@ export async function inCache(box: KuestenBox, linien: [Punkt, Punkt][]): Promis
     for (const e of raus) { iStore.delete(e.id); lStore.delete(e.id); }
     iStore.put({ box, zeit: jetzt }, id);
     lStore.put(linien, id);
-    
-    
+
     index = [...eintraege.filter((e) => e.id !== id && !raus.some((r) => r.id === e.id)), neu];
   } catch {
-    
+
   }
 }
-
 
 export function _indexVergessen(): void {
   index = null;

@@ -1,11 +1,9 @@
-
 import { aktuelleSprache } from '@/shell/sprache';
 
 export function amRechner(): boolean {
   return typeof window.matchMedia === 'function'
     && window.matchMedia('(pointer: fine) and (hover: hover)').matches;
 }
-
 
 export function pdfZiel(wartetext: string): Window | null {
   if (!amRechner()) return null;
@@ -17,17 +15,16 @@ export function pdfZiel(wartetext: string): Window | null {
     w.document.body.style.margin = '2rem';
     w.document.body.textContent = wartetext;
   } catch {
-    
+
   }
   return w;
 }
-
 
 export function verwirfZiel(w: Window | null): void {
   try {
     w?.close();
   } catch {
-    
+
   }
 }
 
@@ -38,7 +35,6 @@ function herunterladen(blob: Blob, name: string): void {
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 10_000);
 }
-
 
 function zeigeImTab(ziel: Window, url: string, name: string): boolean {
   try {
@@ -65,24 +61,15 @@ function zeigeImTab(ziel: Window, url: string, name: string): boolean {
   }
 }
 
-
 export async function biete(blob: Blob, name: string, ziel: Window | null = null): Promise<void> {
   const pdf = blob.type === 'application/pdf' ? blob : new Blob([blob], { type: 'application/pdf' });
   if (ziel && !ziel.closed) {
     const url = URL.createObjectURL(pdf);
-    
-    
-    
-    
+
     if (!zeigeImTab(ziel, url, name)) ziel.location.href = url;
-    
-    
-    
-    
-    
+
     herunterladen(pdf, name);
-    
-    
+
     setTimeout(() => URL.revokeObjectURL(url), 3_600_000);
     return;
   }
@@ -90,21 +77,19 @@ export async function biete(blob: Blob, name: string, ziel: Window | null = null
     const datei = new File([pdf], name, { type: 'application/pdf' });
     const teilen = navigator as Navigator & { canShare?: (d: { files: File[] }) => boolean };
     if (navigator.share && teilen.canShare?.({ files: [datei] })) {
-      
-      
+
       if (aktivierungVerfallen()) { teilenLeiste(datei, pdf, name); return; }
       try {
         await navigator.share({ files: [datei], title: name });
         return;
       } catch (e) {
         if (e instanceof DOMException && e.name === 'NotAllowedError') { teilenLeiste(datei, pdf, name); return; }
-        
+
       }
     }
   }
   herunterladen(pdf, name);
 }
-
 
 export function aktivierungVerfallen(nav: { userActivation?: { isActive: boolean } } = navigator as Navigator & { userActivation?: { isActive: boolean } }): boolean {
   return nav.userActivation !== undefined && !nav.userActivation.isActive;
@@ -114,7 +99,6 @@ const LEISTE_TEXT = {
   de: { fertig: 'PDF fertig', teilen: 'Teilen', speichern: 'Speichern', zu: 'Schließen' },
   en: { fertig: 'PDF ready', teilen: 'Share', speichern: 'Save', zu: 'Close' },
 } as const;
-
 
 function teilenLeiste(datei: File, pdf: Blob, name: string): void {
   const w = LEISTE_TEXT[aktuelleSprache()];

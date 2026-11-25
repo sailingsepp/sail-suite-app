@@ -1,6 +1,5 @@
 import type { Sprache } from '@/core/types';
 
-
 export const STRINGS: Record<Sprache, Record<string, string>> = {
   de: {
     'titel': 'Törn live',

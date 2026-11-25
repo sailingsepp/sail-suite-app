@@ -1,7 +1,6 @@
 import { ortsangabeLogbuch } from '@/data/places';
 import { aktuelleSprache } from '@/shell/sprache';
 
-
 export interface FotoOrt { name: string; endgueltig: boolean }
 
 const gemerkt = new Map<string, Promise<FotoOrt | null>>();
@@ -22,7 +21,7 @@ export function fotoOrt(lat: number, lon: number): Promise<FotoOrt | null> {
     }
   });
   kette = lauf;
-  
+
   void lauf.then((x) => { if (!x || !x.endgueltig) gemerkt.delete(k); });
   gemerkt.set(k, lauf);
   return lauf;

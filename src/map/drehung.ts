@@ -1,20 +1,17 @@
 import L from 'leaflet';
 import { dreheVektor, quadratSeite } from '@/core/kursoben';
 
-
-
 export interface Drehung {
-  
+
   winkel(): number;
   setzeWinkel(grad: number): void;
-  
+
   setzeVergroessert(an: boolean): void;
-  
+
   sichtPolster(px: number): L.Point;
-  
+
   neuMessen(): void;
 }
-
 
 const winkelJe = new WeakMap<HTMLElement, number>();
 
@@ -24,7 +21,6 @@ function containerVon(el: Element | null): HTMLElement | null {
 }
 
 let ergaenzt = false;
-
 
 function ergaenzeLeaflet(): void {
   if (ergaenzt) return;
@@ -51,7 +47,7 @@ function ergaenzeLeaflet(): void {
     const grad = this._map ? winkelJe.get(this._map.getContainer()) ?? 0 : 0;
     const el = this._container;
     if (!grad) { el.style.transformOrigin = ''; return; }
-    
+
     const ziel = this._map!.latLngToLayerPoint(this._latlng);
     const ecke = L.DomUtil.getPosition(el);
     const st = getComputedStyle(el);
@@ -62,22 +58,18 @@ function ergaenzeLeaflet(): void {
   };
 }
 
-
 export function macheDrehbar(karte: L.Map, kasten: HTMLElement): Drehung {
   ergaenzeLeaflet();
   const container = karte.getContainer();
   let grad = 0;
   let gross = false;
 
-  
-  
   const steuer = (karte as unknown as { _controlContainer: HTMLElement })._controlContainer;
   kasten.appendChild(steuer);
   kasten.classList.add('leaflet-container', 'karte-kasten');
   if (container.classList.contains('leaflet-touch')) kasten.classList.add('leaflet-touch');
   container.classList.add('karte-drehbar');
 
-  
   const echt = Element.prototype.getBoundingClientRect;
   container.getBoundingClientRect = function () {
     const r = echt.call(this);
@@ -86,7 +78,6 @@ export function macheDrehbar(karte: L.Map, kasten: HTMLElement): Drehung {
     return new DOMRect(r.left + r.width / 2 - w / 2, r.top + r.height / 2 - h / 2, w, h);
   };
 
-  
   const zuPunkt = karte.mouseEventToContainerPoint.bind(karte);
   karte.mouseEventToContainerPoint = (e) => {
     const p = zuPunkt(e);
@@ -96,9 +87,6 @@ export function macheDrehbar(karte: L.Map, kasten: HTMLElement): Drehung {
     return L.point(m.x + x, m.y + y);
   };
 
-  
-  
-  
   let wartetAufZoom = false;
   function lege(): void {
     if ((karte as unknown as { _animatingZoom?: boolean })._animatingZoom) {
@@ -122,7 +110,7 @@ export function macheDrehbar(karte: L.Map, kasten: HTMLElement): Drehung {
     if (n) winkelJe.set(container, grad); else winkelJe.delete(container);
     kasten.classList.toggle('karte-dreht', !!n);
     kasten.style.setProperty('--karte-gegendrehung', `${-grad}deg`);
-    
+
     karte.eachLayer((l) => { const t = l.getTooltip?.(); if (t?.isOpen()) t.update(); });
   }
 

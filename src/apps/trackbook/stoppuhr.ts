@@ -7,7 +7,6 @@ import {
 import { platziereAufKarte } from './timer';
 import { STRINGS } from './strings';
 
-
 const SCHLUESSEL = 'sail-suite:nav-stoppuhr';
 const sprache = () => aktuelleSprache();
 const wort = (k: string) => STRINGS[sprache()][k] ?? k;
@@ -34,7 +33,6 @@ function schreibe(): void {
 }
 
 export function stoppuhrOffen(): boolean { return offen; }
-
 
 export function schalteStoppuhr(): void {
   offen = !offen;
@@ -89,7 +87,7 @@ function zeichne(): void {
     + knopf('intervall', SIGNAL, wort('stoppuhr.intervall'))
     + knopf('reset', icon('undo'), wort('stoppuhr.reset'), leer ? ' disabled' : '')
     + '</div>' + liste();
-  
+
   const ol = el.querySelector<HTMLElement>('.tb-uhr-liste');
   if (ol) ol.scrollTop = vorher != null && vorher < ol.scrollHeight - ol.clientHeight - 40 ? vorher : ol.scrollHeight;
   if (l) uhr = window.setInterval(takt, 100);
@@ -97,7 +95,6 @@ function zeichne(): void {
 }
 
 function platziere(): void { if (el) platziereAufKarte(el, '#tb-timer:not([hidden])'); }
-
 
 export function initStoppuhr(aenderung: () => void): void {
   geaendert = aenderung;
@@ -109,13 +106,13 @@ export function initStoppuhr(aenderung: () => void): void {
   el.setAttribute('role', 'group');
   el.hidden = true;
   wrap.appendChild(el);
-  
+
   el.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
     const k = (e.target as Element).closest<HTMLButtonElement>('[data-s]');
     if (k && !k.disabled) { e.preventDefault(); aktion(k.dataset['s']!); }
   });
-  
+
   el.addEventListener('click', (e) => {
     if ((e as PointerEvent).pointerType) return;
     const k = (e.target as Element).closest<HTMLButtonElement>('[data-s]');
@@ -132,6 +129,5 @@ export function initStoppuhr(aenderung: () => void): void {
   }
   document.addEventListener('visibilitychange', () => { if (!document.hidden && stoppuhrLaeuft(z)) takt(); });
 }
-
 
 export function stoppuhrPlatzNeu(): void { platziere(); }

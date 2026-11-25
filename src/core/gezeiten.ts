@@ -2,23 +2,17 @@ import { createTidePredictor } from '@neaps/tide-predictor';
 import { distNM } from './geo';
 import type { GezeitenStation } from './gezeitenStationen';
 
-
-
-
 export const GEZEIT_MAX_KM = 50;
-
 
 export const GEZEIT_BEACHTLICH_M = 0.3;
 
 export interface Stationstreffer { station: GezeitenStation; entfernungKm: number }
-
 
 export function stationenNachEntfernung(stationen: readonly GezeitenStation[], lat: number, lon: number): Stationstreffer[] {
   return stationen
     .map((station) => ({ station, entfernungKm: distNM(lat, lon, station.lat, station.lon) * 1.852 }))
     .sort((a, b) => a.entfernungKm - b.entfernungKm);
 }
-
 
 export function bezugsStation(
   stationen: readonly GezeitenStation[], lat: number, lon: number, maxKm = GEZEIT_MAX_KM,
@@ -29,7 +23,6 @@ export function bezugsStation(
 
 type Vorhersager = ReturnType<typeof createTidePredictor>;
 const cache = new WeakMap<GezeitenStation, Map<string, Vorhersager>>();
-
 
 function vorhersager(station: GezeitenStation, nur?: readonly string[]): Vorhersager {
   let je = cache.get(station);
@@ -56,17 +49,14 @@ function phase(station: GezeitenStation, name: string): number | null {
 export interface Tidenpunkt { zeit: Date; hoeheM: number }
 export interface Tidenextrem { zeit: Date; hoeheM: number; art: 'HW' | 'NW' }
 
-
 function versatzMs(station: GezeitenStation): number {
   return (station.versatzMin ?? 0) * 60_000;
 }
 const verschoben = (d: Date, ms: number) => (ms === 0 ? d : new Date(d.getTime() + ms));
 
-
 export function wasserstandZu(station: GezeitenStation, zeit: Date): number {
   return vorhersager(station).getWaterLevelAtTime({ time: verschoben(zeit, -versatzMs(station)) }).level;
 }
-
 
 export function tidenkurve(station: GezeitenStation, von: Date, bis: Date, schrittMin = 10): Tidenpunkt[] {
   const v = versatzMs(station);
@@ -75,7 +65,6 @@ export function tidenkurve(station: GezeitenStation, von: Date, bis: Date, schri
     .map((p) => ({ zeit: verschoben(p.time, v), hoeheM: p.level }));
 }
 
-
 export function tidenextreme(station: GezeitenStation, von: Date, bis: Date): Tidenextrem[] {
   const v = versatzMs(station);
   return vorhersager(station)
@@ -83,17 +72,13 @@ export function tidenextreme(station: GezeitenStation, von: Date, bis: Date): Ti
     .map((e) => ({ zeit: verschoben(e.time, v), hoeheM: e.level, art: e.high ? 'HW' as const : 'NW' as const }));
 }
 
-
 export function groessterTidenhub(extreme: readonly Tidenextrem[]): number {
   let max = 0;
   for (let i = 1; i < extreme.length; i++) max = Math.max(max, Math.abs(extreme[i]!.hoeheM - extreme[i - 1]!.hoeheM));
   return max;
 }
 
-
-
 export type Gezeitenform = 'halbtaegig' | 'gemischt-halbtaegig' | 'gemischt-eintaegig' | 'eintaegig';
-
 
 export function formzahl(station: GezeitenStation): number {
   const halb = amplitude(station, 'M2') + amplitude(station, 'S2');
@@ -108,20 +93,17 @@ export function gezeitenform(f: number): Gezeitenform {
   return 'eintaegig';
 }
 
-
-
-
 export interface Gezeitenkennwerte {
   mspHW: number; mspNW: number; mnpHW: number; mnpNW: number;
   mhw: number | null; mnw: number | null; mhhw: number | null; mllw: number | null;
   hat: number; lat: number;
   formzahl: number;
   form: Gezeitenform;
-  
+
   springHub: number;
-  
+
   nippHub: number;
-  
+
   springverspaetungH: number | null;
 }
 
@@ -133,8 +115,7 @@ export function kennwerte(station: GezeitenStation): Gezeitenkennwerte {
   const gS2 = phase(station, 'S2');
   let verspaetung: number | null = null;
   if (gM2 != null && gS2 != null) {
-    
-    
+
     const d = ((gS2 - gM2 + 540) % 360) - 180;
     verspaetung = 0.984 * d;
   }
@@ -148,12 +129,9 @@ export function kennwerte(station: GezeitenStation): Gezeitenkennwerte {
   };
 }
 
-
-
 const STUNDE = 3600_000;
 const HALBTAEGIG = ['M2', 'S2'] as const;
 const EINTAEGIG = ['K1', 'O1'] as const;
-
 
 function huelle(p: Vorhersager, t: number, viertelH: number): number {
   const a = p.getWaterLevelAtTime({ time: new Date(t) }).level;
@@ -165,21 +143,19 @@ export type Tidenphase = 'springzeit' | 'nippzeit' | 'mittzeit-zunehmend' | 'mit
 
 export interface SpringNippLage {
   phase: Tidenphase;
-  
+
   anteil: number;
-  
+
   naechsteSpring: Date | null;
-  
+
   naechsteNipp: Date | null;
-  
+
   letzteSpring: Date | null;
 }
-
 
 export function springNippLage(station: GezeitenStation, zeit: Date): SpringNippLage | null {
   return huellkurvenLage(station, zeit, HALBTAEGIG, 12.42 / 4);
 }
-
 
 export function deklinationsLage(station: GezeitenStation, zeit: Date): SpringNippLage | null {
   return huellkurvenLage(station, zeit, EINTAEGIG, 24.9 / 4);
@@ -191,14 +167,12 @@ function huellkurvenLage(
   if (paar.some((n) => amplitude(station, n) === 0)) return null;
   const p = vorhersager(station, paar);
   const t0 = zeit.getTime();
-  
-  
+
   const werte: { t: number; a: number }[] = [];
   for (let h = -432; h <= 432; h++) werte.push({ t: t0 + h * STUNDE, a: huelle(p, t0 + h * STUNDE, viertelH) });
   const maxima: { t: number; a: number }[] = [];
   const minima: { t: number; a: number }[] = [];
-  
-  
+
   for (let i = 24; i < werte.length - 24; i++) {
     const a = werte[i]!.a;
     let istMax = true, istMin = true;
@@ -214,12 +188,12 @@ function huellkurvenLage(
   const frueher = (l: typeof maxima) => [...l].reverse().find((w) => w.t < t0) ?? null;
   const nSpring = spaeter(maxima), vSpring = frueher(maxima);
   const nNipp = spaeter(minima), vNipp = frueher(minima);
-  
+
   const oben = Math.max(nSpring?.a ?? -Infinity, vSpring?.a ?? -Infinity);
   const unten = Math.min(nNipp?.a ?? Infinity, vNipp?.a ?? Infinity);
   if (!Number.isFinite(oben) || !Number.isFinite(unten) || oben <= unten) return null;
   const anteil = Math.min(1, Math.max(0, (jetzt - unten) / (oben - unten)));
-  
+
   const zunehmend = (nSpring?.t ?? Infinity) < (nNipp?.t ?? Infinity);
   const phase: Tidenphase = anteil >= 0.75 ? 'springzeit' : anteil <= 0.25 ? 'nippzeit'
     : zunehmend ? 'mittzeit-zunehmend' : 'mittzeit-abnehmend';

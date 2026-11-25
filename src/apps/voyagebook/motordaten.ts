@@ -15,10 +15,7 @@ import { liesEigeneNutzerId } from '@/shell/session';
 import { aktuelleSprache } from '@/shell/sprache';
 import { STRINGS } from './strings';
 
-
-
 const $ = (id: string) => document.getElementById(id);
-
 
 function feldZahl(v: number): string {
   return aktuelleSprache() === 'de' ? String(v).replace('.', ',') : String(v);
@@ -48,7 +45,6 @@ function setz(id: string, v: number | undefined): void {
 async function lokalerToern(id: string): Promise<LokalerToern | null> {
   return speicherVerfuegbar() ? holeLokalenToern(id).catch(() => null) : null;
 }
-
 
 export async function ladeMotordaten(
   sitzung: string, t: ToernZeile, beiAenderung: () => void,
@@ -92,8 +88,7 @@ async function speichere(): Promise<void> {
     werte.motorstunden, zahl('in-motor-anfang'), zahl('in-motor-ende'),
     lokal?.angelegt ?? Date.parse(t.angelegt), lokal?.beendet ?? Date.now(),
   );
-  
-  
+
   const tank = tankliste?.lies() ?? { vorgaenge: tankvorgaengeAus(werte), fehler: false };
   const dieselFehler = tank.fehler;
   const neu: Motordaten = {
@@ -103,15 +98,14 @@ async function speichere(): Promise<void> {
       : { dieselGetanktL: summeLiter(tank.vorgaenge), tankvorgaenge: tank.vorgaenge }),
   };
   if (lokal) {
-    
+
     await aendereToern(lokal.id, (jetzt) => (jetzt
       ? setzeDieselInToern({ ...jetzt, motorstunden: neu.motorstunden }, neu) : null)).catch(() => null);
   }
   const oben = await schreibeMotordaten(token, t.id, neu);
   const nutzerId = liesEigeneNutzerId();
   if (oben && nutzerId) merkeMotordaten(nutzerId, t.id, neu);
-  
-  
+
   if (!oben && !lokal) {
     if (status) status.textContent = wort('motor.fehlerNetz');
     return;
@@ -126,7 +120,6 @@ async function speichere(): Promise<void> {
   }
   nachSpeichern();
 }
-
 
 export function sperreTankliste(gesperrt: boolean): void {
   tankliste?.sperre(gesperrt);

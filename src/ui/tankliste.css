@@ -1,4 +1,3 @@
-
 .tank-liste { display: grid; gap: 8px; margin: 4px 0 8px; container-type: inline-size; }
 .tank-titel { font-size: 13px; color: var(--muted); }
 .tank-zeilen { display: grid; gap: 8px; }

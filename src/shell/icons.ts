@@ -1,5 +1,3 @@
-
-
 export type IconName =
   | 'sonne' | 'mond' | 'auto' | 'globus' | 'buch' | 'haus' | 'kompass' | 'person' | 'tuer'
   | 'anker' | 'export' | 'vorladen' | 'wind' | 'schiff' | 'import' | 'glocke'
@@ -8,21 +6,19 @@ export type IconName =
   | 'drucker' | 'teilen' | 'lupe' | 'diskette' | 'dokument' | 'liste' | 'zurueck' | 'lautsprecher'
   | 'hamburger' | 'zentrieren' | 'start' | 'pause' | 'stop' | 'undo' | 'tastatur'
   | 'ankerPause' | 'papierkorb' | 'propeller' | 'poller' | 'treiben' | 'kai' | 'gezeit'
-  
+
   | 'route' | 'zielpunkt' | 'messen' | 'rueckweg' | 'karten' | 'navigation'
-  
+
   | 'stoppuhr' | 'wiederholen'
-  
+
   | 'boeen' | 'regen' | 'gewitter' | 'blitz' | 'strom' | 'flaeche'
-  
+
   | 'luftbild'
-  
+
   | 'radar';
 
-
 const PFADE: Record<IconName, string> = {
-  
-  
+
   boeen:
     '<path d="M2.5 6.5h8a2 2 0 10-1.6-3.2"/><path d="M2.5 10.5h7"/><path d="M2.5 14.5h8a2 2 0 11-1.6 3.2"/>'
     + '<path d="M11.5 8l2.5 2.5-2.5 2.5M15 8l2.5 2.5L15 13"/>',
@@ -130,7 +126,7 @@ const PFADE: Record<IconName, string> = {
   diskette:
     '<rect x="3.4" y="3.4" width="13.2" height="13.2" rx="1.2"/>' +
     '<path d="M6.4 3.4v4.2h7.2V3.4"/><rect x="6.4" y="11" width="7.2" height="5.6"/>',
-  
+
   liste:
     '<path d="M8 5.5h8.5M8 10h8.5M8 14.5h8.5"/><path d="M3.6 5.5h1.2M3.6 10h1.2M3.6 14.5h1.2"/>',
   dokument:
@@ -160,11 +156,7 @@ const PFADE: Record<IconName, string> = {
   tastatur:
     '<rect x="2.5" y="6" width="15" height="9" rx="1.5"/>'
     + '<path d="M5.2 9.3h.01M8 9.3h.01M10.8 9.3h.01M13.6 9.3h.01M14.8 12.5h.01M5.2 12.5h6.4"/>',
-  
-  
-  
-  
-  
+
   propeller:
     '<circle cx="10" cy="10" r="1.7"/>'
     + '<path d="M10 8.3C8.6 6.6 8.7 3.4 10 2.6c1.3.8 1.4 4 0 5.7z"/>'
@@ -178,14 +170,12 @@ const PFADE: Record<IconName, string> = {
     '<path d="M5 9.8h10l-1.5 3H6.5z"/><path d="M10 9.8V5.2"/>'
     + '<path d="M2.6 16.2c1.2-.9 2.3-.9 3.5 0s2.3.9 3.5 0 2.3-.9 3.5 0 2.3.9 3.5 0"/>'
     + '<path d="M2.6 5.6h3.8M5 4.2l1.4 1.4L5 7"/>',
-  
+
   gezeit:
     '<path d="M2 13.2c1.6-1.6 3.2-1.6 4.8 0s3.2 1.6 4.8 0 3.2-1.6 4.8 0"/>'
     + '<path d="M2 17c1.6-1.6 3.2-1.6 4.8 0s3.2 1.6 4.8 0 3.2-1.6 4.8 0"/>'
     + '<path d="M10 2.4v7M8 4.4l2-2 2 2M8 7.4l2 2 2-2"/>',
-  
-  
-  
+
   route:
     '<circle cx="4" cy="15.5" r="1.8"/><circle cx="10" cy="6" r="1.8"/><circle cx="16" cy="12.5" r="1.8"/>'
     + '<path d="M5.1 14l3.8-6.3M11.4 7.3l3.3 3.9" stroke-dasharray="2 1.6"/>',
@@ -211,23 +201,11 @@ const PFADE: Record<IconName, string> = {
     + '<path d="M2.4 11.4h8.8l-1.4 2.8H3.8z"/><path d="M6.6 11.4V4.8"/>'
     + '<path d="M11.2 11.4c.8-1.9 2.2-2.9 4.1-3.2"/>'
     + '<path d="M2.4 16.8c1-.7 2-.7 3 0s2 .7 3 0 2-.7 3 0"/>',
-  
-  
+
   papierkorb:
     '<path d="M3.5 5.5h13"/><path d="M8 5.5V3.6h4v1.9"/>'
     + '<path d="M5.2 5.5l.9 11h7.8l.9-11"/><path d="M8.6 8.5v5.5M11.4 8.5v5.5"/>',
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
   ankerPause:
     '<g transform="translate(-1.2 0.6) scale(0.78)" stroke-width="2.05">'
     + '<circle cx="10" cy="4.2" r="1.9"/><path d="M10 6v11"/><path d="M6.3 9h7.4"/>'
@@ -235,13 +213,11 @@ const PFADE: Record<IconName, string> = {
     + '<path fill="currentColor" stroke="none" d="M14.2 4h2.6v12h-2.6zM17.2 4h2.6v12h-2.6z"/>',
 };
 
-
 export function icon(name: IconName, klasse = 'icon'): string {
   return `<svg class="${klasse}" viewBox="0 0 20 20" aria-hidden="true" focusable="false" `
     + `fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" `
     + `stroke-linejoin="round">${PFADE[name]}</svg>`;
 }
-
 
 export function initIcons(): void {
   document.querySelectorAll<HTMLElement>('[data-icon]').forEach((el) => {

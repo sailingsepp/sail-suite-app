@@ -1,11 +1,6 @@
-
-
-
 export type Staatsnamen = readonly string[] | null;
 
-
 export const STAATEN_REGEL = 2;
-
 
 const STAAT_KANON: Readonly<Record<string, string>> = Object.fromEntries(([
   ['Greece', 'greek', 'hellas', 'ελλάδα'],
@@ -36,12 +31,10 @@ const STAAT_KANON: Readonly<Record<string, string>> = Object.fromEntries(([
   ['Georgia', 'georgian'],
 ] as const).flatMap(([staat, ...andere]) => [[staat.toLowerCase(), staat], ...andere.map((n) => [n, staat])]));
 
-
 export function kanon(name: string): string {
   const n = name.trim().toLowerCase();
   return STAAT_KANON[n] ?? n;
 }
-
 
 export function staatenAusGazetteer(eintraege: readonly { name: string; art: string }[]): string[] {
   const out: string[] = [];
@@ -55,15 +48,12 @@ export function staatenAusGazetteer(eintraege: readonly { name: string; art: str
   return out;
 }
 
-
 const SCHENGEN = new Set(['Croatia', 'Slovenia', 'Italy', 'Greece', 'Malta', 'France', 'Spain', 'Portugal', 'Bulgaria', 'Romania']);
-
 
 export function schengenGrenze(a: string, b: string): 'binnen' | 'aussen' | 'ohne' {
   const x = SCHENGEN.has(kanon(a)), y = SCHENGEN.has(kanon(b));
   return x && y ? 'binnen' : x || y ? 'aussen' : 'ohne';
 }
-
 
 export function istGrenzuebertritt(a: Staatsnamen, b: Staatsnamen): boolean {
   if (!a || !b || a.length === 0 || b.length === 0) return false;
@@ -71,13 +61,11 @@ export function istGrenzuebertritt(a: Staatsnamen, b: Staatsnamen): boolean {
   return !b.some((n) => staaten.has(kanon(n)));
 }
 
-
 export function istKlarierGrenze(a: Staatsnamen, b: Staatsnamen): boolean {
   if (!istGrenzuebertritt(a, b)) return false;
   const imSchengen = (s: Staatsnamen) => !!s && s.some((n) => SCHENGEN.has(kanon(n)));
   return !(imSchengen(a) && imSchengen(b));
 }
-
 
 export function einklarierStunden(maxStundenProTag: number): number {
   return maxStundenProTag / 2;

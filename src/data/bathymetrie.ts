@@ -3,13 +3,10 @@ import { bearingDeg, destPoint } from '@/core/geo';
 import type { Punkt, StreckenPunkt } from '@/core/types';
 import { ausCache, inCache, schluessel } from './tiefeCache';
 
-
-
 const BASIS = 'https://rest.emodnet-bathymetry.eu';
 
 const RUHE_MS = 5 * 60_000;
 let ruheBis = 0;
-
 
 const wkt = (p: Punkt) => `${p.lon.toFixed(6)} ${p.lat.toFixed(6)}`;
 
@@ -32,7 +29,6 @@ async function hole(pfad: string): Promise<unknown> {
   return res.json();
 }
 
-
 export async function fetchTiefe(punkt: { lat: number; lon: number }): Promise<Tiefenpunkt> {
   const geom = `POINT(${wkt(punkt)})`;
   const id = schluessel(geom);
@@ -41,10 +37,7 @@ export async function fetchTiefe(punkt: { lat: number; lon: number }): Promise<T
   try {
     const j = (await hole(`/depth_sample?geom=${geom}`)) as RohAntwort;
     const gedeutet = deuteTiefe(j);
-    
-    
-    
-    
+
     void inCache(id, gedeutet).catch(() => {  });
     return gedeutet;
   } catch {
@@ -52,11 +45,9 @@ export async function fetchTiefe(punkt: { lat: number; lon: number }): Promise<T
   }
 }
 
+const AUSWEICH_MAX_NM = 0.27;
 
-const AUSWEICH_MAX_NM = 0.27;   
-
-
-const NAHE_DEUTUNG_VERSION = 2; 
+const NAHE_DEUTUNG_VERSION = 2;
 
 export async function fetchTiefeNahe(
   punkt: { lat: number; lon: number },
@@ -72,15 +63,12 @@ export async function fetchTiefeNahe(
   try {
     const roh = (await hole(`/depth_profile?geom=LINESTRING(${linie})`)) as unknown;
     if (!Array.isArray(roh) || roh.length < 2) return { tiefeM: null, guete: 'land' };
-    
-    
+
     const klar = ersteKlareTiefe(roh, (maxNM * 1852) / (roh.length - 1));
     if (klar) {
       const gefunden: Tiefenpunkt = {
         tiefeM: klar.tiefeM,
-        
-        
-        
+
         guete: 'unbekannt',
         versatzM: klar.versatzM,
       };
@@ -96,14 +84,13 @@ export async function fetchTiefeNahe(
 }
 
 export interface Tiefenprofil {
-  
+
   punkte: { cum: number; tiefeM: number | null }[];
-  
+
   flachsteM: number | null;
-  
+
   werte: number;
 }
-
 
 export async function fetchTiefenprofil(strecke: StreckenPunkt[]): Promise<Tiefenprofil | null> {
   if (strecke.length < 2) return null;
@@ -111,7 +98,7 @@ export async function fetchTiefenprofil(strecke: StreckenPunkt[]): Promise<Tiefe
   try {
     const stuecke = geradeStuecke(strecke);
     const reihen: unknown[][] = [];
-    
+
     for (let k = 0; k < stuecke.length; k += 4) {
       reihen.push(...await Promise.all(stuecke.slice(k, k + 4).map(([i0, i1]) => profilDerLinie(strecke[i0]!, strecke[i1]!))));
     }
@@ -132,7 +119,6 @@ export async function fetchTiefenprofil(strecke: StreckenPunkt[]): Promise<Tiefe
   }
 }
 
-
 async function profilDerLinie(a: Punkt, b: Punkt): Promise<unknown[]> {
   const linie = `${wkt(a)},${wkt(b)}`;
   const id = schluessel(linie);
@@ -143,7 +129,6 @@ async function profilDerLinie(a: Punkt, b: Punkt): Promise<unknown[]> {
   void inCache(id, roh as number[]).catch(() => {  });
   return roh;
 }
-
 
 export function geradeStuecke(strecke: readonly Punkt[]): [number, number][] {
   const KNICK_GRAD = 1;

@@ -1,8 +1,4 @@
-
-
-
 const RICHTUNGEN = [0, 45, 90, 135, 180, 225, 270, 315] as const;
-
 
 export function bildschirmRichtung(a: { x: number; y: number }, b: { x: number; y: number }): number | null {
   const dx = b.x - a.x, dy = b.y - a.y;
@@ -11,7 +7,6 @@ export function bildschirmRichtung(a: { x: number; y: number }, b: { x: number; 
 }
 
 const abstand = (a: number, b: number): number => { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; };
-
 
 export function freieRichtung(meiden: readonly (number | null)[]): number {
   const r = meiden.filter((x): x is number => x !== null);
@@ -24,7 +19,6 @@ export function freieRichtung(meiden: readonly (number | null)[]): number {
   }
   return beste;
 }
-
 
 export function tooltipLage(richtung: number, abstandPx: number): { direction: 'top' | 'bottom' | 'left' | 'right'; offset: [number, number] } {
   const sx = Math.sin(richtung * Math.PI / 180), cy = Math.cos(richtung * Math.PI / 180);

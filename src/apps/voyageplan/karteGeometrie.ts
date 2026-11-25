@@ -1,8 +1,6 @@
-
 import type { WochenplanErgebnis } from '@/core/wochenplan';
 import type { Punkt } from '@/core/types';
 import { distNM, bearingDeg } from '@/core/geo';
-
 
 export function markenJeOrt(
   etappen: WochenplanErgebnis['etappen'],
@@ -18,9 +16,7 @@ export function markenJeOrt(
   return je;
 }
 
-
 export const PFEIL_ANTEIL = 0.4;
-
 
 export function punktAufWeg(weg: readonly Punkt[], anteil: number): { punkt: Punkt; kursDeg: number } | null {
   if (weg.length < 2) return null;

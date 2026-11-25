@@ -4,15 +4,13 @@ import { naechsteTankstelle, TANKSTELLE_NAH_M, TANKSTELLE_SUCHE_M, type Tankstel
 import { umgebungLokal } from './umgebung';
 import { queryOverpass } from './overpass';
 
-
 export async function tankstelleNeben(punkt: Punkt): Promise<Tankstelle | null | undefined> {
   const paket = await umgebungLokal(punkt, TANKSTELLE_SUCHE_M).catch(() => null);
   const ausPaket = paket ? naechsteTankstelle(elementeImUmkreis(paket, punkt, TANKSTELLE_SUCHE_M), punkt) : undefined;
   if (ausPaket) return ausPaket;
   const um = `(around:${TANKSTELLE_SUCHE_M},${punkt.lat},${punkt.lon})`;
   const ql = '[out:json][timeout:8];('
-    
-    
+
     + `nwr["seamark:small_craft_facility:category"~"fuel_station"]${um};`
     + `nwr["waterway"="fuel"]${um};`
     + `nwr["amenity"="fuel"]["boat"~"^(yes|designated)$"]${um};`

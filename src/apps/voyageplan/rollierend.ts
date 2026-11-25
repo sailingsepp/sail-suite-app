@@ -1,10 +1,8 @@
-
 import {
   fahrtenZuToern, ladeFixe, orteZurFahrt, speicherVerfuegbar, type Fahrt,
 } from '@/data/logdb';
 import { toernBilanz, type FahrtMitSpur, type Etappe as GefahreneEtappe } from '@/core/toernbilanz';
 import type { Punkt } from '@/core/types';
-
 
 export interface GefahrenerTag {
   tag: number;
@@ -14,7 +12,6 @@ export interface GefahrenerTag {
   nachPos: Punkt;
 }
 
-
 export function tagAusZeitstempel(toernVonIso: string, tMs: number): number {
   const von = new Date(`${toernVonIso}T00:00:00`);
   const t = new Date(tMs);
@@ -23,11 +20,9 @@ export function tagAusZeitstempel(toernVonIso: string, tMs: number): number {
   return Math.round((tTag - vonTag) / 86_400_000) + 1;
 }
 
-
 export function tagAusPlanDatum(toernVonIso: string, etappenDatumIso: string): number {
   return tagAusZeitstempel(toernVonIso, new Date(`${etappenDatumIso}T00:00:00`).getTime());
 }
-
 
 export function gefahreneTage(toernVonIso: string, etappen: readonly GefahreneEtappe[]): GefahrenerTag[] {
   return etappen
@@ -40,7 +35,6 @@ export function gefahreneTage(toernVonIso: string, etappen: readonly GefahreneEt
       nachPos: e.nachPos,
     }));
 }
-
 
 async function mitSpurAufbauen(fahrten: readonly Fahrt[]): Promise<FahrtMitSpur[]> {
   const raus: FahrtMitSpur[] = [];
@@ -55,7 +49,6 @@ async function mitSpurAufbauen(fahrten: readonly Fahrt[]): Promise<FahrtMitSpur[
   }
   return raus;
 }
-
 
 export async function holeGefahreneTage(toernId: string, toernVonIso: string): Promise<GefahrenerTag[]> {
   if (!speicherVerfuegbar()) return [];
@@ -76,7 +69,7 @@ export interface VergleichsZeile {
   tag: number;
   geplant: { von: string; nach: string } | null;
   gefahren: { von: string | null; nach: string | null; nm: number } | null;
-  
+
   weicht: boolean;
 }
 
@@ -84,12 +77,10 @@ function gleicherOrt(a: string, b: string): boolean {
   return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
 
-
 export function vergleichePlanMitWirklichkeit(
   geplant: readonly GeplanteZeile[], gefahren: readonly GefahrenerTag[],
 ): VergleichsZeile[] {
-  
-  
+
   const geplantJeTag = new Map<number, GeplanteZeile>();
   for (const g of geplant) {
     const da = geplantJeTag.get(g.tag);
@@ -112,7 +103,6 @@ export function vergleichePlanMitWirklichkeit(
     };
   });
 }
-
 
 export function neuerStartpunkt(gefahren: readonly GefahrenerTag[]): { ort: Punkt; name: string | null } | null {
   const sortiert = [...gefahren].sort((a, b) => a.tag - b.tag);

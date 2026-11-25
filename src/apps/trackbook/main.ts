@@ -11,7 +11,7 @@ import { wetterOrt } from '@/core/zielwetter';
 import { zeichneZielwetter } from './zielwetter';
 import { eintragArtName, eintragInhalt, liegeartName, LIEGEARTEN, type Liegeart } from '@/core/logbuchText';
 import { antriebsZeit, eintragsZeit, positionZurZeit, uhrzeitFeld } from '@/core/logbuchBearbeiten';
-import '@/shell/tokens.css'; 
+import '@/shell/tokens.css';
 import './style.css';
 
 import { setzeAppTexte } from '@/shell/strings';
@@ -63,7 +63,6 @@ import { initAis, pruefeAis, aisNeuZeichnen, aisRuhtLiegend } from './ais';
 import { initStationen, pruefeStationen } from './stationen';
 import { initWarnblock } from './warnblock';
 
-
 const AIS_RUHE_AB_STILLSTAND_S = 120;
 import { initSeegrenze, pruefeSeegrenze } from './seegrenze';
 import { initMeeresgebiet, pruefeMeeresgebiet } from './meeresgebiet';
@@ -102,9 +101,6 @@ import { initEinBildschirm } from './einbildschirm';
 import type { LogEintrag } from '@/data/logdb';
 import { ladebildGezeichnet, ladebildWeg } from '@/shell/ladebild';
 
-
-
-
 await ladebildGezeichnet();
 initIcons();
 
@@ -119,8 +115,6 @@ initUserMenu();
 initHandbuchModal();
 initSupport('trackbook');
 
-
-
 const merkenBox = document.getElementById('in-menu-merken') as HTMLInputElement | null;
 if (merkenBox) {
   merkenBox.checked = merktSich();
@@ -134,7 +128,6 @@ if (merkenBox) {
 }
 
 const $ = (id: string) => document.getElementById(id);
-
 
 const LAGE_ICON: Record<Lage, IconName> = {
   motor: 'propeller', segel: 'segel', angelegt: 'poller', treibend: 'treiben', ankernd: 'anker', liegeplatz: 'kai',
@@ -159,13 +152,12 @@ function zeigeLage(z: Zustand): void {
   const l0 = lage(z);
   el.hidden = l0 === null;
   if (!l0) { letzteLage = null; return; }
-  
+
   if (antriebVorschau && z.betriebsart !== 'laeuft') uebernimmAntriebVorschau();
   const l: Lage = (l0 === 'motor' || l0 === 'segel') && antriebVorschau ? antriebVorschau.ziel : l0;
-  
+
   (el as HTMLButtonElement).disabled = !((l === 'motor' || l === 'segel') && z.betriebsart === 'laeuft');
-  
-  
+
   const schluessel = `${l}|${aktuelleSprache()}`;
   if (schluessel === letzteLage) return;
   letzteLage = schluessel;
@@ -179,7 +171,6 @@ function zeigeLage(z: Zustand): void {
   if (l === 'motor' || l === 'segel') lageTextZeigen();
   else { window.clearTimeout(lageTextUhr); el.classList.add('nur-symbol'); }
 }
-
 
 const ANTRIEB_VERZUG_MS = 10_000;
 let antriebVorschau: { ziel: 'motor' | 'segel'; t: number; uhr: number } | null = null;
@@ -205,14 +196,13 @@ function uebernimmAntriebVorschau(): void {
   const z = aktuellerZustand();
   letzteLage = null;
   if (!z.fahrt || (z.antrieb === 'motor' ? 'motor' : 'segel') === v.ziel) { zeigeLage(z); return; }
-  
+
   motorwacheVonHand();
   const pos = positionZurZeit(aktuelleFixe(), v.t) ?? z.position;
   void setzeAntrieb(v.ziel, { t: v.t, lat: pos?.lat ?? null, lon: pos?.lon ?? null });
 }
 const wort = (schluessel: string): string =>
   STRINGS[aktuelleSprache()][schluessel] ?? schluessel;
-
 
 const uhr = (t: number) => uhrLtVon(t);
 
@@ -222,7 +212,6 @@ function dauer(sekunden: number): string {
   const m = Math.floor((s % 3600) / 60);
   return h > 0 ? `${h}:${String(m).padStart(2, '0')} h` : `${m}:${String(s % 60).padStart(2, '0')} min`;
 }
-
 
 function setzeDauer(sekunden: number | null): void {
   const el = $('w-dauer');
@@ -235,7 +224,6 @@ function setzeDauer(sekunden: number | null): void {
   einheit.textContent = t.slice(k + 1);
   el.appendChild(einheit);
 }
-
 
 function wert(id: string, text: string): void {
   const el = $(id);
@@ -254,28 +242,23 @@ let laufenderToern: Awaited<ReturnType<typeof aktuellerToern>> = null;
 const karteEl = $('tb-karte');
 if (karteEl) {
   initKarte(karteEl, (folgt) => {
-    
-    
+
     ($('btn-zentrieren') as HTMLElement | null)?.toggleAttribute('hidden', folgt);
     ($('btn-nav-zentrieren') as HTMLElement | null)?.toggleAttribute('hidden', folgt);
     karteEl.classList.toggle('tb-folgt', folgt);
   });
   karteEl.classList.add('tb-folgt');
-  
-  
+
   requestAnimationFrame(() => karteNeuMessen());
 }
 $('btn-zentrieren')?.addEventListener('click', () => zentriere());
-
 
 const AUSRICHTUNG_KEY = 'sail-suite:karten-ausrichtung';
 function beschrifteAusrichtung(): void {
   const knopf = $('btn-ausrichtung');
   if (!knopf) return;
   const kurs = ausrichtung() === 'kurs';
-  
-  
-  
+
   const text = $('tb-ausrichtung-text');
   if (text) text.textContent = wort(kurs ? 'karte.kurzKurs' : 'karte.kurzNord');
   knopf.setAttribute('aria-label', wort('karte.kursOben'));
@@ -289,11 +272,10 @@ if (karteEl) {
   } catch {  }
   const knopf = $('btn-ausrichtung');
   if (knopf) alsKartenelement(knopf);
-  
+
   setzeAusrichtung(gespeichert);
   setzeDrehRueckruf((bearing) => {
-    
-    
+
     const nadel = $('tb-nordnadel');
     if (nadel) nadel.style.transform = `rotate(${bearing}deg)`;
   });
@@ -306,9 +288,7 @@ if (karteEl) {
   });
 }
 
-
 let vorigeFahrtId: string | null = null;
-
 
 let themeOrt: { lat: number; lon: number } | null = null;
 function folgeThemeOrt(): void {
@@ -325,46 +305,30 @@ function zeichne(z: Zustand): void {
   liveBeiZustand(z);
   const fahrtId = z.fahrt?.id ?? null;
   if (vorigeFahrtId && fahrtId !== vorigeFahrtId) {
-    
-    
-    
+
     setTimeout(() => void sichereSpuren(), 30_000);
   }
   vorigeFahrtId = fahrtId;
   const de = aktuelleSprache() === 'de';
 
-  
-  
   wert('w-sog', z.laeuft && !z.wartetAufFix ? nf(z.sog, 1) : '–');
   wert('w-cog', z.cog === null ? '–' : kursGrad(z.cog, false));
   wert('w-strecke', z.fahrt && z.abgelegt ? nf(z.streckeNM, 1) : '–');
-  
-  
-  
+
   setzeDauer(z.fahrt && z.abgelegt ? z.dauerS : null);
-  
-  
+
   const fahrzeit = $('w-fahrzeit');
   if (fahrzeit) {
     const anders = z.fahrt && z.abgelegt && z.pausen.length > 0;
     fahrzeit.textContent = anders ? `${wort('kachel.fahrzeit')} ${dauer(z.fahrzeitS)}` : '';
   }
 
-  
-  
-  
-  
   const position = $('tb-position');
   if (position) position.textContent = z.position ? positionText(z.position.lat, z.position.lon, aktuelleSprache()) : '–';
   zeichneSonne();
   zeichneMond();
   zeichneZielwetter(wetterOrt(z, zielDerRoute(), bekanntePosition()));
 
-  
-  
-  
-  
-  
   const gpsStatus = $('gps-status');
   const gpsAn = (z.betriebsart === 'laeuft' || z.betriebsart === 'pausiert-anker')
     && !z.wartetAufFix && !z.fehler;
@@ -372,8 +336,7 @@ function zeichne(z: Zustand): void {
     gpsStatus.classList.toggle('an', gpsAn);
     gpsStatus.textContent = wort(gpsAn ? 'gps.an' : 'gps.aus');
   }
-  
-  
+
   const gpsGenauigkeit = $('gps-genauigkeit');
   if (gpsGenauigkeit) {
     const zeigen = gpsAn && z.genauigkeitM !== null;
@@ -383,8 +346,6 @@ function zeichne(z: Zustand): void {
     }
   }
 
-  
-  
   const wach = $('btn-wach');
   if (wach) wach.hidden = !(z.laeuft && z.wake === 'fehlt');
 
@@ -398,43 +359,29 @@ function zeichne(z: Zustand): void {
     }
   }
 
-  
-  
-  
-  
   const setzeTaste = (id: string, aus: boolean, textKey: string, titelKey: string): void => {
     const knopf = $(id) as HTMLButtonElement | null;
     if (!knopf) return;
     knopf.disabled = aus;
-    
-    
+
     const txt = knopf.querySelector('.tb-transport-txt');
     if (txt) txt.textContent = wort(textKey);
     knopf.title = wort(titelKey);
   };
   const bart = z.betriebsart;
-  
-  
+
   const setztFort = bart === 'pausiert' || bart === 'pausiert-anker';
-  
+
   gezeitenStreifen(setztFort);
-  
-  
-  
-  
-  
-  
+
   const keinToernAusgewaehlt = !laufenderToern || Boolean(laufenderToern.beendet);
-  
-  
-  
-  
+
   const toernZeile = $('tb-toern-zeile') as HTMLElement | null;
   if (toernZeile) {
     toernZeile.hidden = keinToernAusgewaehlt;
     if (!keinToernAusgewaehlt && laufenderToern) {
       const nameEl = $('tb-toern-zeile-name');
-      
+
       if (nameEl && nameEl.textContent !== `${wort('toern.oeffnen')}: ${laufenderToern.name}`) {
         const name = document.createElement('b');
         name.className = 'tb-toern-zeile-titel';
@@ -443,14 +390,12 @@ function zeichne(z: Zustand): void {
       }
     }
   }
-  
+
   setzeTaste('btn-start', bart === 'laeuft',
     setztFort ? 'btn.fortsetzen' : 'btn.start',
     setztFort ? 'btn.fortsetzenTitel' : 'btn.startTitel');
   setzeTaste('btn-pause', bart !== 'laeuft', 'btn.pause', 'btn.pauseTitel');
-  
-  
-  
+
   const ankerAn = bart === 'pausiert-anker';
   setzeTaste('btn-pause-anker', bart === 'gestoppt',
     ankerAn ? 'btn.ankerwacheAufheben' : 'btn.pauseAnker',
@@ -459,20 +404,12 @@ function zeichne(z: Zustand): void {
   setzeTaste('btn-stop', bart === 'gestoppt', 'btn.stop', 'btn.stopTitel');
   const wachwechselKnopf = $('btn-wachwechsel') as HTMLButtonElement | null;
   if (wachwechselKnopf) wachwechselKnopf.disabled = keinToernAusgewaehlt;
-  
-  
-  
+
   for (const id of ['btn-statistik', 'btn-coastguard']) {
     const knopf = $(id) as HTMLButtonElement | null;
     if (knopf) knopf.disabled = keinToernAusgewaehlt;
   }
-  
-  
-  
-  
-  
-  
-  
+
   const ohneFahrt = z.betriebsart === 'gestoppt';
   for (const id of ['btn-wetter-zeile', 'btn-ais-zeile', 'btn-eintrag', 'btn-foto']) {
     const knopf = $(id) as HTMLButtonElement | null;
@@ -481,25 +418,19 @@ function zeichne(z: Zustand): void {
   const antriebKnopf = $('btn-antrieb') as HTMLButtonElement | null;
   if (antriebKnopf) {
     antriebKnopf.disabled = z.betriebsart !== 'laeuft';
-    
-    
-    
-    
+
     const motor = z.antrieb === 'motor';
     antriebKnopf.innerHTML = icon(motor ? 'zahnrad' : 'segel')
       + `<span>${wort(motor ? 'btn.motor' : 'btn.segel')}</span>`;
   }
 
-  
   const luecken = $('tb-luecken') as HTMLElement | null;
   if (luecken) {
     luecken.hidden = z.luecken.length === 0;
     if (z.luecken.length) {
       const gesamt = z.luecken.reduce((s, l) => s + l.dauer, 0);
       const name = z.luecken.length === 1 ? wort('luecke.eine') : wort('luecke.mehrere');
-      
-      
-      
+
       const amOrt = lueckenAmSelbenOrt(z.luecken);
       const hinweis = amOrt >= gesamt - 60
         ? wort('luecke.stillAlle')
@@ -510,7 +441,6 @@ function zeichne(z: Zustand): void {
     }
   }
 
-  
   const pausen = $('tb-pausen') as HTMLElement | null;
   if (pausen) {
     pausen.hidden = z.pausen.length === 0;
@@ -521,14 +451,10 @@ function zeichne(z: Zustand): void {
     }
   }
 
-  
   zeigeLage(z);
 
-  
   const liste = $('tb-eintraege');
-  
-  
-  
+
   if (liste && !listeGesperrt()) {
     liste.innerHTML = '';
     if (!z.eintraege.length) {
@@ -545,15 +471,12 @@ function zeichne(z: Zustand): void {
       if (e.art === 'hand') {
         text.textContent = e.text || (de ? '(ohne Text)' : '(no text)');
       } else if (e.art === 'foto') {
-        
-        
+
         text.className = 'tb-fotozeile';
         if (e.text) text.appendChild(document.createTextNode(e.text));
         zeigeVorschau(text, e);
       } else if (e.art === 'wetter') {
-        
-        
-        
+
         text.className = e.wetter?.quelle === 'beobachtet' ? 'tb-beobachtet' : 'tb-vorhergesagt';
         text.textContent = e.text ?? '';
       } else {
@@ -568,20 +491,10 @@ function zeichne(z: Zustand): void {
     }
   }
 
-  
-  
-  
-  
-  
-  
-  
   const manuellePausen = aktuelleManuellePausen();
   const auswertung = werteSpurAus(aktuelleFixe(), {}, manuellePausen);
   if (karteEl) {
-    
-    
-    
-    
+
     const lueckenFuerKarte: Luecke[] = [
       ...auswertung.luecken,
       ...manuellePausen.map((p) => ({ von: p.von, bis: p.bis, dauer: (p.bis - p.von) / 1000, sehneNM: 0 })),
@@ -592,76 +505,51 @@ function zeichne(z: Zustand): void {
     if (z.position) setzePosition(z.position.lat, z.position.lon, z.betriebsart === 'laeuft' ? z.cog : null);
     if (z.position && z.betriebsart === 'laeuft' && !z.wartetAufFix) {
       const fueg = geglaetteteSog(auswertung.punkte.slice(0, -1), Date.now(), undefined, auswertung.laufAnfaenge) ?? z.sog;
-      
-      
+
       const vh = aktualisiereVorhalt(z.position.lat, z.position.lon, z.cog, z.sog);
       setzeVorauslinie(z.position.lat, z.position.lon, z.cog, fueg, vh?.kdw ?? null);
     } else { vorhaltWeg(); entferneVorauslinie(); }
     setzeKurs(kursFuerKarte(auswertung.punkte));
   }
 
-  
-  
   if (z.fahrt && wartendeNavEintraege.length) {
     for (const e of wartendeNavEintraege.splice(0)) void ergaenzeEintrag({ ...e, fahrt: z.fahrt.id });
   }
   navTakt(z, auswertung.punkte, auswertung.laufAnfaenge);
 
-  
   aktualisiereCoastguard(z, auswertung);
 
-  
   pruefeMotorwache(z, auswertung);
-  
+
   pruefeAngelegt(z, auswertung);
 
-  
-  
-  
   const fixe = aktuelleFixe();
   pruefeAnkerwache(z, fixe[fixe.length - 1], fixe);
 
-  
-  
   if (z.laeuft) ergaenzeRevier(laufenderToern, z.position);
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
   pruefeStationen();
   if (z.betriebsart !== 'pausiert' && z.stillstandS < AIS_RUHE_AB_STILLSTAND_S) pruefeAis();
   else if (z.stillstandS >= AIS_RUHE_AB_STILLSTAND_S) aisRuhtLiegend();
 
-  
-  
-  
-  
   if (z.betriebsart !== 'pausiert') pruefeSeegrenze(z);
-  
+
   pruefeMeeresgebiet(z);
   beobachteUnterwegs(z, aktuelleFixe());
 
-  
   pruefeWetterlog(z);
   zeigeWetterkopf(z.fahrt);
   zeigeGenauigkeit(z.fahrt);
 
-  
   const zeile = $('tb-speicher-zeile');
   if (zeile && z.speicher) {
     const s = z.speicher;
-    
+
     const groesse = (n: number) => (n >= 1024 ** 3 ? `${nf(n / 1024 ** 3, 1)} GB` : `${nf(n / 1048576, 0)} MB`);
     zeile.className = s.dauerhaft ? 'ok' : 'warn';
     zeile.textContent = (s.dauerhaft ? wort('speicher.dauerhaft') : wort('speicher.fluechtig'))
       + (s.kontingent ? ` · ${wort('speicher.belegt').replace('{b}', groesse(s.belegt)).replace('{k}', groesse(s.kontingent))}` : '');
-    
+
     const lage = $('tb-speicher-lage') as HTMLElement | null;
     if (lage) {
       lage.hidden = s.lage === 'ok';
@@ -672,9 +560,6 @@ function zeichne(z: Zustand): void {
     if (hinweis) hinweis.hidden = s.dauerhaft;
   }
 }
-
-
-
 
 let schnittMerk: { ms: number; n: number; p: number; kn: number | null } | null = null;
 function schnittSeitGemerkt(ms: number): number | null {
@@ -690,12 +575,10 @@ function bekanntePosition(): { lat: number; lon: number } | null {
   if (z.position) return { lat: z.position.lat, lon: z.position.lon };
   const letzter = aktuelleFixe().at(-1);
   if (letzter) return { lat: letzter.lat, lon: letzter.lon };
-  
-  
+
   const mitOrt = [...z.eintraege].reverse().find((e) => e.lat !== null && e.lon !== null);
   return mitOrt ? { lat: mitOrt.lat!, lon: mitOrt.lon! } : null;
 }
-
 
 function restzeit(ms: number): string {
   const min = Math.max(0, Math.round(ms / 60000));
@@ -703,7 +586,6 @@ function restzeit(ms: number): string {
   const m = min % 60;
   return h > 0 ? `${h} h ${String(m).padStart(2, '0')} min` : `${m} min`;
 }
-
 
 function zeichneSonne(): void {
   const el = $('tb-sonne');
@@ -733,11 +615,11 @@ function zeichneMond(): void {
     z.unter ? { t: z.unter.getTime(), k: 'mond.unter' } : null,
   ].filter((x): x is { t: number; k: string } => !!x).sort((a, b) => a.t - b.t);
   const anteil = wort('mond.anteil').replace('{phase}', wort(`mond.${ph.name}`)).replace('{p}', String(Math.round(ph.beleuchtung * 100)));
-  
+
   const teile = [anteil, ...termine.map((x) => wort(x.k).replace('{uhr}', uhr(x.t)))]
     .map((t) => `<span class="tb-mond-teil">${escapeHtml(t)}</span>`).join(' · ');
   el.innerHTML = `<span class="tb-mond-teil">${mondSvg(ph.beleuchtung, rand, ueber, 20)}</span>${teile}`;
-  
+
   el.title = [anteil, ...termine.map((x) => wort(`${x.k}Text`).replace('{uhr}', uhr(x.t)))].join(', ');
   el.setAttribute('aria-label', el.title);
 }
@@ -745,7 +627,7 @@ function zeichneMond(): void {
 setInterval(() => {
   zeichneSonne();
   zeichneMond();
-  
+
   if (letzterZustand) zeichneZielwetter(wetterOrt(letzterZustand, zielDerRoute(), bekanntePosition()));
 }, 30_000);
 
@@ -759,16 +641,12 @@ function beschriftung(art: string, de: boolean, liegeart?: Liegeart): string {
   return eintragArtName(art, de ? 'de' : 'en', liegeart);
 }
 
-
-
 initCoastguard(() => aktuellerZustand());
 initFunkspruch(() => ({
   schiffsname: laufenderToern?.schiff.name ?? '',
   mmsi: laufenderToern?.schiff.mmsi ?? '',
   position: aktuellerZustand().position,
-  
-  
-  
+
   personenAnBord: laufenderToern?.crew.length ?? null,
   laengeM: laufenderToern?.schiff.laengeM ?? null,
   breiteM: laufenderToern?.schiff.breiteM ?? null,
@@ -819,16 +697,11 @@ initAnkerwache(
   () => aktuellerZustand().position,
   (ziel) => ankerwacheMitAnsage(ziel),
   () => aktuellerZustand().fahrt?.id ?? null,
-  
-  
-  
+
   (e) => void ergaenzeEintrag(e),
-  
-  
-  
+
   () => laufenderToern?.schiff.laengeM,
-  
-  
+
   () => hebeAnkerwacheAuf(),
 );
 initWetterlog(
@@ -836,27 +709,22 @@ initWetterlog(
     const z = aktuellerZustand();
     return z.fahrt ? { id: z.fahrt.id, position: z.position } : null;
   },
-  
-  
+
   (e) => void ergaenzeEintrag(e),
   (kopf) => aktualisiereFahrt({ wetterkopf: kopf }),
 );
 
 initAis(
-  
-  
+
   () => {
     const z = aktuellerZustand();
     if (!z.position) return null;
     return { lat: z.position.lat, lon: z.position.lon, sog: z.sog, cog: z.cog ?? 0 };
   },
   () => aktuellerZustand().fahrt?.id ?? null,
-  
-  
-  
+
   (e) => void ergaenzeEintrag(e),
 );
-
 
 initSeegrenze((e) => {
   const fahrt = aktuellerZustand().fahrt;
@@ -866,8 +734,6 @@ initMeeresgebiet((e) => {
   const fahrt = aktuellerZustand().fahrt;
   if (fahrt) void ergaenzeEintrag({ ...e, fahrt: fahrt.id });
 });
-
-
 
 initStationen(() => {
   const p = aktuellerZustand().position;
@@ -880,9 +746,7 @@ initFoto(
     const z = aktuellerZustand();
     return z.fahrt ? { id: z.fahrt.id, position: z.position } : null;
   },
-  
-  
-  
+
   (t) => {
     const alle = aktuelleFixe();
     if (!alle.length) return null;
@@ -890,8 +754,7 @@ initFoto(
     for (const f of alle) {
       if (Math.abs(f.t - t) < Math.abs(naechster.t - t)) naechster = f;
     }
-    
-    
+
     return Math.abs(naechster.t - t) <= 5 * 60_000
       ? { lat: naechster.lat, lon: naechster.lon }
       : null;
@@ -900,13 +763,9 @@ initFoto(
   (e, text) => void ergaenzeEintragText(e, text),
 );
 
-
-
-
 initSpurimport(
   async () => {
-    
-    
+
     const z = aktuellerZustand();
     if (z.fahrt) return { id: z.fahrt.id, fixe: aktuelleFixe() };
     const letzte = (await alleFahrten()).sort((a, b) => b.begonnen - a.begonnen)[0];
@@ -922,7 +781,6 @@ initSpurimport(
 initSeewetter();
 
 initWarnblock();
-
 
 initGezeiten(bekanntePosition);
 
@@ -952,17 +810,15 @@ void initWetter();
 initDatensicherung();
 initStatistik();
 
-
 entsperreBeiBeruehrung();
 $('btn-start')?.addEventListener('click', () => {
-  
-  
+
   entsperreTon();
-  
+
   mikrofonStarten();
   const bart = aktuellerZustand().betriebsart;
   if (bart === 'pausiert' || bart === 'pausiert-anker') {
-    
+
     void (async () => {
       if (!(await geraetBeiDerYacht())) return;
       await fortsetzen();
@@ -992,24 +848,21 @@ async function geraetBeiDerYacht(): Promise<boolean> {
   return confirm(wort('weiter.fernFrage').replace('{abstand}', abstand));
 }
 
-
 $('btn-stop')?.addEventListener('click', () => {
   void (async () => {
     const toern = await aktuellerToern();
     const anzahl = toern ? (await fahrtenZuToern(toern.id)).length : 0;
-    
+
     const frage = toern && !toern.beendet ? wort('ende.frage').replace('{n}', String(anzahl)) : wort('ende.frageOhneToern');
     if (!confirm(frage)) return;
     await beendeToernJetzt();
     sage(ANSAGE.logStopp);
-    
+
     void meldeStopp();
     setzeToern(null);
-    
+
     navStopp();
-    
-    
-    
+
     if (toern) oeffneToernFenster(toern.id);
   })();
 });
@@ -1040,7 +893,7 @@ function zeichneLiegearten(): void {
     b.textContent = liegeartName(l, aktuelleSprache());
     b.addEventListener('click', () => {
       schliesseLiegeartModal();
-      
+
       motorwacheVonHand();
       void merkeTankstelle(l);
       void pausiere(l).then(() => sage(ANSAGE.logPause));
@@ -1051,7 +904,7 @@ function zeichneLiegearten(): void {
 $('btn-pause')?.addEventListener('click', () => {
   if (aktuellerZustand().betriebsart !== 'laeuft') return;
   zeichneLiegearten();
-  
+
   sucheTankstelle();
   liegeartModalEl?.removeAttribute('hidden');
   liegeartModal?.beimOeffnen();
@@ -1104,7 +957,7 @@ $('btn-antrieb')?.addEventListener('click', () => {
   beschrifteAntriebModal();
   antriebFehler(null);
   antriebModalEl?.removeAttribute('hidden');
-  
+
   antriebModal?.beimOeffnen(undefined, $('btn-antrieb-ok'));
 });
 $('btn-antrieb-ok')?.addEventListener('click', () => {
@@ -1117,15 +970,13 @@ $('btn-antrieb-ok')?.addEventListener('click', () => {
   if (!r) { antriebFehler(wort('antrieb.ungueltig')); return; }
   if ('zuFrueh' in r) { antriebFehler(wort('antrieb.zuFrueh').replace('{uhr}', uhr(r.zuFrueh))); return; }
   schliesseAntriebModal();
-  
-  
+
   motorwacheVonHand();
   const pos = r.t === antriebGeoeffnet ? z.position : positionZurZeit(aktuelleFixe(), r.t) ?? z.position;
   void setzeAntrieb(antriebZiel, { t: r.t, lat: pos?.lat ?? null, lon: pos?.lon ?? null });
 });
 $('btn-antrieb-weg')?.addEventListener('click', schliesseAntriebModal);
 aufSprachwechsel(beschrifteAntriebModal);
-
 
 let eintragZeit = 0;
 const eintragModalEl = $('tb-eintrag-modal') as HTMLElement | null;
@@ -1159,7 +1010,7 @@ function zeigeEintragTag(): void {
 $('in-eintrag-zeit')?.addEventListener('input', zeigeEintragTag);
 $('btn-eintrag-ok')?.addEventListener('click', () => {
   const feld = $('in-eintrag') as HTMLTextAreaElement | null;
-  
+
   const zeitFeld = $('in-eintrag-zeit') as HTMLInputElement | null;
   const t = zeitFeld?.value && zeitFeld.value !== uhrzeitFeld(eintragZeit)
     ? eintragsZeit(eintragZeit, zeitFeld.value) ?? eintragZeit : eintragZeit;
@@ -1173,8 +1024,6 @@ $('btn-eintrag-weg')?.addEventListener('click', () => {
   schliesseEintragModal();
 });
 
-
-
 aufSprachwechsel(() => {
   if (letzterZustand) zeichne(letzterZustand);
   aisNeuZeichnen();
@@ -1183,31 +1032,15 @@ aufSprachwechsel(() => {
   gezeitenNeuZeichnen();
 });
 
-
-
-
-
 void loeseOrteAuf();
 window.addEventListener('online', () => void loeseOrteAuf());
 setInterval(() => void loeseOrteAuf(), 5 * 60_000);
-
-
-
-
-
-
-
-
-
-
-
-
 
 async function sichereSpuren(): Promise<void> {
   const token = liesSitzungsToken();
   const nutzerId = liesEigeneNutzerId();
   if (!token || !nutzerId || !istOnline()) return;
-  
+
   await holeZurueck();
   await sichereFahrten(token, nutzerId, await alleFahrten().catch(() => []), true);
   const grenze = Date.now() - 30 * 86_400_000;
@@ -1224,7 +1057,7 @@ async function holeZurueck(): Promise<void> {
   if (zurueckLaeuft || !token || !nutzerId || !istOnline()) return;
   zurueckLaeuft = true;
   try {
-    
+
     const liefSchon = !!(await laufendeFahrt().catch(() => null));
     const n = await holeFahrtenZurueck(token, nutzerId).catch(() => 0);
     if (n > 0 && !liefSchon) window.location.reload();
@@ -1239,12 +1072,7 @@ setInterval(() => void sichereSpuren(), 15 * 60_000);
 
 initTankstopp(() => void sichereSpuren());
 
-
-
 initLivestream();
-
-
-
 
 const wartendeNavEintraege: Omit<LogEintrag, 'fahrt'>[] = [];
 const ETAPPEN_KEY = (id: string) => `sail-suite:nav-etappen:${id}`;
@@ -1261,13 +1089,13 @@ initNavigation({
     let etappen: E[] | null = null;
     const token = liesSitzungsToken();
     if (token && istOnline()) etappen = await holeEtappen(token, toernId).catch(() => null);
-    
+
     try {
       if (etappen) localStorage.setItem(ETAPPEN_KEY(toernId), JSON.stringify(etappen));
       else etappen = JSON.parse(localStorage.getItem(ETAPPEN_KEY(toernId)) ?? 'null') as E[] | null;
     } catch {  }
     if (!etappen) return 'offline';
-    const heute = new Date().toLocaleDateString('sv'); 
+    const heute = new Date().toLocaleDateString('sv');
     const fahrten = etappen.filter((e) => e.art !== 'hafentag' && e.wegpunkte.length >= 2);
     const passend = fahrten.filter((e) => !e.datum || e.datum >= heute)
       .sort((a, b) => (a.datum ?? '9').localeCompare(b.datum ?? '9') || Number(!!b.gewaehlt) - Number(!!a.gewaehlt));
@@ -1277,8 +1105,7 @@ initNavigation({
   },
   eintrag(e) {
     const fahrt = aktuellerZustand().fahrt;
-    
-    
+
     if (fahrt) void ergaenzeEintrag({ ...e, fahrt: fahrt.id });
     else wartendeNavEintraege.push(e);
   },
@@ -1300,28 +1127,14 @@ void initToernAuswahl((t) => {
   setzeToern(t?.id ?? null);
   motorwacheToern(t);
   laufenderToern = t;
-  
+
   setzeTiefgang(t?.schiff.tiefgangM ?? null);
-  
+
   revierZuruecksetzen();
-  
-  
-  
+
   if (letzterZustand) zeichne(letzterZustand);
 }).then(() => {
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
   void besitzeTab(() => location.reload()).then((besitzer) => {
     if (besitzer) { void initAufzeichnung(zeichne); return; }
     setzeNurLesen(zeichne);
@@ -1329,8 +1142,6 @@ void initToernAuswahl((t) => {
     if (el) el.hidden = false;
   });
 });
-
-
 
 $('btn-export')?.addEventListener('click', () => {
   void (async () => {
@@ -1351,20 +1162,8 @@ $('btn-export')?.addEventListener('click', () => {
   })();
 });
 
-
-
-
-
-
 if ('serviceWorker' in navigator) {
-  
-  
-  
-  
-  
-  
-  
-  
+
   const hatteWorker = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.register('./sw.js')
     .then((reg) => {
@@ -1374,15 +1173,12 @@ if ('serviceWorker' in navigator) {
     })
     .catch((err) => console.warn('Service Worker nicht registriert:', err));
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!hatteWorker) return; 
+    if (!hatteWorker) return;
     const leiste = $('tb-update') as HTMLElement | null;
     if (leiste) leiste.hidden = false;
   });
   $('btn-update')?.addEventListener('click', () => location.reload());
-  
-  
-  
-  
+
   const laufend = document.querySelector<HTMLMetaElement>('meta[name="app-version"]')?.content ?? null;
   let gefragtUm = 0;
   const frageNeueFassung = (): void => {
@@ -1401,12 +1197,7 @@ if ('serviceWorker' in navigator) {
   setTimeout(frageNeueFassung, 30_000);
 }
 
-
-
 initNetz();
-
-
-
 
 aufNetzwechsel((lage) => {
   const el = $('tb-netz') as HTMLElement | null;
@@ -1416,8 +1207,6 @@ aufNetzwechsel((lage) => {
   }
   if (lage === 'online') void loeseOrteAuf();
 });
-
-
 
 function mbText(bytes: number, sp: 'de' | 'en'): string {
   const mb = bytes / 1_000_000;
@@ -1436,7 +1225,7 @@ async function vorladenAusschnitt(fortschritt: (text: string) => void): Promise<
     alert(wort('vorladen.zuviel').replace('{n}', String(anzahl)));
     return false;
   }
-  
+
   const plan = await vorladePlan(ausschnitt);
   const sp = aktuelleSprache();
   if (plan.neu.length > 0) {
@@ -1448,7 +1237,7 @@ async function vorladenAusschnitt(fortschritt: (text: string) => void): Promise<
     fortschritt(wort('vorladen.laeuft').replace('{a}', String(p.geladen)).replace('{b}', String(p.gesamt))
       .replace('{mb}', mbText(p.bytes, sp)));
   });
-  
+
   fortschritt(wort('vorladen.seekarte'));
   const box = { swLat: ausschnitt.sued, swLon: ausschnitt.west, neLat: ausschnitt.nord, neLon: ausschnitt.ost };
   await Promise.all([
@@ -1475,8 +1264,7 @@ $('btn-vorladen')?.addEventListener('click', () => {
     abbruch.className = 'btn';
     abbruch.textContent = wort('vorladen.abbrechen');
     abbruch.addEventListener('click', () => brichVorladenAb());
-    
-    
+
     const geladen = await vorladenAusschnitt((t) => {
       if (zeile.hidden) { zeile.replaceChildren(text, abbruch); zeile.hidden = false; }
       text.textContent = t;
@@ -1485,6 +1273,5 @@ $('btn-vorladen')?.addEventListener('click', () => {
     if (geladen) setTimeout(() => { zeile.hidden = true; }, 20_000);
   })();
 });
-
 
 ladebildWeg();

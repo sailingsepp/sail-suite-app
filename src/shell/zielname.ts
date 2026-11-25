@@ -2,8 +2,6 @@ import { ortsangabeLogbuch } from '@/data/places';
 import { SCHLUESSEL } from '@/shell/speicherschluessel';
 import { aktuelleSprache } from '@/shell/sprache';
 
-
-
 const MAX = 20;
 const ERNEUT_MS = 2 * 60_000;
 
@@ -28,13 +26,11 @@ function merke(k: string, e: Eintrag): void {
   try { localStorage.setItem(SCHLUESSEL.zielNamen, JSON.stringify(s)); } catch {  }
 }
 
-
 export function beiZielname(fn: () => void): void { hoerer.push(fn); }
-
 
 export function zielname(lat: number, lon: number): string | null {
   const sprache = aktuelleSprache();
-  
+
   const k = `${lat.toFixed(4)},${lon.toFixed(4)},${sprache},2`;
   const e = lies()[k];
   if ((!e || !e.vollstaendig) && !laeuft.has(k) && Date.now() - (versucht.get(k) ?? 0) >= ERNEUT_MS) {
@@ -42,7 +38,7 @@ export function zielname(lat: number, lon: number): string | null {
     versucht.set(k, Date.now());
     void ortsangabeLogbuch({ lat, lon }, sprache)
       .then((r) => {
-        
+
         if (r.name || r.vollstaendig) merke(k, { name: r.name ?? e?.name ?? null, vollstaendig: r.vollstaendig });
         for (const fn of hoerer) fn();
       })

@@ -1,13 +1,9 @@
-
 import type { StundenWind } from '@/core/types';
 import type { EtappenBewertung } from '@/core/wochenplan';
 
-
-export const BEWERTUNGSREGEL_VERSION = 5; 
-
+export const BEWERTUNGSREGEL_VERSION = 5;
 
 const MAX_EINTRAEGE = 20_000;
-
 
 export class BegrenzterSpeicher<T> {
   private readonly eintraege = new Map<string, T>();
@@ -45,11 +41,9 @@ export class BegrenzterSpeicher<T> {
   }
 }
 
-
 export function stundenSchluessel(jetzt: Date): string {
   return `${jetzt.getUTCFullYear()}-${jetzt.getUTCMonth()}-${jetzt.getUTCDate()}T${jetzt.getUTCHours()}`;
 }
-
 
 export function stabilerSchluessel(wert: unknown): string {
   if (wert === null || typeof wert !== 'object') return JSON.stringify(wert);
@@ -61,13 +55,12 @@ export function stabilerSchluessel(wert: unknown): string {
     .map((k) => `${JSON.stringify(k)}:${stabilerSchluessel(o[k])}`).join(',')}}`;
 }
 
-
 export interface KostenkartenSpeicher {
-  
+
   wetter: BegrenzterSpeicher<Promise<{ hourly: StundenWind[]; utcOffsetSeconds: number }>>;
-  
+
   bewertung: BegrenzterSpeicher<EtappenBewertung | null>;
-  
+
   abrufe: BegrenzterSpeicher<Promise<unknown>>;
 }
 
@@ -76,7 +69,6 @@ export function neuerKostenkartenSpeicher(): KostenkartenSpeicher {
     wetter: new BegrenzterSpeicher(), bewertung: new BegrenzterSpeicher(), abrufe: new BegrenzterSpeicher(),
   };
 }
-
 
 export function gemerkt<T>(
   speicher: KostenkartenSpeicher | null, art: string, parameter: unknown, holen: () => Promise<T>,

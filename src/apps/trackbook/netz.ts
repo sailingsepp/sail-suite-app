@@ -1,15 +1,10 @@
-
-
 import { API_BASIS } from '@/shell/api';
 
 export type Netzlage = 'online' | 'offline';
 
-
 const PROBE = `${API_BASIS}/api/health`;
 
-
 const PROBE_ABSTAND_MS = 30_000;
-
 
 const FEHLSCHLAEGE_BIS_OFFLINE = 2;
 
@@ -25,18 +20,15 @@ function setze(neu: Netzlage): void {
   for (const h of hoerer) h(lage);
 }
 
-
 export function meldeErfolg(): void {
   fehlschlaege = 0;
   setze('online');
 }
 
-
 export function meldeFehlschlag(): void {
   fehlschlaege++;
   if (fehlschlaege >= FEHLSCHLAEGE_BIS_OFFLINE) setze('offline');
 }
-
 
 export async function probe(erzwingen = false): Promise<Netzlage> {
   const jetzt = Date.now();
@@ -65,12 +57,10 @@ export function istOnline(): boolean {
   return lage === 'online';
 }
 
-
 export function aufNetzwechsel(fn: (l: Netzlage) => void): void {
   hoerer.add(fn);
   fn(lage);
 }
-
 
 export async function mitNetzlage<T>(aufruf: () => Promise<T>): Promise<T> {
   try {
@@ -85,15 +75,14 @@ export async function mitNetzlage<T>(aufruf: () => Promise<T>): Promise<T> {
 
 export function initNetz(): void {
   if (typeof window === 'undefined') return;
-  
+
   window.addEventListener('online', () => void probe(true));
   window.addEventListener('offline', () => {
-    
-    
+
     fehlschlaege = FEHLSCHLAEGE_BIS_OFFLINE;
     setze('offline');
   });
-  
+
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') void probe();
   });

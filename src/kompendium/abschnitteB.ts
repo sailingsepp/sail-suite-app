@@ -9,12 +9,7 @@ import { FLAGGE, TONNE } from './farben';
 import { imSektor, SICHERE_SEKTOREN, type Kardinal } from '@/core/kompendium';
 import type { Sprache } from '@/core/types';
 
-
-
-
 export const LAND = 'color-mix(in srgb, var(--text) 22%, var(--panel-2))';
-
-
 
 export function signalflaggen(sprache: Sprache): string {
   const t = tFuer(sprache);
@@ -50,8 +45,6 @@ export function signalflaggen(sprache: Sprache): string {
 ${quelle(sprache, 'pub102', 'wiki_flags')}`;
 }
 
-
-
 export function flaggenkombinationen(sprache: Sprache): string {
   const t = tFuer(sprache);
   const ueber = t('über', 'over');
@@ -70,11 +63,8 @@ export function flaggenkombinationen(sprache: Sprache): string {
 ${sprache === 'en' ? quelle(sprache, 'pub102', 'colregs') : quelle(sprache, 'pub102', 'kvr')}`;
 }
 
-
-
 const zahl = (x: number, y: number, n: number, blass = false) => `<g${blass ? ' opacity=".55"' : ''}><circle cx="${x}" cy="${y}" r="13" fill="var(--gelb)"/>`
   + `<text x="${x}" y="${y + 6}" text-anchor="middle" class="kp-zahl">${n}</text></g>`;
-
 
 function yachtAchtern(sprache: Sprache): string {
   const t = tFuer(sprache);
@@ -88,13 +78,13 @@ function yachtAchtern(sprache: Sprache): string {
     `<line x1="150" y1="120" x2="270" y2="120" stroke="${I}" stroke-width="3"/>`,
     `<line x1="210" y1="28" x2="150" y2="120" stroke="${I}" stroke-width=".8" opacity=".5"/><line x1="210" y1="28" x2="270" y2="120" stroke="${I}" stroke-width=".8" opacity=".5"/>`,
     `<line x1="150" y1="120" x2="152" y2="252" stroke="${I}" stroke-width=".8" opacity=".5"/><line x1="270" y1="120" x2="268" y2="252" stroke="${I}" stroke-width=".8" opacity=".5"/>`,
-    
+
     `<polygon points="210,20 238,26 210,32" fill="${B}"/><polygon points="214,23 228,26 214,29" fill="${W}"/>`,
-    
+
     `<line x1="268" y1="120" x2="268" y2="160" stroke="var(--muted)" stroke-width="1"/><rect x="268" y="124" width="36" height="24" fill="var(--muted)" fill-opacity=".45" stroke="var(--muted)" stroke-width=".8"/>`,
-    
+
     `<line x1="152" y1="120" x2="152" y2="160" stroke="var(--muted)" stroke-width="1"/><polygon points="152,124 120,131 152,138" fill="${B}" opacity=".5" stroke="var(--muted)" stroke-width=".6"/>`,
-    
+
     `<line x1="210" y1="256" x2="232" y2="214" stroke="${I}" stroke-width="2.2"/>`,
     `<g transform="translate(231,214) rotate(-18)"><rect width="36" height="8" fill="${R}"/><rect y="8" width="36" height="8" fill="${W}"/><rect y="16" width="36" height="8" fill="${R}"/><rect width="36" height="24" fill="none" stroke="var(--muted)" stroke-width=".6"/></g>`,
     zahl(290, 230, 1), zahl(322, 136, 2), zahl(256, 26, 3), zahl(104, 131, 3, true),
@@ -169,8 +159,6 @@ ${flaggengala(sprache)}
 ${quelle(sprache, 'dsv', 'seeschfg', 'adac', 'pub102')}`;
 }
 
-
-
 type Feuer = [kurz: string, de: string, en: string, dDe: string, dEn: string, folge: Takt[], periode: number, zeige: number];
 
 const QQ: Takt[] = [[0.5, 'W'], [0.5, null]];
@@ -215,8 +203,6 @@ export function leuchtfeuer(sprache: Sprache): string {
     'Colours: W white · R red · G green · Y yellow · Bu blue. Sector lights such as “Oc(2)WRG.9s” show a different colour depending on the bearing; sector limits are given from seaward towards the light.')}</p>
 ${quelle(sprache, 'pub116', 'dewiki_kennung', 'iala')}`;
 }
-
-
 
 function fahrwasser(sprache: Sprache): string {
   const t = tFuer(sprache);
@@ -283,8 +269,6 @@ export function lateralsystem(sprache: Sprache): string {
 ${quelle(sprache, 'iala', 'nga_q', 'ne')}`;
 }
 
-
-
 const { schwarz: SK, gelb: SY } = TONNE;
 const KARDINAL_BAENDER: Record<Kardinal, Band[]> = {
   N: [[1, SK], [1, SY]], S: [[1, SY], [1, SK]], E: [[1, SK], [1, SY], [1, SK]], W: [[1, SY], [1, SK], [1, SY]],
@@ -311,7 +295,6 @@ function kardinalrose(sprache: Sprache): string {
   }
   return `<figure class="kp-fig"><svg class="kp-zeichnung kp-fach" viewBox="0 0 400 400" role="img" aria-label="${t('Kardinalzeichen um eine Gefahrenstelle', 'Cardinal marks around a danger')}">${o.join('')}</svg></figure>`;
 }
-
 
 function sichererFaecher(key: Kardinal, label: string): string {
   const { von, bis } = SICHERE_SEKTOREN[key];
@@ -380,8 +363,6 @@ export function kardinalsystem(sprache: Sprache): string {
     'The rhythm bars show the VQ variant over 15 s. The course figures are derived from the IALA definition of the quadrants; the chart always takes precedence.')}</p>
 ${quelle(sprache, 'iala', 'nga_q')}`;
 }
-
-
 
 export function einzelgefahr(sprache: Sprache): string {
   const t = tFuer(sprache);

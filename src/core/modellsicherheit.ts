@@ -1,14 +1,10 @@
 import type { WindEnsemble } from '@/data/ensemble';
 
-
-
-
 const STREUUNG_NIEDRIG_KN = 1.0;
 
 const STREUUNG_HOCH_KN = 6.0;
 const PROZENT_MAX = 95;
 const PROZENT_MIN = 30;
-
 
 function streuung(werte: (number | null)[]): number | null {
   const gueltig = werte.filter((v): v is number => v != null && Number.isFinite(v));
@@ -17,7 +13,6 @@ function streuung(werte: (number | null)[]): number | null {
   const varianz = gueltig.reduce((a, b) => a + (b - mittel) ** 2, 0) / gueltig.length;
   return Math.sqrt(varianz);
 }
-
 
 export function modellUebereinstimmung(ensemble: WindEnsemble, dateStr: string): number | null {
   const idxs: number[] = [];

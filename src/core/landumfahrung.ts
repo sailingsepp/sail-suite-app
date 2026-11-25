@@ -1,4 +1,3 @@
-
 import type { Punkt } from './types';
 import { distNM, kreuzungsZahl, istLandSeite } from './geo';
 
@@ -9,7 +8,7 @@ export interface Wassergitter {
   dLon: number;
   nx: number;
   ny: number;
-  
+
   frei: Uint8Array;
   zelleSm: number;
 }
@@ -17,14 +16,13 @@ export interface Wassergitter {
 export interface Box { swLat: number; swLon: number; neLat: number; neLon: number }
 
 export interface Umfahrung {
-  
+
   punkte: Punkt[];
-  
+
   sm: number;
-  
+
   umfahren: boolean;
 }
-
 
 export const MAX_ZELLEN = 1_500_000;
 
@@ -33,7 +31,6 @@ export const STUFEN: readonly { zelleSm: number; abstandZellen: number }[] = [
   { zelleSm: 0.03, abstandZellen: 1 },
   { zelleSm: 0.03, abstandZellen: 0 },
 ];
-
 
 export function boxUm(punkte: readonly Punkt[], randSm: number): Box {
   const lats = punkte.map((p) => p.lat), lons = punkte.map((p) => p.lon);
@@ -45,11 +42,9 @@ export function boxUm(punkte: readonly Punkt[], randSm: number): Box {
   };
 }
 
-
 export function randFuer(a: Punkt, b: Punkt): number {
   return Math.max(4, 0.4 * distNM(a.lat, a.lon, b.lat, b.lon));
 }
-
 
 export function randZweiterVersuch(a: Punkt, b: Punkt): number {
   return Math.max(distNM(a.lat, a.lon, b.lat, b.lon), 2 * randFuer(a, b));
@@ -75,7 +70,7 @@ export function baueWassergitter(
   };
 
   for (const [a, b] of kueste) {
-    
+
     if (Math.max(a.lat, b.lat) < box.swLat || Math.min(a.lat, b.lat) > box.neLat
       || Math.max(a.lon, b.lon) < box.swLon || Math.min(a.lon, b.lon) > box.neLon) continue;
     const x0 = (a.lon - box.swLon) / dLon, y0 = (a.lat - box.swLat) / dLat;
@@ -86,7 +81,7 @@ export function baueWassergitter(
     for (let s = 1; s <= schritte; s++) {
       const t = s / schritte;
       const cx = Math.floor(x0 + (x1 - x0) * t), cy = Math.floor(y0 + (y1 - y0) * t);
-      if (cx !== vx && cy !== vy) sperre(cx, vy); 
+      if (cx !== vx && cy !== vy) sperre(cx, vy);
       sperre(cx, cy);
       vx = cx; vy = cy;
     }
@@ -96,7 +91,7 @@ export function baueWassergitter(
   if (abstandZellen <= 0) {
     for (let i = 0; i < frei.length; i++) frei[i] = gesperrt[i] ? 0 : 1;
   } else {
-    
+
     const zeile = new Uint8Array(nx * ny);
     for (let y = 0; y < ny; y++) {
       for (let x = 0; x < nx; x++) {
@@ -133,21 +128,17 @@ function zellIndex(g: Wassergitter, p: Punkt): number | null {
   return y * g.nx + x;
 }
 
-
 function kuesteNah(p: Punkt, kueste: readonly [Punkt, Punkt][], sm: number): [Punkt, Punkt][] {
   const dLat = sm / 60, dLon = sm / (60 * Math.max(0.2, Math.cos((p.lat * Math.PI) / 180)));
   return kueste.filter(([a, b]) => Math.max(a.lat, b.lat) >= p.lat - dLat && Math.min(a.lat, b.lat) <= p.lat + dLat
     && Math.max(a.lon, b.lon) >= p.lon - dLon && Math.min(a.lon, b.lon) <= p.lon + dLon) as [Punkt, Punkt][];
 }
 
-
 export const ANSCHLUSS_MAX_SM = 0.5;
-
 
 export function liegtAnLand(p: Punkt, kueste: readonly [Punkt, Punkt][]): boolean {
   return istLandSeite(p, kuesteNah(p, kueste, ANSCHLUSS_MAX_SM + 3), 1) === true;
 }
-
 
 export function geradeUeberWasser(
   a: Punkt, b: Punkt, kueste: readonly [Punkt, Punkt][], aAnLand?: boolean,
@@ -155,11 +146,9 @@ export function geradeUeberWasser(
   if (kueste.length === 0) return true;
   if (aAnLand ?? liegtAnLand(a, kueste)) return false;
   if (kreuzungsZahl(a, b, kueste as [Punkt, Punkt][]) !== 0) return false;
-  
-  
+
   return !amFluss(a, kueste) && !amFluss(b, kueste);
 }
-
 
 export function naechsteZelleDerFlaeche(
   g: Wassergitter, flaechen: Int32Array, flaecheId: number, p: Punkt, maxSm: number,
@@ -181,21 +170,13 @@ export function naechsteZelleDerFlaeche(
   return beste;
 }
 
-
 export function anschlussZelle(
   g: Wassergitter, p: Punkt, kueste: readonly [Punkt, Punkt][],
-  
+
   nurFlaeche?: number,
 ): number | null {
   const nah = kuesteNah(p, kueste, ANSCHLUSS_MAX_SM + 3);
-  
-  
-  
-  
-  
-  
-  
-  
+
   const anLand = istLandSeite(p, nah, 1) === true;
   const passt = (k: number) => (anLand ? k % 2 === 1 : k === 0);
   const flaechen = nurFlaeche === undefined ? null : wasserflaechen(g);
@@ -215,7 +196,7 @@ export function anschlussZelle(
         if (frei(i)) ring.push(i);
       }
     }
-    
+
     ring.sort((i, j) => {
       const a = zellMitte(g, i), b = zellMitte(g, j);
       return distNM(p.lat, p.lon, a.lat, a.lon) - distNM(p.lat, p.lon, b.lat, b.lon);
@@ -224,7 +205,6 @@ export function anschlussZelle(
   }
   return null;
 }
-
 
 class Heap {
   private daten: number[] = [];
@@ -256,10 +236,8 @@ class Heap {
   }
 }
 
-
 interface Arbeit { gk: Float32Array; f: Float32Array; vor: Int32Array; stempel: Int32Array; zu: Int32Array; generation: number }
 const arbeitJeGitter = new WeakMap<Wassergitter, Arbeit>();
-
 
 export function suchePfad(g: Wassergitter, start: number, ziel: number): number[] | null {
   const n = g.nx * g.ny;
@@ -311,7 +289,6 @@ export function suchePfad(g: Wassergitter, start: number, ziel: number): number[
   return null;
 }
 
-
 function sichtFrei(g: Wassergitter, a: Punkt, b: Punkt): boolean {
   const ax = (a.lon - g.swLon) / g.dLon, ay = (a.lat - g.swLat) / g.dLat;
   const bx = (b.lon - g.swLon) / g.dLon, by = (b.lat - g.swLat) / g.dLat;
@@ -323,7 +300,6 @@ function sichtFrei(g: Wassergitter, a: Punkt, b: Punkt): boolean {
   }
   return true;
 }
-
 
 export function glaette(g: Wassergitter, pfad: readonly number[]): Punkt[] {
   const p = pfad.map((i) => zellMitte(g, i));
@@ -344,7 +320,6 @@ function weglaenge(punkte: readonly Punkt[]): number {
   for (let i = 1; i < punkte.length; i++) sm += distNM(punkte[i - 1]!.lat, punkte[i - 1]!.lon, punkte[i]!.lat, punkte[i]!.lon);
   return sm;
 }
-
 
 const flaechenJeGitter = new WeakMap<Wassergitter, Int32Array>();
 export function wasserflaechen(g: Wassergitter): Int32Array {
@@ -379,7 +354,6 @@ export function wasserflaechen(g: Wassergitter): Int32Array {
   return flaeche;
 }
 
-
 const hauptJeGitter = new WeakMap<Wassergitter, number | null>();
 export function hauptflaeche(g: Wassergitter): number | null {
   if (hauptJeGitter.has(g)) return hauptJeGitter.get(g)!;
@@ -392,24 +366,22 @@ export function hauptflaeche(g: Wassergitter): number | null {
   return haupt;
 }
 
-
 export type AnschlussSpeicher = Map<Punkt, number | null>;
-
 
 export interface Durchfahrt {
   name: string;
   enden: readonly [Punkt, Punkt];
-  
+
   zelleSm: number;
-  
+
   randSm?: number;
-  
+
   kette?: readonly Punkt[];
-  
+
   fluss?: true;
   zugang?: Punkt;
   zugangKette?: readonly Punkt[];
-  
+
   bereich?: Box;
 }
 
@@ -421,12 +393,7 @@ export const DURCHFAHRTEN: readonly Durchfahrt[] = [
     kette: [P(37.91802, 23.00713), P(37.91202, 23.01601)],
   },
   { name: 'Rio-Andirrio-Brücke', enden: [P(38.300, 21.710), P(38.345, 21.800)], zelleSm: 0.02 },
-  
-  
-  
-  
-  
-  
+
   {
     name: 'Straße von Messina', enden: [P(38.320, 15.660), P(38.050, 15.570)], zelleSm: 0.05, randSm: 3,
     kette: [P(38.26458, 15.65429), P(38.21708, 15.62566)],
@@ -445,22 +412,16 @@ export const DURCHFAHRTEN: readonly Durchfahrt[] = [
       P(38.44752, 23.58791), P(38.44297, 23.59467), P(38.44297, 23.59627), P(38.44262, 23.59755), P(38.44062, 23.59991),
       P(38.44002, 23.59997)],
   },
-  
-  
-  
-  
+
   {
     name: 'Brindisi, innerer Hafen', enden: [P(40.648, 17.955), P(40.6436, 17.9488)], zelleSm: 0.003,
     kette: [P(40.64513, 17.9516), P(40.64442, 17.95061), P(40.64363, 17.94883)],
   },
   {
-    
-    
-    
-    
+
     name: 'Krka bis Skradin', enden: [P(43.712, 15.830), P(43.81434, 15.92042)], zelleSm: 0.003, randSm: 1.2,
     fluss: true, zugang: P(43.748, 15.868),
-    
+
     zugangKette: [P(43.72426, 15.85903), P(43.72836, 15.87611), P(43.72836, 15.87773), P(43.72912, 15.87992),
       P(43.72941, 15.88), P(43.73854, 15.87636), P(43.74801, 15.86802)],
     kette: [
@@ -481,11 +442,9 @@ export const DURCHFAHRTEN: readonly Durchfahrt[] = [
   },
 ];
 
-
 const FLUSS_NAEHE_SM = 0.3;
 
 const flussQuerungen = new WeakMap<readonly [Punkt, Punkt][], Map<string, number[]>>();
-
 
 function querungenEntlang(d: Durchfahrt, kueste: readonly [Punkt, Punkt][]): number[] {
   let je = flussQuerungen.get(kueste);
@@ -499,18 +458,15 @@ function querungenEntlang(d: Durchfahrt, kueste: readonly [Punkt, Punkt][]): num
   return summe;
 }
 
-
 function flussKette(d: Durchfahrt): Punkt[] {
   return [d.zugang!, ...(d.kette ?? []), d.enden[1]];
 }
-
 
 function flussZugang(d: Durchfahrt, kueste: readonly [Punkt, Punkt][], vereinfacht: boolean): Punkt[] | null {
   const weg = durchfahrtsWegAusKueste({ ...d, name: `${d.name}:zugang`, enden: [d.enden[0], d.zugang!] }, kueste);
   if (weg || !vereinfacht || !d.zugangKette) return weg;
   return [d.enden[0], ...d.zugangKette, d.zugang!];
 }
-
 
 export function amFluss(p: Punkt, kueste: readonly [Punkt, Punkt][]): { d: Durchfahrt; i: number } | null {
   for (const d of DURCHFAHRTEN) {
@@ -528,22 +484,18 @@ export function amFluss(p: Punkt, kueste: readonly [Punkt, Punkt][]): { d: Durch
   return null;
 }
 
-
 const DURCHFAHRT_RAND_SM = 0.3;
 
 const DURCHFAHRT_UMWEG_MAX = 3;
 
 const DURCHFAHRT_GEWINN_MIN = 0.9;
 
-
 const teilwege = new WeakMap<Wassergitter, Map<string, Punkt[] | null>>();
 
 const durchfahrtsWege = new WeakMap<readonly [Punkt, Punkt][], Map<string, Punkt[] | null>>();
 
-
 export function durchfahrtsWeg(d: Durchfahrt, kueste: readonly [Punkt, Punkt][], vereinfacht = false): Punkt[] | null {
-  
-  
+
   if (d.fluss) {
     if (!vereinfacht && querungenEntlang(d, kueste).at(-1) !== 1) return null;
     const zugang = flussZugang(d, kueste, vereinfacht);
@@ -566,7 +518,6 @@ function durchfahrtsWegAusKueste(d: Durchfahrt, kueste: readonly [Punkt, Punkt][
   je.set(d.name, weg);
   return weg;
 }
-
 
 export function wegImGitter(
   g: Wassergitter, a: Punkt, b: Punkt, kueste: readonly [Punkt, Punkt][], speicher?: AnschlussSpeicher, tiefe = 2,
@@ -607,7 +558,6 @@ export function wegImGitter(
   return bester ?? flussWeg(a, b, kueste, vereinfacht, (p, q) => (imGitter(p) && imGitter(q) ? teil(p, q) : null));
 }
 
-
 function flussWeg(
   a: Punkt, b: Punkt, kueste: readonly [Punkt, Punkt][], vereinfacht: boolean,
   suche: (p: Punkt, q: Punkt) => Punkt[] | null,
@@ -622,8 +572,7 @@ function flussWeg(
     const teil = fa.i <= fb.i ? k.slice(fa.i, fb.i + 1) : k.slice(fb.i, fa.i + 1).reverse();
     return entferneDoppelte([a, ...teil, b], kueste);
   }
-  
-  
+
   const zumZugang = (q: Punkt): Punkt[] | null => {
     const direkt = suche(q, k[0]!);
     if (direkt) return direkt;
@@ -650,11 +599,7 @@ function wegImGitterDirekt(
   };
   let sa = anschluss(a), sb = anschluss(b);
   const flaeche = wasserflaechen(g);
-  
-  
-  
-  
-  
+
   if (sa == null || sb == null || flaeche[sa] !== flaeche[sb]) {
     const haupt = hauptflaeche(g);
     if (haupt == null) return null;
@@ -666,8 +611,7 @@ function wegImGitterDirekt(
   if (!pfad) return null;
   const mitte = glaette(g, pfad);
   const punkte = [a, ...mitte, b];
-  
-  
+
   for (let i = 2; i < punkte.length - 1; i++) {
     const p = punkte[i - 1]!, q = punkte[i]!;
     if (kreuzungsZahl(p, q, kuesteNah({ lat: (p.lat + q.lat) / 2, lon: (p.lon + q.lon) / 2 }, kueste,
@@ -675,7 +619,6 @@ function wegImGitterDirekt(
   }
   return entferneDoppelte(punkte, kueste);
 }
-
 
 function entferneDoppelte(punkte: Punkt[], kueste?: readonly [Punkt, Punkt][]): Punkt[] {
   const quer = (p: Punkt, q: Punkt) => kreuzungsZahl(p, q, kuesteNah({ lat: (p.lat + q.lat) / 2, lon: (p.lon + q.lon) / 2 },
@@ -692,12 +635,11 @@ function entferneDoppelte(punkte: Punkt[], kueste?: readonly [Punkt, Punkt][]): 
   return aus;
 }
 
-
 export function umfahreLand(
   a: Punkt, b: Punkt, kueste: readonly [Punkt, Punkt][], teilung = TEILUNG_TIEFE,
-  
+
   randSm = randFuer(a, b),
-  
+
   engeMitVtg = false,
 ): Umfahrung | null {
   if (geradeUeberWasser(a, b, kueste)) {
@@ -708,7 +650,6 @@ export function umfahreLand(
   return ohneGitterweg(a, b, kueste, teilung);
 }
 
-
 function inStufen(a: Punkt, b: Punkt, kueste: readonly [Punkt, Punkt][], box: Box, luft: number, engeMitVtg = false): Umfahrung | null {
   let bester: Umfahrung | null = null;
   for (const stufe of STUFEN) {
@@ -717,33 +658,16 @@ function inStufen(a: Punkt, b: Punkt, kueste: readonly [Punkt, Punkt][], box: Bo
     if (!weg) continue;
     const sm = weglaenge(weg);
     if (!bester || sm < bester.sm) bester = { punkte: weg, sm, umfahren: true };
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     if (bester.sm <= UMWEG_FEINER * luft && !rueckZumEnde(weg, a, b) && !(engeMitVtg && durchEngeMitBereich(weg))) return bester;
   }
   return bester;
 }
 
-
 function ohneGitterweg(a: Punkt, b: Punkt, kueste: readonly [Punkt, Punkt][], teilung: number): Umfahrung | null {
-  
-  
-  
-  
-  
-  
-  
+
   if (teilung > 0) {
-    
-    
+
     const ausA = hafenausfahrt(a, kueste), ausB = hafenausfahrt(b, kueste);
     const start = ausA ?? a, ende = ausB ?? b;
     const fertig = (mitte: Punkt[]): Umfahrung => {
@@ -759,7 +683,6 @@ function ohneGitterweg(a: Punkt, b: Punkt, kueste: readonly [Punkt, Punkt][], te
   }
   return null;
 }
-
 
 export function ueberHilfspunkte(
   start: Punkt, ende: Punkt, kueste: readonly [Punkt, Punkt][], abstaende: readonly number[] = TEILUNG_ABSTAND_SM,
@@ -787,33 +710,26 @@ export function ueberHilfspunkte(
 
 const imBereich = (p: Punkt, x: Box) => p.lat >= x.swLat && p.lat <= x.neLat && p.lon >= x.swLon && p.lon <= x.neLon;
 
-
 function rueckZumEnde(weg: readonly Punkt[], a: Punkt, b: Punkt): boolean {
   return DURCHFAHRTEN.some((d) => d.bereich && (imBereich(a, d.bereich) || imBereich(b, d.bereich))
     && weg.some((p) => d.enden.some((e) => distNM(p.lat, p.lon, e.lat, e.lon) <= 0.05)));
 }
 
-
 function durchEngeMitBereich(weg: readonly Punkt[]): boolean {
   return DURCHFAHRTEN.some((d) => d.bereich && weg.some((p) => imBereich(p, d.bereich!)));
 }
 
-
 export const UMWEG_FEINER = 1.5;
-
 
 export const TEILUNG_ABSTAND_SM = [3, 6, 1.5, 10, 15] as const;
 export const TEILUNG_TIEFE = 1;
-
 
 export const HAFENAUSFAHRT_MAX_SM = 1;
 
 export const HAFENBECKEN_MAX_SM2 = 0.25;
 
-
 export function hafenausfahrt(p: Punkt, kueste: readonly [Punkt, Punkt][]): Punkt | null {
-  
-  
+
   const g = baueWassergitter(boxUm([p], 3), kueste, 0.03, 0);
   const flaeche = wasserflaechen(g);
   const haupt = hauptflaeche(g);
@@ -827,14 +743,11 @@ export function hafenausfahrt(p: Punkt, kueste: readonly [Punkt, Punkt][]): Punk
     if (zellen * g.zelleSm * g.zelleSm >= HAFENBECKEN_MAX_SM2) return null;
   }
   const draussen = naechsteZelleDerFlaeche(g, flaeche, haupt, p, HAFENAUSFAHRT_MAX_SM);
-  
-  
+
   return draussen && landStreckeSm(p, draussen, kueste) <= HAFENAUSFAHRT_LAND_MAX_SM ? draussen : null;
 }
 
-
 export const HAFENAUSFAHRT_LAND_MAX_SM = 0.08;
-
 
 export function landStreckeSm(p: Punkt, q: Punkt, kueste: readonly [Punkt, Punkt][]): number {
   const cosLat = Math.cos((p.lat * Math.PI) / 180);
@@ -860,11 +773,9 @@ export function landStreckeSm(p: Punkt, q: Punkt, kueste: readonly [Punkt, Punkt
   return summe;
 }
 
-
 function entlang(a: Punkt, b: Punkt, f: number): Punkt {
   return { lat: a.lat + (b.lat - a.lat) * f, lon: a.lon + (b.lon - a.lon) * f };
 }
-
 
 function wasserNahe(p: Punkt, kueste: readonly [Punkt, Punkt][]): Punkt | null {
   const linien = kueste as [Punkt, Punkt][];
@@ -880,14 +791,13 @@ function wasserNahe(p: Punkt, kueste: readonly [Punkt, Punkt][]): Punkt | null {
   return null;
 }
 
-
 export interface RoutenUmfahrung {
   punkte: Punkt[];
-  
+
   umfahreneAbschnitte: number[];
-  
+
   ohneWeg: number[];
-  
+
   abschnitte?: Punkt[][];
 }
 
@@ -905,18 +815,15 @@ export function umfahreRoute(wegpunkte: readonly Punkt[], kueste: readonly [Punk
   return { punkte, umfahreneAbschnitte, ohneWeg, abschnitte };
 }
 
-
-
 const SEEWEG_FLAECHE_MIN_SM2 = 25;
 
 export function seeweg(
   a: Punkt, b: Punkt, kueste: readonly [Punkt, Punkt][], randSm = 150, zelleSm = 0.5,
-  
+
   vereinfacht = false,
 ): Punkt[] | null {
   if (kueste.length === 0) return null;
-  
-  
+
   const ueberFluss = flussWeg(a, b, kueste, vereinfacht, (p, q) => seeweg(p, q, kueste, randSm, zelleSm, vereinfacht));
   if (ueberFluss) return ueberFluss;
   const g = baueWassergitter(boxUm([a, b], randSm), kueste, zelleSm, 0);
@@ -925,10 +832,7 @@ export function seeweg(
   for (let z = 0; z < flaeche.length; z++) if (flaeche[z]! >= 0 && g.frei[z]) groesse.set(flaeche[z]!, (groesse.get(flaeche[z]!) ?? 0) + 1);
   const haupt = [...groesse].sort((x, y) => y[1] - x[1])[0]?.[0];
   if (haupt == null) return null;
-  
-  
-  
-  
+
   const gross = new Set([...groesse].filter(([, n]) => n * g.zelleSm * g.zelleSm >= SEEWEG_FLAECHE_MIN_SM2).map(([f]) => f));
   gross.add(haupt);
   const mitte = (x: number, y: number): Punkt => ({ lat: g.swLat + (y + 0.5) * g.dLat, lon: g.swLon + (x + 0.5) * g.dLon });
@@ -954,10 +858,7 @@ export function seeweg(
   if (!a2 || !b2) return null;
   const weg = wegImGitter(g, a2, b2, kueste, undefined, 2, vereinfacht);
   if (weg) return [a, ...weg, b];
-  
-  
-  
-  
+
   const angebunden = (q: Punkt): boolean => {
     const s = anschlussZelle(g, q, kueste);
     return s != null && gross.has(flaeche[s]!);
@@ -970,10 +871,8 @@ export function seeweg(
   return entferneDoppelte([...(va ? va.slice(0, -1) : [a]), ...kern, ...(vb ? [...vb].reverse().slice(1) : [b])], kueste);
 }
 
-
 const ANLAUF_RAND_SM = 6;
 const ANLAUF_ZELLE_SM = 0.04;
-
 
 function anlauf(
   p: Punkt, kueste: readonly [Punkt, Punkt][], g: Wassergitter, angebunden: (q: Punkt) => boolean, vereinfacht: boolean,
@@ -989,7 +888,7 @@ function anlauf(
     kandidaten.push({ q, d: distNM(p.lat, p.lon, q.lat, q.lon) });
   }
   kandidaten.sort((x, y) => x.d - y.d);
-  
+
   const geprueft = new Set<number>();
   for (const { q } of kandidaten) {
     const grob = zellIndex(g, q);

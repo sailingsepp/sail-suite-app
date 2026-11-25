@@ -8,14 +8,10 @@ import {
 } from './segelZeichnungen';
 import type { Sprache } from '@/core/types';
 
-
-
 const fig = (svg: string, unterschrift: string, breit = true) =>
   `<figure class="kp-fig${breit ? ' kp-fig-breit' : ''}">${svg}<figcaption class="kp-small">${unterschrift}</figcaption></figure>`;
 
 const liste = (punkte: string[]) => `<ul>${punkte.map((p) => `<li>${p}</li>`).join('')}</ul>`;
-
-
 
 export function segeltheorie(sprache: Sprache): string {
   const t = tFuer(sprache);
@@ -61,8 +57,6 @@ ${fig(zeichnungSpalt(t), t(
     'For trimming this means the two sails form one profile. A badly trimmed headsail disturbs the flow over the main; set the headsail first, then fine-tune with the main.')}</p>
 ${quelle(sprache, 'forces_sails', 'genua_gentry', 'windgradient', 'points_sail')}`;
 }
-
-
 
 export function stabilitaet(sprache: Sprache): string {
   const t = tFuer(sprache);
@@ -121,8 +115,6 @@ ${fig(zeichnungGierig(t), t(
 <div><h4>${t('Luvgierigkeit erhöhen', 'Increase weather helm')}</h4>${liste(erhoehen)}</div></div>
 ${quelle(sprache, 'kentern', 'gz_kurve', 'lateralplan', 'luvgierig', 'segeldruckpunkt')}`;
 }
-
-
 
 export function segeltrimm(sprache: Sprache): string {
   const t = tFuer(sprache);

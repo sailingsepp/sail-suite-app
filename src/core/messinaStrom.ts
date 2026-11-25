@@ -1,10 +1,8 @@
 import { createTidePredictor } from '@neaps/tide-predictor';
 import type { Punkt } from './types';
 
-
 export const MESSINA_ENGE: Punkt = { lat: 38.25, lon: 15.635 };
 export const GEGENSTROM_MAX_KN = 1;
-
 
 export interface MessinaEinfahrt { de: string; en: string; kurzDe: string; kurzEn: string; a: Punkt; b: Punkt }
 export const MESSINA_EINFAHRT: { sued: MessinaEinfahrt; nord: MessinaEinfahrt } = {
@@ -22,11 +20,9 @@ export const MESSINA_EINFAHRT: { sued: MessinaEinfahrt; nord: MessinaEinfahrt } 
   },
 };
 
-
 function xy(p: Punkt): [number, number] {
   return [(p.lon - MESSINA_ENGE.lon) * 60 * Math.cos((MESSINA_ENGE.lat * Math.PI) / 180), (p.lat - MESSINA_ENGE.lat) * 60];
 }
-
 
 export function abstandZurEinfahrt(p: Punkt, e: MessinaEinfahrt): number {
   const [px, py] = xy(p), [ax, ay] = xy(e.a), [bx, by] = xy(e.b);
@@ -35,13 +31,11 @@ export function abstandZurEinfahrt(p: Punkt, e: MessinaEinfahrt): number {
   return Math.hypot(px - ax - t * dx, py - ay - t * dy);
 }
 
-
 export function vorDerEinfahrt(p: Punkt, e: MessinaEinfahrt): boolean {
   const [ax, ay] = xy(e.a), [bx, by] = xy(e.b), [px, py] = xy(p);
   const seite = (x: number, y: number) => Math.sign((bx - ax) * (y - ay) - (by - ay) * (x - ax));
   return seite(px, py) !== 0 && seite(px, py) !== seite(0, 0);
 }
-
 
 export function kreuztEinfahrt(p: Punkt, q: Punkt, e: MessinaEinfahrt): number | null {
   const [px, py] = xy(p), [qx, qy] = xy(q), [ax, ay] = xy(e.a), [bx, by] = xy(e.b);
@@ -53,7 +47,6 @@ export function kreuztEinfahrt(p: Punkt, q: Punkt, e: MessinaEinfahrt): number |
   return t >= 0 && t <= 1 && u >= 0 && u <= 1 ? t : null;
 }
 
-
 export function einfahrtBisEnge(e: MessinaEinfahrt): number {
   const [ax, ay] = xy(e.a), [bx, by] = xy(e.b);
   return Math.max(0.5, Math.hypot((ax + bx) / 2, (ay + by) / 2));
@@ -63,7 +56,6 @@ const SCHRITT_MS = 10 * 60_000;
 
 const SUCHE_MS = 30 * H;
 
-
 export const MESSINA_MITTEL_KN = -0.7;
 
 export const MESSINA_KOMPONENTEN: readonly [string, number, number][] = [
@@ -71,20 +63,17 @@ export const MESSINA_KOMPONENTEN: readonly [string, number, number][] = [
   ['K1', 0.8004, 58], ['O1', 0.3974, 41.9], ['P1', 0.2978, 58.4], ['M4', 0.2988, 16.2],
 ];
 
-
 export interface MessinaStelle {
   name: string;
-  
+
   ort?: Punkt;
-  
+
   achse?: number;
   mittel: number;
   komponenten: readonly [string, number, number][];
 }
 
-
 export const MESSINA_GANZIRRI: MessinaStelle = { name: 'Ganzirri', mittel: -0.17, komponenten: [['M2', 2.5986, 100.1], ['S2', 0.7011, 116.9], ['K1', 0.7004, 58], ['N2', 0.3997, 93.6], ['O1', 0.2981, 41.9], ['K2', 0.2000, 117], ['M4', 0.1993, 16.2], ['P1', 0.1981, 58.6]] };
-
 
 export const MESSINA_ZONEN: readonly MessinaStelle[] = [
   { name: 'Zona 1', ort: { lat: 38.2656, lon: 15.6802 }, achse: 30, mittel: -0.405, komponenten: [['M2', 0.4797, 114.6], ['S2', 0.1352, 131.8], ['K1', 0.1201, 65.5], ['N2', 0.0750, 107.8], ['O1', 0.0596, 48.9], ['K2', 0.0450, 132], ['M4', 0.0448, 45.2], ['P1', 0.0446, 65.8]] },
@@ -103,7 +92,7 @@ export type MessinaStromArt = 'montante' | 'scendente';
 
 export interface MessinaStrom {
   art: MessinaStromArt;
-  
+
   kn: number;
 }
 
@@ -116,7 +105,6 @@ function kurve(): ReturnType<typeof createTidePredictor> {
 const praediktoren = new Map<MessinaStelle, ReturnType<typeof createTidePredictor>>();
 const stellenTage = new Map<MessinaStelle, Map<number, Float64Array>>();
 const TAG_MS = 24 * H;
-
 
 export function messinaStelleKn(stelle: MessinaStelle, t: number): number {
   let tage = stellenTage.get(stelle);
@@ -138,17 +126,14 @@ export function messinaStelleKn(stelle: MessinaStelle, t: number): number {
   return reihe[i]! + (reihe[i + 1]! - reihe[i]!) * (x - i);
 }
 
-
 export function messinaStromKn(t: number): number {
   return MESSINA_MITTEL_KN + kurve().getWaterLevelAtTime({ time: new Date(t) }).level;
 }
-
 
 export function messinaStrom(t: number): MessinaStrom {
   const u = messinaStromKn(t);
   return { art: u >= 0 ? 'montante' : 'scendente', kn: Math.abs(u) };
 }
-
 
 function reihe(von: number, bis: number): { start: number; u: number[] } {
   const start = Math.floor(von / SCHRITT_MS) * SCHRITT_MS;
@@ -157,7 +142,6 @@ function reihe(von: number, bis: number): { start: number; u: number[] } {
 }
 
 interface Phase { art: MessinaStromArt; beginn: number; ende: number }
-
 
 export function messinaPhasen(von: number, bis: number): Phase[] {
   const { start, u } = reihe(von - 30 * H, bis + 30 * H);
@@ -177,7 +161,6 @@ export function messinaPhasen(von: number, bis: number): Phase[] {
   return phasen;
 }
 
-
 export function messinaFenster(von: number, bis: number, nachNorden: boolean): { beginn: number; ende: number }[] {
   const { start, u } = reihe(von - 30 * H, bis + 30 * H);
   const gut = (x: number) => (nachNorden ? x >= -GEGENSTROM_MAX_KN : x <= GEGENSTROM_MAX_KN);
@@ -188,10 +171,9 @@ export function messinaFenster(von: number, bis: number, nachNorden: boolean): {
     if (gut(u[i]!)) { if (beginn === null) beginn = t; }
     else if (beginn !== null) { fenster.push({ beginn, ende: t }); beginn = null; }
   }
-  
+
   return fenster.filter((f) => f.beginn > start && f.ende >= von && f.beginn <= bis);
 }
-
 
 export function einfahrtFenster(
   e: MessinaEinfahrt, nachNorden: boolean, tUtc: number, vKn: number, spanneMs = SUCHE_MS,
@@ -202,7 +184,6 @@ export function einfahrtFenster(
     .filter((f) => f.bis > tUtc);
 }
 
-
 export function einfahrtImFenster(e: MessinaEinfahrt, nachNorden: boolean, tUtc: number, vKn: number): boolean {
   const u = messinaStromKn(tUtc + (einfahrtBisEnge(e) / Math.max(vKn, LANGSAM_MIN_KN)) * H);
   return nachNorden ? u >= -GEGENSTROM_MAX_KN : u <= GEGENSTROM_MAX_KN;
@@ -210,19 +191,16 @@ export function einfahrtImFenster(e: MessinaEinfahrt, nachNorden: boolean, tUtc:
 
 type MitEinfahrt = { departure: Date; messinaEinfahrt?: { imFenster: boolean; zeit: Date; nachNorden: boolean; vKn: number } };
 
-
 export function zeitInDerEnge(e: { zeit: Date; nachNorden: boolean; vKn: number }): number {
   const einfahrt = e.nachNorden ? MESSINA_EINFAHRT.sued : MESSINA_EINFAHRT.nord;
   return naivNachUtc(e.zeit.getTime()) + (einfahrtBisEnge(einfahrt) / Math.max(e.vKn, LANGSAM_MIN_KN)) * H;
 }
-
 
 export function zumMaximum(e: { zeit: Date; nachNorden: boolean; vKn: number }): boolean {
   const t = zeitInDerEnge(e);
   const v = messinaStromverlauf(t, e.nachNorden);
   return !!v && t >= v.maxVon && t <= v.maxBis;
 }
-
 
 export function messinaAblegezeit<T extends MitEinfahrt>(ergebnisse: readonly T[], unfahrbar: (r: T) => boolean): T | null {
   let beste: T | null = null;
@@ -232,7 +210,6 @@ export function messinaAblegezeit<T extends MitEinfahrt>(ergebnisse: readonly T[
   }
   return beste ?? messinaFruehesteAblegezeit(ergebnisse, unfahrbar);
 }
-
 
 export function messinaFruehesteAblegezeit<T extends MitEinfahrt>(ergebnisse: readonly T[], unfahrbar: (r: T) => boolean): T | null {
   let beste: T | null = null;
@@ -244,12 +221,11 @@ export function messinaFruehesteAblegezeit<T extends MitEinfahrt>(ergebnisse: re
 }
 
 export interface MessinaDurchfahrt {
-  
+
   zeit: number;
   wartenMs: number;
   strom: MessinaStrom;
 }
-
 
 export function messinaPlaner(von: number, bis: number): (ankunft: number, nachNorden: boolean) => MessinaDurchfahrt | null {
   const { start, u } = reihe(von, bis + SUCHE_MS);
@@ -270,11 +246,9 @@ export function messinaPlaner(von: number, bis: number): (ankunft: number, nachN
   };
 }
 
-
 export function messinaDurchfahrt(ankunft: number, nachNorden: boolean): MessinaDurchfahrt | null {
   return messinaPlaner(ankunft, ankunft)(ankunft, nachNorden);
 }
-
 
 const formatierer = new Map<string, Intl.DateTimeFormat>();
 function formatiererFuer(zone: string): Intl.DateTimeFormat {
@@ -289,22 +263,18 @@ function formatiererFuer(zone: string): Intl.DateTimeFormat {
   return f;
 }
 
-
 export function zonenVersatzMs(zone: string, utc: number): number {
   const teile = formatiererFuer(zone).formatToParts(new Date(utc));
   const w = (typ: string) => Number(teile.find((x) => x.type === typ)!.value);
   return Date.UTC(w('year'), w('month') - 1, w('day'), w('hour'), w('minute'), w('second')) - Math.floor(utc / 1000) * 1000;
 }
 
-
 export function naivNachUtc(naiv: number, zone = 'Europe/Rome'): number {
   const erst = naiv - zonenVersatzMs(zone, naiv);
   return naiv - zonenVersatzMs(zone, erst);
 }
 
-
 export const LANGSAM_MIN_KN = 2.5;
-
 
 export function langsameFahrt(vorlaufSm: number, fahrtKn: number, wartenMs: number): number | null {
   if (wartenMs <= 0 || vorlaufSm <= 0 || fahrtKn <= 0) return null;
@@ -312,28 +282,23 @@ export function langsameFahrt(vorlaufSm: number, fahrtKn: number, wartenMs: numb
   return v >= LANGSAM_MIN_KN ? v : null;
 }
 
-
 export const MESSINA_VOLL_SM = 3;
 export const MESSINA_AUSLAUF_SM = 8;
 
 const ZONE_NAH_KM = 0.3;
 
-
 export function messinaStromAnPunkt(
   lat: number, lon: number, naivZeit: Date,
 ): { gewicht: number; speed: number; dir: number } | null {
-  
-  
+
   if (abstandZurEngeSm(lat, lon) >= MESSINA_AUSLAUF_SM) return null;
   return messinaStromAnPunktUtc(lat, lon, naivNachUtc(naivZeit.getTime()));
 }
-
 
 function abstandZurEngeSm(lat: number, lon: number): number {
   const kmLat = 111.32, kmLon = 111.32 * Math.cos((MESSINA_ENGE.lat * Math.PI) / 180);
   return Math.hypot((lat - MESSINA_ENGE.lat) * kmLat, (lon - MESSINA_ENGE.lon) * kmLon) / 1.852;
 }
-
 
 export function messinaStromAnPunktUtc(
   lat: number, lon: number, t: number,
@@ -352,7 +317,6 @@ export function messinaStromAnPunktUtc(
   return { gewicht, speed: Math.hypot(e, n), dir: ((Math.atan2(e, n) * 180) / Math.PI + 360) % 360 };
 }
 
-
 export function mischeMessina(
   grund: { speed: number; dir: number; valid: boolean }, m: { gewicht: number; speed: number; dir: number },
 ): { speed: number; dir: number; valid: true } {
@@ -366,14 +330,12 @@ export function mischeMessina(
   return { speed: Math.hypot(e, n), dir: ((Math.atan2(e, n) * 180) / Math.PI + 360) % 360, valid: true };
 }
 
-
 export function messinaZonenStrom(t: number): { name: string; ort: Punkt; kn: number; nach: number }[] {
   return MESSINA_ZONEN.map((z) => {
     const u = messinaStelleKn(z, t);
     return { name: z.name, ort: z.ort!, kn: Math.abs(u), nach: u >= 0 ? z.achse! : (z.achse! + 180) % 360 };
   });
 }
-
 
 export interface StromGitter {
   lat0: number; lon0: number; dLat: number; dLon: number; zeilen: number; spalten: number;
@@ -406,7 +368,6 @@ export function messinaStromGitter(
   return { lat0, lon0, dLat, dLon, zeilen, spalten, u, v };
 }
 
-
 export function stromImGitter(g: StromGitter, lat: number, lon: number): { u: number; v: number } | null {
   const y = (lat - g.lat0) / g.dLat, x = (lon - g.lon0) / g.dLon;
   if (!(y >= 0 && x >= 0 && y <= g.zeilen - 1 && x <= g.spalten - 1)) return null;
@@ -421,7 +382,6 @@ export function stromImGitter(g: StromGitter, lat: number, lon: number): { u: nu
   return sw > 0 ? { u: su / sw, v: sv / sw } : null;
 }
 
-
 export const STAU_KN = 0.5;
 export const ZUNAHME_ANTEIL = 0.8;
 export const MAX_ANTEIL = 0.95;
@@ -429,7 +389,7 @@ export interface MessinaStromverlauf {
   art: MessinaStromArt;
   kenter: number; stauVon: number; stauBis: number;
   zunahmeBis: number; maxVon: number; maxBis: number; maxKn: number;
-  
+
   stauEndeVon: number;
   ende: number;
 }
@@ -437,12 +397,12 @@ export function messinaStromverlauf(t: number, nachNorden: boolean): MessinaStro
   const { start, u } = reihe(t - 16 * H, t + 30 * H);
   const s = nachNorden ? 1 : -1;
   const zeit = (i: number) => start + i * SCHRITT_MS;
-  
+
   const kreuz = (i: number, x: number) => {
     const a = s * u[i - 1]!, b = s * u[i]!;
     return zeit(i - 1) + (b === a ? 0 : ((x - a) / (b - a)) * SCHRITT_MS);
   };
-  
+
   const phasen: { a: number; e: number }[] = [];
   let a: number | null = null;
   for (let i = 1; i < u.length; i++) {
@@ -457,7 +417,7 @@ export function messinaStromverlauf(t: number, nachNorden: boolean): MessinaStro
   const maxKn = s * u[maxI]!;
   if (maxKn <= 0) return null;
   const kenter = kreuz(ph.a, 0);
-  
+
   let i0 = ph.a - 1;
   while (i0 > 0 && s * u[i0 - 1]! >= -STAU_KN) i0--;
   const stauVon = i0 > 0 ? kreuz(i0, -STAU_KN) : zeit(0);
@@ -471,15 +431,14 @@ export function messinaStromverlauf(t: number, nachNorden: boolean): MessinaStro
   while (m0 > ph.a && s * u[m0 - 1]! >= MAX_ANTEIL * maxKn) m0--;
   while (m1 < ph.e - 1 && s * u[m1 + 1]! >= MAX_ANTEIL * maxKn) m1++;
   const maxVon = m0 > ph.a ? kreuz(m0, MAX_ANTEIL * maxKn) : zeit(m0);
-  
+
   const b0 = s * u[m1]!, b1 = s * u[m1 + 1]!;
   const maxBis = zeit(m1) + (b1 === b0 ? 0 : ((MAX_ANTEIL * maxKn - b0) / (b1 - b0)) * SCHRITT_MS);
   let i2 = ph.e - 1;
   while (i2 > m1 && s * u[i2]! < Math.min(STAU_KN, maxKn)) i2--;
   const c0 = s * u[i2]!, c1 = s * u[i2 + 1]!, x = Math.min(STAU_KN, maxKn);
   const stauEndeVon = zeit(i2) + (c1 === c0 ? 0 : ((x - c0) / (c1 - c0)) * SCHRITT_MS);
-  
-  
+
   const stauEnde = Math.min(stauBis, maxVon);
   return {
     art: nachNorden ? 'montante' : 'scendente', kenter, stauVon, stauBis: stauEnde,

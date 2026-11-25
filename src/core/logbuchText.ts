@@ -4,9 +4,7 @@ import type { Ereignis } from './spur';
 import type { Sprache } from './types';
 import { lateinisch } from './umschrift';
 
-
 const ORTS_ARTEN = new Set(['start', 'ziel', 'anlegen', 'ankern', 'liegeplatz', 'ankerplatz', 'treiben']);
-
 
 const ARTEN: Record<string, [string, string]> = {
   kurswechsel: ['Kurswechsel', 'Course change'],
@@ -26,20 +24,18 @@ const ARTEN: Record<string, [string, string]> = {
   standort: ['Standort', 'Position'],
   aufschiesser: ['Aufschießer', 'Head to wind'],
   treiben: ['Treiben lassen', 'Drifting'],
-  
+
   ais: ['AIS', 'AIS'],
-  
+
   navigation: ['Navigation', 'Navigation'],
   mob: ['Mann über Bord', 'Man overboard'],
-  
+
   tanken: ['Tankstopp', 'Fuel stop'],
 };
-
 
 export type Liegeart = 'anker' | 'heck' | 'bug' | 'laengsseits' | 'boje' | 'treiben';
 
 export const LIEGEARTEN: readonly Liegeart[] = ['anker', 'heck', 'bug', 'laengsseits', 'boje', 'treiben'];
-
 
 const FESTGEMACHT: Record<'heck' | 'bug' | 'laengsseits' | 'boje', [string, string]> = {
   heck: ['Heckleinen am Kai', 'stern-to'],
@@ -47,7 +43,6 @@ const FESTGEMACHT: Record<'heck' | 'bug' | 'laengsseits' | 'boje', [string, stri
   laengsseits: ['längsseits am Kai', 'alongside'],
   boje: ['an Boje', 'to a buoy'],
 };
-
 
 export function liegeartName(l: Liegeart, sprache: Sprache): string {
   switch (l) {
@@ -57,15 +52,13 @@ export function liegeartName(l: Liegeart, sprache: Sprache): string {
   }
 }
 
-
 export function liegeEintragArt(l: Liegeart): 'ankern' | 'anlegen' | 'treiben' {
   return l === 'anker' ? 'ankern' : l === 'treiben' ? 'treiben' : 'anlegen';
 }
 
-
 export function eintragArtName(art: string, sprache: Sprache, liegeart?: Liegeart): string {
   if (art === 'hand' || art === 'wetter') return '';
-  
+
   if (liegeart === 'heck' || liegeart === 'bug' || liegeart === 'laengsseits' || liegeart === 'boje') {
     if (art === 'anlegen') return liegeartName(liegeart, sprache);
     if (art === 'liegeplatz') {
@@ -77,18 +70,15 @@ export function eintragArtName(art: string, sprache: Sprache, liegeart?: Liegear
   return paar ? (sprache === 'de' ? paar[0] : paar[1]) : art;
 }
 
-
 export function eintragInhalt(art: string, text: string | null | undefined, sprache: Sprache): string {
   const t = text ?? '';
   if (art === 'antrieb') {
     if (t === 'motor') return sprache === 'de' ? 'Maschine' : 'Engine';
     if (t === 'segel') return sprache === 'de' ? 'Segel' : 'Sail';
   }
-  
-  
+
   if (ORTS_ARTEN.has(art)) return lateinisch(t);
-  
-  
+
   if (art === 'kurswechsel') {
     return t.replace(/(?<![\d,.])(\d{1,2})°/g, (_, g: string) => `${g.padStart(3, '0')}°`);
   }
@@ -99,7 +89,6 @@ export function eintragInhalt(art: string, text: string | null | undefined, spra
   return t;
 }
 
-
 export function ereignisText(e: Ereignis, sprache: Sprache): string {
   const grad = (x: number) => kursGrad(x);
   switch (e.art) {
@@ -108,8 +97,7 @@ export function ereignisText(e: Ereignis, sprache: Sprache): string {
     case 'fahrtwechsel':
       return `${nf(e.von, 1, sprache)} kn → ${nf(e.nach, 1, sprache)} kn`;
     case 'standort':
-      
-      
+
       return sprache === 'en'
         ? `${positionText(e.lat, e.lon, 'en')} · COG ${grad(e.von)} · SOG ${nf(e.nach, 1, 'en')} kn`
         : `${positionText(e.lat, e.lon, 'de')} · KüG ${grad(e.von)} · FüG ${nf(e.nach, 1, 'de')} kn`;
@@ -129,7 +117,6 @@ export function ereignisText(e: Ereignis, sprache: Sprache): string {
 
 const BEWEGUNG = new Set(['kurswechsel', 'fahrtwechsel', 'aufschiesser']);
 
-
 export function liegeZeitNachBewegung(
   eintraege: readonly { art: string; t: number }[], liegeT: number, fensterMs = 3 * 60_000,
 ): number {
@@ -139,7 +126,6 @@ export function liegeZeitNachBewegung(
   }
   return t;
 }
-
 
 export function liegenAmTagesbeginn(
   alteEintraege: readonly { art: string; t: number; text?: string | undefined; liegeart?: Liegeart | undefined }[],
@@ -151,7 +137,7 @@ export function liegenAmTagesbeginn(
     .pop();
   const geankert = ankerwache || letzter?.art === 'ankern' || letzter?.art === 'ankerplatz';
   const art = geankert ? 'ankerplatz' : 'liegeplatz';
-  
+
   const la = letzter?.liegeart;
   return la && la !== 'treiben' && (la === 'anker') === geankert
     ? { art, text: letzter?.text ?? '', liegeart: la }

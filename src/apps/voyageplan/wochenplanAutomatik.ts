@@ -1,4 +1,3 @@
-
 import { schutzStufe } from '@/core/shelter';
 import { fmtDur, nf } from '@/core/time';
 import { smText } from './einheit';
@@ -19,14 +18,12 @@ import { tagesplanungUrl } from '@/core/tagesplanungLink';
 import { tageszeileHtml, tabellenKopfHtml, wochentagDatum, wochentagAusIso } from './tageszeile';
 import { anspruch, anspruchHtml, anspruchKompaktHtml, anspruchKurztext, anspruchGruende, type Anspruch } from '@/briefing/anspruch';
 
-
 function tageAbHeute(datum: Date | null): number | null {
   if (!datum) return null;
   const heute = new Date(); heute.setHours(12, 0, 0, 0);
   const tag = new Date(datum); tag.setHours(12, 0, 0, 0);
   return Math.max(0, Math.round((tag.getTime() - heute.getTime()) / 86_400_000));
 }
-
 
 export function etappenAnspruch(e: WochenplanEtappe, datum: Date | null, sprache: Sprache): Anspruch | null {
   const k = e.kennzahlen;
@@ -44,7 +41,6 @@ export function etappenAnspruch(e: WochenplanEtappe, datum: Date | null, sprache
   }, sprache);
 }
 
-
 export function toernAnspruchHtml(liste: readonly { tag: number; a: Anspruch }[], sprache: Sprache): string {
   if (liste.length === 0) return '';
   const max = liste.reduce((m, x) => (x.a.punkte > m.a.punkte ? x : m), liste[0]!);
@@ -57,7 +53,6 @@ const ANKER_ZEICHEN: Record<'geschuetzt' | 'teilweise' | 'offen', string> = {
   geschuetzt: '⚓', teilweise: '⚓', offen: '⚓',
 };
 
-
 const WARUM_TEXT: Record<Sprache, (t: number) => string> = {
   de: (t) => `Begründung<span class="vp-sr-only">, Tag ${t}</span>`,
   en: (t) => `Reasoning<span class="vp-sr-only">, day ${t}</span>`,
@@ -66,7 +61,6 @@ const DETAILS_TEXT: Record<Sprache, (t: number) => string> = {
   de: (t) => `Tag ${t} ändern`,
   en: (t) => `Change day ${t}`,
 };
-
 
 const EINGRIFF_TEXT: Record<Sprache, {
   festnageln: string; hafentag: string; hafentagFest: string; umlegen: string; umlegenKnopf: string;
@@ -81,7 +75,6 @@ const EINGRIFF_TEXT: Record<Sprache, {
   },
 };
 
-
 export function naechsteLiegeplaetze(netz: Kandidatennetz, index: number, anzahl = 6): number[] {
   const ort = netz.knoten[index]?.ort;
   if (!ort) return [];
@@ -93,7 +86,6 @@ export function naechsteLiegeplaetze(netz: Kandidatennetz, index: number, anzahl
     .slice(0, anzahl)
     .map((x) => x.i);
 }
-
 
 export function naechsterVerbundenerKnoten(netz: Kandidatennetz, punkt: Punkt): number | null {
   const mitKante = new Set(netz.kanten.flatMap((k) => [k.von, k.nach]));
@@ -107,7 +99,6 @@ export function naechsterVerbundenerKnoten(netz: Kandidatennetz, punkt: Punkt): 
   return bester;
 }
 
-
 export function eingriffHtml(e: WochenplanEtappe, netz: Kandidatennetz, sprache: Sprache): string {
   const T = EINGRIFF_TEXT[sprache];
   const knopf = (text: string, knoten: number): string =>
@@ -117,8 +108,7 @@ export function eingriffHtml(e: WochenplanEtappe, netz: Kandidatennetz, sprache:
     .map((i) => `<option value="${i}">${escapeHtml(netz.knoten[i]!.name)}</option>`).join('');
   return `<div class="vp-eingriff">`
     + knopf(T.festnageln, e.nachIndex)
-    
-    
+
     + (e.istNachtschlag ? '' : knopf(T.hafentag, e.vonIndex))
     + (optionen ? `<label class="vp-eingriff-umlegen">${escapeHtml(T.umlegen)} `
       + `<select class="vp-eingriff-auswahl" data-tag="${e.tag}">${optionen}</select></label>`
@@ -144,7 +134,6 @@ const GERUEST_KURZ: Record<Sprache, string> = { de: 'geschätzt', en: 'estimated
 const HAFENTAG_IN: Record<Sprache, (art: string, ort: string) => string> = {
   de: (art, ort) => `${art} in ${ort}`, en: (art, ort) => `${art}: ${ort}`,
 };
-
 
 const LISTE_LABEL: Record<Sprache, string> = { de: 'Tage des Plans', en: 'Days of the plan' };
 
@@ -174,12 +163,10 @@ const UMKEHR_TEXT: Record<Sprache, (tag: number) => string> = {
   en: (tag) => `Turning point after day ${tag}: from here the plan heads for the return harbour. Going further out would leave no time for the remaining wish destinations and the reserve days.`,
 };
 
-
 const UMKEHR_NIE: Record<Sprache, string> = {
   de: 'Umkehrpunkt: schon zu Beginn reicht die Zeit nur für Rückweg, offene Wünsche und Reserve.',
   en: 'Turning point: from the very start the time covers only the way back, the open wishes and the reserve.',
 };
-
 
 const UMKEHR_BRUCH: Record<Sprache, string> = {
   de: ' Achtung: Eine spätere Etappe hält die Bedingung wieder ein. Der Plan überspringt den Umkehrpunkt.',
@@ -190,31 +177,27 @@ const SPUR_TAG_LABEL: Record<Sprache, (t: number) => string> = {
   de: (t) => `Tag ${t}`, en: (t) => `Day ${t}`,
 };
 
-
-
-
 export interface WochenplanAnzeigeZiel {
   boxId?: string;
   label?: string;
   istOption?: boolean;
-  
+
   hinweis?: string;
-  
+
   umkehrpunkt?: UmkehrpunktErgebnis | null;
-  
+
   datumFuerTag?: (tag: number) => Date | null;
-  
+
   reserveTage?: number;
-  
+
   uebernahmeSpaet?: boolean;
-  
+
   eingriff?: boolean;
-  
+
   skipperGuide?: ReadonlyMap<number, { name: string; text: string; seite: string; quelle: string; stand: string | null }>;
-  
+
   kraftstoff?: { angabe: KraftstoffAngabe; motorKn: number } | null;
 }
-
 
 export function planMotorSm(ergebnis: WochenplanErgebnis): { sm: number; ohneVorhersage: boolean } {
   let sm = 0, ohneVorhersage = false;
@@ -227,7 +210,6 @@ export function planMotorSm(ergebnis: WochenplanErgebnis): { sm: number; ohneVor
   return { sm, ohneVorhersage };
 }
 
-
 export function skipperGuideZitatHtml(
   z: { name: string; text: string; seite: string; quelle: string; stand: string | null }, sprache: Sprache,
 ): string {
@@ -238,7 +220,6 @@ export function skipperGuideZitatHtml(
   return `<blockquote class="vp-zitat"><p>${escapeHtml(kopf)}:</p><p>${escapeHtml(z.text)}</p>`
     + `<p class="vp-zitat-quelle">${en ? 'Source' : 'Quelle'}: ${escapeHtml(z.quelle)} (GFDL)</p></blockquote>`;
 }
-
 
 function kennzahlenzeileHtml(
   ergebnis: WochenplanErgebnis, sprache: Sprache, umkehr: UmkehrpunktErgebnis | null,
@@ -256,19 +237,16 @@ function kennzahlenzeileHtml(
     { schluessel: 'hafentage', wert: String(hafentage) },
     { schluessel: 'laengste', wert: smText(laengste, 0, sprache) },
   ];
-  
-  
+
   if (naechte > 0) felder.push({ schluessel: 'naechte', wert: String(naechte) });
-  
-  
+
   const reichweite = umkehr?.reichweiteJeTag[umkehr.reichweiteJeTag.length - 1];
   if (reichweite != null) felder.push({ schluessel: 'reichweite', wert: `${reichweite} d` });
-  
-  
+
   if (k.modellUebereinstimmungMinProzent != null) {
     felder.push({ schluessel: 'modell', wert: `${nf(k.modellUebereinstimmungMinProzent, 0, sprache)} %` });
   }
-  
+
   if (kraftstoff) {
     const motor = planMotorSm(ergebnis).sm;
     felder.push({ schluessel: 'motor', wert: smText(motor, 0, sprache) });
@@ -279,7 +257,6 @@ function kennzahlenzeileHtml(
     `<div><dt>${escapeHtml(KENNZAHL_TEXT[sprache][f.schluessel])}</dt><dd>${escapeHtml(f.wert)}</dd></div>`
   )).join('')}</dl>`;
 }
-
 
 function kraftstoffHtml(ergebnis: WochenplanErgebnis, k: NonNullable<WochenplanAnzeigeZiel['kraftstoff']>, sprache: Sprache): string {
   const motor = planMotorSm(ergebnis);
@@ -299,15 +276,12 @@ const KENNZAHL_TEXT = {
   },
 } as const;
 
-
 const k0 = (e: { kennzahlen: EtappenKennzahlen }): EtappenKennzahlen => e.kennzahlen;
-
 
 function ankerHtml(stufe: 'geschuetzt' | 'teilweise' | 'offen', sprache: Sprache): string {
   return `<span class="vp-woche-anker vp-woche-anker-${stufe}">${ANKER_ZEICHEN[stufe]}`
     + `<span class="vp-woche-anker-text">${escapeHtml(ANKER_TEXT[sprache][stufe])}</span></span>`;
 }
-
 
 function warumHtml(titel: string | null, tag: number, sprache: Sprache, eingriff = ''): string {
   if (!titel && !eingriff) return '';
@@ -317,18 +291,14 @@ function warumHtml(titel: string | null, tag: number, sprache: Sprache, eingriff
   </details>`;
 }
 
-
-
 export function ablegeTag(e: Pick<WochenplanEtappe, 'tag' | 'istNachtschlag'>): number {
   return e.istNachtschlag ? e.tag - 1 : e.tag;
 }
-
 
 export function vortag(iso: string | null | undefined): string | null {
   const m = iso ? /^(\d{4})-(\d{2})-(\d{2})/.exec(iso) : null;
   return m ? new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]) - 1)).toISOString().slice(0, 10) : null;
 }
-
 
 export function gespeicherterAblegetag(datum: string | null, vorigesDatum: string | null): string | null {
   if (!datum || !vorigesDatum) return datum;
@@ -341,11 +311,9 @@ function tagLabel(tag: number, datumFuerTag: ((tag: number) => Date | null) | un
   return datum ? wochentagDatum(datum, sprache) : TAG_LABEL[sprache](tag);
 }
 
-
 function uhrzeitAus(iso: string): string {
   return iso.slice(11, 16);
 }
-
 
 function courseCastLink(
   e: WochenplanEtappe, netz: Kandidatennetz,
@@ -357,30 +325,21 @@ function courseCastLink(
   const datum = datumFuerTag?.(ablegeTag(e)) ?? null;
   if (!von || !nach || !datum) return '';
   const p = (n: number): string => String(n).padStart(2, '0');
-  
+
   const zwischen = kantenWeg(netz, e.vonIndex, e.nachIndex).slice(1, -1);
   return tagesplanungLinkHtml(von, nach, `${datum.getFullYear()}-${p(datum.getMonth() + 1)}-${p(datum.getDate())}`, sprache, zwischen);
 }
 
-
 function tagesplanungLinkHtml(von: Punkt, nach: Punkt, datumStr: string, sprache: Sprache, zwischen: readonly Punkt[] = []): string {
   const url = tagesplanungUrl(von, nach, datumStr, zwischen);
-  
-  
-  
-  
-  
-  
+
   return `<a class="vp-woche-coursecast" href="${url}">${escapeHtml(COURSECAST_TEXT[sprache])}</a>`;
 }
 
 const COURSECAST_TEXT: Record<Sprache, string> = {
-  
-  
-  
+
   de: 'In der Tagesplanung', en: 'In CourseCast',
 };
-
 
 function umkehrlinieHtml(u: UmkehrpunktErgebnis | null | undefined, sprache: Sprache): string {
   if (!u) return '';
@@ -397,7 +356,6 @@ function umkehrlinieHtml(u: UmkehrpunktErgebnis | null | undefined, sprache: Spr
   </div>`;
 }
 
-
 function vollstaendigeSpurHtml(begruendung: Begruendungsspur, netz: Kandidatennetz, sprache: Sprache): string {
   const eintraege = begruendung.tage
     .map((tag) => ({ tag: tag.tag, text: vollstaendigeTagesSpur(tag, netz, sprache) }))
@@ -411,7 +369,6 @@ function vollstaendigeSpurHtml(begruendung: Begruendungsspur, netz: Kandidatenne
     <ul>${zeilen}</ul>
   </details>`;
 }
-
 
 export function renderAutomatischenWochenplan(
   ergebnis: WochenplanErgebnis | null, netz: Kandidatennetz | null,
@@ -428,8 +385,6 @@ export function renderAutomatischenWochenplan(
     return;
   }
 
-  
-  
   const ueberblickHtml = `<p class="vp-woche-ueberblick">`
     + `${escapeHtml(wochenUeberblick(ergebnis, planKennzahlen(ergebnis), sprache))}</p>`;
 
@@ -442,25 +397,19 @@ export function renderAutomatischenWochenplan(
     + spurHtml;
 }
 
-
 export function planZeilenHtml(
   ergebnis: WochenplanErgebnis, netz: Kandidatennetz,
   wunschzielIndizesListe: readonly number[], sprache: Sprache,
   begruendung: Begruendungsspur | null = null, ziel: WochenplanAnzeigeZiel = {},
 ): string {
-  
-  
-  
-  
+
   const umkehrNachTag = ziel.umkehrpunkt?.tag ?? null;
 
   const zusatzHtml = (knoten: number, e: WochenplanEtappe): string => {
     const zitat = ziel.skipperGuide?.get(knoten);
     return (zitat ? skipperGuideZitatHtml(zitat, sprache) : '') + (ziel.eingriff ? eingriffHtml(e, netz, sprache) : '');
   };
-  
-  
-  
+
   const letzterPlanTag = ergebnis.etappen[ergebnis.etappen.length - 1]?.tag ?? 0;
   const umkehrSagtEtwas = ziel.umkehrpunkt?.gueltig === false || (umkehrNachTag != null && umkehrNachTag < letzterPlanTag);
   const ansprueche: { tag: number; a: Anspruch }[] = [];
@@ -472,8 +421,7 @@ export function planZeilenHtml(
     const von = netz.knoten[e.vonIndex]?.name ?? '?';
     const nach = netz.knoten[e.nachIndex]?.name ?? '?';
     const istWunschziel = wunschzielIndizesListe.includes(e.nachIndex);
-    
-    
+
     const tagBeg = begruendung?.tage.find((t) => t.tag === e.tag);
     const titel = tagBeg ? tagesBegruendung(tagBeg, netz, sprache) : null;
     const k = e.kennzahlen;
@@ -489,8 +437,7 @@ export function planZeilenHtml(
         if ((ziel.reserveTage ?? 0) > 0 && x.vonIndex === zielKnoten && x.tag > letzterTag - (ziel.reserveTage ?? 0)) return RESERVETAG_TEXT[sprache];
         return HAFENTAG_TEXT[sprache];
       };
-      
-      
+
       return tageszeileHtml({
         tag: e.tag, wann, route: HAFENTAG_IN[sprache](hafentagName(e), von), ort: von,
         klassen: ['vp-woche-hafentag'], wind,
@@ -525,15 +472,13 @@ export function planZeilenHtml(
         + warumHtml(titel, e.tag, sprache, zusatzHtml(e.nachIndex, e)),
     }, sprache) + linie;
   });
-  
-  
+
   return toernAnspruchHtml(ansprueche, sprache)
     + `<div class="vp-woche-liste" role="list" aria-label="${escapeHtml(LISTE_LABEL[sprache])}">`
     + tabellenKopfHtml(sprache)
     + zeilen.map((z) => `<div role="listitem">${z}</div>`).join('')
     + '</div>';
 }
-
 
 export interface GespeicherteEtappenZeile {
   tag: number;
@@ -542,18 +487,16 @@ export interface GespeicherteEtappenZeile {
   nachName: string;
   istHafentag: boolean;
   sm: number | null;
-  
+
   von?: Punkt | null;
   nach?: Punkt | null;
-  
+
   wegpunkte?: Punkt[];
 }
-
 
 function gespeichertesTagLabel(z: GespeicherteEtappenZeile, sprache: Sprache): string {
   return wochentagAusIso(z.datum, sprache) ?? TAG_LABEL[sprache](z.tag);
 }
-
 
 export function renderGespeichertenWochenplan(
   zeilen: readonly GespeicherteEtappenZeile[], sprache: Sprache, ziel: WochenplanAnzeigeZiel = {},
@@ -618,13 +561,11 @@ const ENTSCHEIDUNGSPUNKT_TEXT: Record<Sprache, { keiner: string; keinVergleich: 
   },
 };
 
-
 export function entscheidungspunktText(ep: Entscheidungspunkt, sprache: Sprache): string {
   if (ep === null) return ENTSCHEIDUNGSPUNKT_TEXT[sprache].keinVergleich;
   if (ep === 'keiner') return ENTSCHEIDUNGSPUNKT_TEXT[sprache].keiner;
   return ENTSCHEIDUNGSPUNKT_TEXT[sprache].tag(ep.tag);
 }
-
 
 export function optionsSpalteHtml(
   ergebnis: WochenplanErgebnis | null, netz: Kandidatennetz | null,
@@ -634,7 +575,6 @@ export function optionsSpalteHtml(
   return `<p class="vp-woche-ueberblick">${escapeHtml(wochenUeberblick(ergebnis, planKennzahlen(ergebnis), sprache))}</p>`
     + planZeilenHtml(ergebnis, netz, wunschzielIndizesListe, sprache, null, { ...ziel, eingriff: false });
 }
-
 
 export function tageszieleText(ergebnis: WochenplanErgebnis | null, netz: Kandidatennetz | null): string | null {
   if (!ergebnis || !netz) return null;
@@ -646,11 +586,10 @@ export function tageszieleText(ergebnis: WochenplanErgebnis | null, netz: Kandid
   return namen.length ? namen.join(' → ') : null;
 }
 
-
 export function renderOptionenVergleich(
   vergleich: { kennzahlen: readonly OptionKennzahlen[]; entscheidungspunkt: Entscheidungspunkt } | null,
   sprache: Sprache,
-  
+
   tagesziele: readonly (string | null)[] = [],
 ): void {
   const box = document.getElementById('vp-vergleich');
@@ -668,8 +607,7 @@ export function renderOptionenVergleich(
 
   const l = VERGLEICH_LABEL[sprache];
   const zeilen: ReadonlyArray<{ label: string; wert: (k: OptionKennzahlen, i: number) => string }> = [
-    
-    
+
     ...(tagesziele.some(Boolean) ? [{ label: l.tagesziele, wert: (_k: OptionKennzahlen, i: number) => tagesziele[i] ?? '–' }] : []),
     { label: l.machbar, wert: (k) => MACHBAR_TEXT[sprache][k.machbar ? 'ja' : 'nein'] },
     { label: l.seemeilen, wert: (k) => k.kennzahlen ? smText(k.kennzahlen.gesamtSm, 1, sprache) : '–' },

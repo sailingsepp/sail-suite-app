@@ -5,7 +5,6 @@ import { sage, verwirf } from './ansage';
 import { ANSAGE } from '@/core/ansagen';
 import type { Zustand } from './aufzeichnung';
 
-
 const $ = (id: string) => document.getElementById(id);
 let ruheBis = 0;
 let offen = false;
@@ -19,9 +18,8 @@ function schliesse(): void {
   modal?.beimSchliessen();
 }
 
-
 export function pruefeAngelegt(z: Zustand, a: SpurAuswertung): void {
-  
+
   if (z.fahrt?.id !== fahrtId) { fahrtId = z.fahrt?.id ?? null; ruheBis = 0; }
   const laeuft = z.betriebsart === 'laeuft';
   if (!laeuft && offen) { schliesse(); return; }
@@ -37,7 +35,7 @@ export function initAngelegt(): void {
   if (el) modal = initModal(el, () => { schliesse(); ruheBis = Date.now() + ANGELEGT_RUHE_NACH_NEIN_MS; });
   $('btn-angelegt-ja')?.addEventListener('click', () => {
     schliesse();
-    
+
     $('btn-pause')?.click();
   });
   $('btn-angelegt-nein')?.addEventListener('click', () => {

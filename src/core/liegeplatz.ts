@@ -1,28 +1,25 @@
 import type { Punkt } from './types';
 
-
-
 export interface Kante {
   a: Punkt;
   b: Punkt;
-  
+
   art: 'kueste' | 'steg';
-  
+
   halbeBreiteM?: number;
 }
 
 export interface LiegeLage {
-  
+
   kurs: number;
-  
+
   lat: number;
   lon: number;
-  
+
   seite: 'bb' | 'stb' | null;
-  
+
   abstandM: number;
 }
-
 
 export const LIEGE_MAX_M = 20;
 
@@ -47,7 +44,6 @@ const winkelAbstand = (a: number, b: number): number => Math.abs(((a - b + 540) 
 
 interface Treffer { k: Kante; fx: number; fy: number; ux: number; uy: number; d: number }
 
-
 function naechste(kanten: readonly Kante[], hin: (q: Punkt) => [number, number]): Treffer | null {
   let best: Treffer | null = null;
   for (const k of kanten) {
@@ -65,7 +61,6 @@ function naechste(kanten: readonly Kante[], hin: (q: Punkt) => [number, number])
   return best;
 }
 
-
 export function liegeLage(
   p: Punkt, art: 'heck' | 'bug' | 'laengsseits', kanten: readonly Kante[],
   anfahrt: Punkt | null = null, anfahrtKurs: number | null = null,
@@ -74,13 +69,13 @@ export function liegeLage(
   const t = naechste(kanten, hin);
   if (!t || t.d > LIEGE_MAX_M) return null;
   const { fx, fy, ux, uy } = t;
-  
+
   const rx = uy, ry = -ux;
   let seite: 1 | -1;
   if (t.k.art === 'kueste') {
     seite = 1;
   } else {
-    
+
     const vx = -fx, vy = -fy;
     const quer = vx * rx + vy * ry;
     if (Math.abs(quer) >= SEITE_SICHER_M || !anfahrt) seite = quer >= 0 ? 1 : -1;
@@ -95,16 +90,15 @@ export function liegeLage(
   const abstandM = Math.max(0, t.d);
   if (art === 'heck') return { kurs: peilung(nx, ny), lat: kai.lat, lon: kai.lon, seite: null, abstandM };
   if (art === 'bug') return { kurs: peilung(-nx, -ny), lat: kai.lat, lon: kai.lon, seite: null, abstandM };
-  
+
   const vor = peilung(ux, uy), zurueckK = (vor + 180) % 360;
   const kurs = anfahrtKurs != null && winkelAbstand(anfahrtKurs, zurueckK) < winkelAbstand(anfahrtKurs, vor) ? zurueckK : vor;
-  
+
   const kr = (kurs * Math.PI) / 180;
   const stbX = Math.cos(kr), stbY = -Math.sin(kr);
   const seiteKai = -nx * stbX - ny * stbY > 0 ? 'stb' : 'bb';
   return { kurs, lat: kai.lat, lon: kai.lon, seite: seiteKai, abstandM };
 }
-
 
 export function kantenAusOsm(
   elemente: readonly { type: string; tags?: Record<string, string>; geometry?: { lat: number; lon: number }[] }[],

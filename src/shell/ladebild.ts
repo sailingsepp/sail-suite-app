@@ -1,11 +1,9 @@
-
 export function ladebildWeg(): void {
   const l = document.getElementById('ladebild');
   if (!l) return;
   l.classList.add('lb-weg');
   setTimeout(() => { if (l.classList.contains('lb-weg')) l.classList.add('lb-aus'); }, 300);
 }
-
 
 export function ladebildGezeichnet(): Promise<void> {
   const l = document.getElementById('ladebild');

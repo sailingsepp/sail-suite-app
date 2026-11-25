@@ -4,21 +4,16 @@ import type { Sprache } from '@/core/types';
 import { SCHLUESSEL } from '@/shell/speicherschluessel';
 import { macheWischbar, wischZeile } from '@/shell/wischListe';
 
-
-
 export interface Kommentar { id: string; name: string; text: string; t: string }
-
 
 export const NAME_MAX = 60;
 export const TEXT_MAX = 1000;
-
 
 export function kommentarZeit(iso: string, sprache: Sprache): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
   return datumUhrLtVon(d.getTime(), sprache === 'de' ? 'de' : 'en', { weekday: 'short', day: 'numeric', month: 'numeric' });
 }
-
 
 export function blasenHtml(liste: readonly Kommentar[], sprache: Sprache, leer: string, loeschen?: string): string {
   if (!liste.length) return `<p class="st-leer">${escapeHtml(leer)}</p>`;
@@ -35,11 +30,9 @@ interface Umgebung {
   sprache: Sprache;
 }
 
-
 function angemeldet(): boolean {
   try { return document.cookie.split(';').some((c) => c.trim().startsWith('angemeldet=') && c.trim().length > 'angemeldet='.length); } catch { return false; }
 }
-
 
 export function anmeldeZiel(hier: string): string {
   return `/?login=1&next=${encodeURIComponent(hier)}`;
@@ -51,7 +44,6 @@ function liesName(): string {
 function merkeName(n: string): void {
   try { localStorage.setItem(SCHLUESSEL.streamName, n); } catch {  }
 }
-
 
 export function initKommentare(u: Umgebung): { lade: () => Promise<void> } {
   const $ = (id: string) => document.getElementById(id);
@@ -79,7 +71,6 @@ export function initKommentare(u: Umgebung): { lade: () => Promise<void> } {
     liste.innerHTML = blasenHtml(k, u.sprache, u.wort('kommentare.leer'), darfLoeschen ? u.wort('kommentar.loeschen') : undefined);
   };
 
-  
   macheWischbar(liste, (id, knopf) => {
     if (!window.confirm(u.wort('kommentar.loeschenFrage'))) return false;
     knopf.disabled = true;
@@ -103,13 +94,12 @@ export function initKommentare(u: Umgebung): { lade: () => Promise<void> } {
   };
   const schliesse = () => { if (typeof dialog.close === 'function') dialog.close(); else dialog.removeAttribute('open'); };
 
-  
   kopfKnopf.addEventListener('click', () => {
     kachel.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
   });
   $('st-kommentar-neu')!.addEventListener('click', oeffne);
   $('st-kommentar-abbrechen')!.addEventListener('click', schliesse);
-  
+
   dialog.addEventListener('click', (e) => { if (e.target === dialog) schliesse(); });
 
   form.addEventListener('submit', (e) => {
@@ -140,14 +130,13 @@ export function initKommentare(u: Umgebung): { lade: () => Promise<void> } {
 
   async function lade(): Promise<void> {
     try {
-      
+
       const r = await fetch(u.api('/kommentare'), { credentials: 'include' });
       if (r.status === 404 || r.status === 410) { kachel.hidden = true; kopfKnopf.hidden = true; return; }
       if (!r.ok) return;
       const d = (await r.json()) as { kommentare: Kommentar[]; darfLoeschen?: boolean };
       darfLoeschen = d.darfLoeschen === true;
-      
-      
+
       const zeile = $('st-kommentar-anmelden-zeile');
       const link = $('st-kommentar-anmelden') as HTMLAnchorElement | null;
       if (zeile && link) {

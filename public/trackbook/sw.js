@@ -1,11 +1,3 @@
-
-
-
-
-
-
-
-
 const APP_CACHE = 'trackbook-app-v2';
 const KACHEL_CACHE = 'trackbook-kacheln-v1';
 
@@ -16,24 +8,19 @@ const STIMME_QUELLEN = [
 ];
 const istStimme = (url) => STIMME_QUELLEN.some((q) => url.startsWith(q));
 
-
 const KACHELN_MAX = 6000;
-
 
 const ZEITLIMIT_SEITE_MS = 2500;
 const ZEITLIMIT_REST_MS = 10_000;
 
 const ZEITLIMIT_SEITE_GESPEICHERT_MS = 800;
 
-
 const istEntwicklungspfad = (pfad) =>
   pfad.startsWith('/@') || pfad.startsWith('/node_modules/') || pfad.startsWith('/src/');
 
 const APP_DATEIEN = ['./', './index.html', '/icon-180.png', '/icon-trackbook-180.png'];
 
-
 const istUnveraenderlich = (pfad) => pfad.startsWith('/app-assets/');
-
 
 const INDEX = new URL('./index.html', self.location.href).href;
 function seitenSchluessel(adresse) {
@@ -49,7 +36,6 @@ async function legeSeite(cache, schluessel, antwort) {
   if (schluessel === INDEX) await cache.put('./', antwort.clone());
   await raeumeAlteDateien(cache, vorige).catch(() => {});
 }
-
 
 async function raeumeAlteDateien(cache, vorigeSeite) {
   const schluessel = await cache.keys();
@@ -76,15 +62,13 @@ async function raeumeAlteDateien(cache, vorigeSeite) {
   }
 }
 
-
 const echteDatei = (antwort) => antwort && antwort.ok
   && !(antwort.headers.get('content-type') || '').includes('text/html');
-
 
 function verweise(text, basis) {
   const treffer = new Set();
   for (const m of text.matchAll(/["'(](\/app-assets\/[A-Za-z0-9_.-]+\.(?:js|mjs|css))/g)) treffer.add(m[1]);
-  
+
   if (basis) {
     for (const m of text.matchAll(/["'](\.\/[A-Za-z0-9_.-]+\.(?:js|mjs|css))["']/g)) {
       if (m[1] !== './sw.js') treffer.add(new URL(m[1], basis).pathname);
@@ -92,7 +76,6 @@ function verweise(text, basis) {
   }
   return [...treffer];
 }
-
 
 async function sichereVollstaendig(cache, html, frist) {
   const noetig = verweise(html);
@@ -110,7 +93,6 @@ async function sichereVollstaendig(cache, html, frist) {
   }
   return true;
 }
-
 
 async function sichereNachgeladene(cache, html) {
   for (const pfad of verweise(html)) {
@@ -134,11 +116,10 @@ const istKachel = (url) =>
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(APP_CACHE)
-      
+
       .then(async (c) => {
         await Promise.all(APP_DATEIEN.map((d) => c.add(d).catch(() => {})));
-        
-        
+
         const seite = await c.match('./index.html');
         if (seite) {
           const html = await seite.text();
@@ -154,13 +135,11 @@ self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys()
       .then((namen) => Promise.all(
-        
-        
-        
+
         namen.filter((n) => n.startsWith('trackbook-') && n !== APP_CACHE && n !== KACHEL_CACHE && n !== STIMME_CACHE)
           .map((n) => caches.delete(n)),
       ))
-      
+
       .then(() => caches.open(APP_CACHE))
       .then(async (c) => {
         for (const k of await c.keys()) {
@@ -171,8 +150,7 @@ self.addEventListener('activate', (e) => {
       .catch(() => {})
       .then(() => self.clients.claim()),
   );
-  
-  
+
   opakeKachelnRaeumen().catch(() => { opakeGeraeumt = false; });
 });
 
@@ -191,7 +169,6 @@ function mitZeitlimit(anfrage, ms) {
   });
 }
 
-
 const KACHELN_SPIEL = 300;
 
 const STUTZEN_NACH_MS = 5000;
@@ -208,13 +185,11 @@ async function kachelnStutzen() {
   kachelBestand = KACHELN_MAX;
 }
 
-
 let opakeGeraeumt = false;
 async function opakeKachelnRaeumen() {
   if (opakeGeraeumt) return;
   opakeGeraeumt = true;
-  
-  
+
   const cache = await caches.open(KACHEL_CACHE);
   const schluessel = await cache.keys();
   const antworten = await cache.matchAll();
@@ -225,7 +200,6 @@ async function opakeKachelnRaeumen() {
   kachelBestand = null;
 }
 
-
 function kachelAbgelegt() {
   if (kachelBestand !== null) kachelBestand++;
   if (stutzenGeplant) return;
@@ -235,7 +209,6 @@ function kachelAbgelegt() {
     kachelnStutzen().catch(() => {}).finally(() => { stutzenGeplant = false; });
   }, STUTZEN_NACH_MS);
 }
-
 
 async function holeNeueFassung() {
   const antwort = await mitZeitlimit(new Request('./', { cache: 'no-store', credentials: 'include' }), ZEITLIMIT_REST_MS * 4);
@@ -253,8 +226,7 @@ async function holeNeueFassung() {
 self.addEventListener('message', (e) => {
   if (!e.data || e.data.art !== 'neueFassung') return;
   e.waitUntil(holeNeueFassung().catch(() => null).then((version) => {
-    
-    
+
     const kanal = e.ports && e.ports[0];
     if (kanal) kanal.postMessage({ art: 'neueFassung', version });
     else if (e.source) e.source.postMessage({ art: 'neueFassung', version });
@@ -265,7 +237,6 @@ self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
 
-  
   if (istStimme(req.url)) {
     e.respondWith(
       caches.open(STIMME_CACHE).then((c) => c.match(req.url).then((treffer) => treffer || fetch(req).then((antwort) => {
@@ -276,18 +247,13 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  
   if (istKachel(req.url)) {
     e.respondWith(
       caches.match(req, { ignoreVary: true }).then((treffer) => {
-        
-        
-        
+
         if (treffer && !(treffer.type === 'opaque' && req.mode !== 'no-cors')) return treffer;
         return fetch(req).then((antwort) => {
-          
-          
-          
+
           if (antwort && (antwort.ok || antwort.type === 'opaque')) {
             const kopie = antwort.clone();
             caches.open(KACHEL_CACHE)
@@ -302,19 +268,14 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
-  
+
   if (istEntwicklungspfad(url.pathname)) return;
 
-  
   if (istUnveraenderlich(url.pathname)) {
     e.respondWith(
-      
-      
-      
-      
+
       caches.match(req, { ignoreSearch: true, ignoreVary: true }).then((treffer) => treffer
         ?? mitZeitlimit(req, ZEITLIMIT_REST_MS).then((antwort) => {
           if (echteDatei(antwort)) {
@@ -344,13 +305,7 @@ self.addEventListener('fetch', (e) => {
       .catch(async () => {
         const treffer = await caches.match(req, { ignoreSearch: true, ignoreVary: true });
         if (treffer) return treffer;
-        
-        
-        
-        
-        
-        
-        
+
         if (istSeite) {
           const seite = await caches.match('./index.html');
           if (seite) return seite;
@@ -360,13 +315,11 @@ self.addEventListener('fetch', (e) => {
   );
 });
 
-
 async function alleDa(cache, html) {
-  
+
   const treffer = await Promise.all(verweise(html).map((pfad) => cache.match(pfad, { ignoreVary: true })));
   return treffer.every(Boolean);
 }
-
 
 async function seiteAblegen(cache, schluessel, antwort, html) {
   if (!(await sichereVollstaendig(cache, html, Date.now() + ZEITLIMIT_SEITE_MS + 6000))) return;
@@ -374,25 +327,23 @@ async function seiteAblegen(cache, schluessel, antwort, html) {
   await sichereNachgeladene(cache, html).catch(() => {});
 }
 
-
 async function seiteLaden(e) {
   const req = e.request;
   const cache = await caches.open(APP_CACHE);
   const schluessel = seitenSchluessel(req.url);
-  
+
   const alt = await cache.match(schluessel);
   if (alt) return seiteMitGespeicherter(e, cache, alt, schluessel);
   const frist = Date.now() + ZEITLIMIT_SEITE_MS + 6000;
   try {
     const antwort = await mitZeitlimit(req, ZEITLIMIT_SEITE_MS);
-    
-    
+
     if (antwort.type === 'opaqueredirect' || (!antwort.ok && antwort.status < 500)) return antwort;
     if (!antwort.ok) return alt ?? antwort;
     const html = await antwort.clone().text();
     if (!(await sichereVollstaendig(cache, html, frist)) && alt) return alt;
     await legeSeite(cache, schluessel, antwort);
-    
+
     sichereNachgeladene(cache, html).catch(() => {});
     return antwort;
   } catch {
@@ -401,17 +352,16 @@ async function seiteLaden(e) {
   }
 }
 
-
 async function seiteMitGespeicherter(e, cache, alt, schluessel) {
   const req = e.request;
   const netz = fetch(req);
-  
+
   const altText = alt.clone().text();
   const entscheid = netz.then(async (antwort) => {
     if (antwort.type === 'opaqueredirect' || (!antwort.ok && antwort.status < 500)) return { zeige: antwort };
     if (!antwort.ok) return { zeige: null };
     const html = await antwort.clone().text();
-    
+
     if (html === (await altText)) return { zeige: antwort, antwort, html };
     return { zeige: (await alleDa(cache, html)) ? antwort : null, antwort, html };
   });
@@ -421,18 +371,17 @@ async function seiteMitGespeicherter(e, cache, alt, schluessel) {
   ]);
   if (ergebnis?.zeige) {
     if (ergebnis.antwort) {
-      
+
       const kopie = ergebnis.antwort.clone();
       e.waitUntil(legeSeite(cache, schluessel, kopie)
         .then(() => sichereNachgeladene(cache, ergebnis.html)).catch(() => {}));
     }
     return ergebnis.zeige;
   }
-  
+
   e.waitUntil(entscheid.then((r) => (r?.antwort ? seiteAblegen(cache, schluessel, r.antwort, r.html) : null)).catch(() => {}));
   return alt;
 }
-
 
 self.addEventListener('message', (e) => {
   if (e.data?.art !== 'kachelzahl') return;

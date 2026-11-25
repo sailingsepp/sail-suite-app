@@ -1,4 +1,3 @@
-
 import { nf } from '@/core/time';
 import { verfuegbareFahrtage, type WunschlisteKontext } from './wunschliste';
 import {
@@ -48,7 +47,6 @@ function renderRollierendListe(zeilen: readonly VergleichsZeile[]): void {
   }
 }
 
-
 export async function zeigeRollierend(): Promise<void> {
   const box = $('vp-rollierend');
   if (!box) return;
@@ -76,8 +74,7 @@ async function rollierendNeuRechnenKlick(): Promise<void> {
   }
   if (status) status.textContent = '';
   const kontext: WunschlisteKontext = {
-    
-    
+
     toern: { ...app.toern, von: heuteIso, uebernahme_zeit: heuteIso === app.toern.von ? app.toern.uebernahme_zeit ?? null : null },
     cfg: standardSchiffConfig(app.toern),
     start: punkt.ort,

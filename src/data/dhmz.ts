@@ -2,9 +2,6 @@ import type { Sprache } from '@/core/types';
 import type { AmtlicherBericht } from '@/briefing/amtlich';
 import { API_BASIS } from '@/shell/api';
 
-
-
-
 async function eine(sprache: 'de' | 'en', basis: string): Promise<AmtlicherBericht | null> {
   try {
     const res = await fetch(`${basis}/api/dhmz?sprache=${sprache}`, { signal: AbortSignal.timeout(20_000) });

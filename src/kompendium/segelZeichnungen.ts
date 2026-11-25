@@ -6,13 +6,10 @@ import {
 } from './yacht';
 import type { T } from './bausteine';
 
-
-
 const TEAL = 'var(--teal)';
 const AMBER = 'var(--akzent)';
 const TEXT = 'var(--text)';
 const GRAU = 'var(--muted)';
-
 
 function marker(...farben: string[]): { defs: string; id: (farbe: string) => string } {
   const ids = new Map<string, string>();
@@ -38,9 +35,6 @@ const pfeil2d = (m: ReturnType<typeof marker>, x1: number, y1: number, x2: numbe
   ln(x1, y1, x2, y2, farbe, b, ` marker-end="url(#${m.id(farbe)})"${extra}`);
 const pfad = (pts: readonly (readonly [number, number])[]) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${k(x)} ${k(y)}`).join(' ');
 
-
-
-
 function profil(x0: number, y0: number, c: number, alpha: number, tiefe: number, lage = 0.45, n = 28): [number, number][] {
   const a = (alpha * Math.PI) / 180;
   const pts: [number, number][] = [];
@@ -53,7 +47,6 @@ function profil(x0: number, y0: number, c: number, alpha: number, tiefe: number,
   }
   return pts;
 }
-
 
 function stromlinie(p: [number, number][], abstand: number, vor = 70, nach = 60, abriss = 1): [number, number][] {
   const [x0, y0] = p[0]!;
@@ -72,7 +65,6 @@ function stromlinie(p: [number, number][], abstand: number, vor = 70, nach = 60,
   return [...anlauf, ...entlang, [ende[0] + (dx / l) * nach, ende[1] + (dy / l) * nach]];
 }
 
-
 export function zeichnungAuftriebWiderstand(t: T): string {
   const m = marker(TEXT, TEAL, GRAU);
   const p = profil(70, 92, 150, 14, 0.13);
@@ -84,7 +76,7 @@ export function zeichnungAuftriebWiderstand(t: T): string {
     + pfeil2d(m, 150, 100, 168, 34, TEAL, 2.4) + tx(178, 30, t('Auftrieb', 'Lift'), 'kp-rr-l', 'start')
     + pfeil2d(m, 8, 150, 50, 150, TEXT, 2) + tx(10, 168, t('scheinbarer Wind', 'apparent wind'), 'kp-rr-s', 'start')
     + tx(150, 205, t('Am Wind bis raumschots: Auftrieb', 'Close-hauled to broad reach: lift'), 'kp-rr-l');
-  
+
   const ox = 330;
   const quer = `<path d="M${ox + 120} 40 Q${ox + 150} 100 ${ox + 120} 160" fill="none" stroke="${TEXT}" stroke-width="3" stroke-linecap="round"/>`;
   const zu = [55, 80, 105, 130, 150].map((y) => pfeil2d(m, ox + 10, y, ox + 100, y, GRAU, 1.2)).join('');
@@ -97,10 +89,7 @@ export function zeichnungAuftriebWiderstand(t: T): string {
     links + ln(310, 10, 310, 205, 'var(--line)', 1) + rechts, m.defs);
 }
 
-
-
 const YACHT: Fahrzeug = { x: 0, y: 0, kurs: 90, art: 'segel', windAus: 130, L: 10 };
-
 
 function schwerpunkt(dreiecke: readonly (readonly [V3, V3, V3])[]): V3 {
   let A = 0;
@@ -120,7 +109,6 @@ function segelDruckpunkt(f: Fahrzeug): V3 {
   const r = rigg(f);
   return schwerpunkt([[r.baumFuss, r.mastTop, r.baumEnde], [r.hals, r.kopfVor, r.schothornVor]]);
 }
-
 
 export function zeichnungKraefte(t: T): string {
   const m = marker(TEXT, TEAL, AMBER, GRAU);
@@ -150,7 +138,6 @@ export function zeichnungKraefte(t: T): string {
     'Forces on a sail: total force, drive, side force and lateral resistance'), inhalt, m.defs, 'kp-iso');
 }
 
-
 export function zeichnungWindgradient(t: T): string {
   const m = marker(TEXT, TEAL, GRAU, AMBER);
   const hoehen = [0.15, 0.4, 0.65, 0.9];
@@ -161,9 +148,7 @@ export function zeichnungWindgradient(t: T): string {
     + `<path d="${profilPfad}" fill="none" stroke="${TEAL}" stroke-width="2"/>`
     + hoehen.map((h) => pfeil2d(m, 30, y(h), 30 + v(h) - 3, y(h), TEXT, 1.6)).join('')
     + tx(34, 16, t('Höhe', 'Height'), 'kp-rr-s', 'start') + tx(178, 232, t('wahrer Wind', 'true wind'), 'kp-rr-s', 'end');
-  
-  
-  
+
   const drei = [[0.1, t('an Deck', 'at deck')], [0.5, t('halbe Höhe', 'mid mast')], [0.95, t('Masttopp', 'masthead')]] as const;
   const fahrt = 46;
   const rechts = drei.map(([h, name], i) => {
@@ -184,13 +169,11 @@ export function zeichnungWindgradient(t: T): string {
     'Wind gradient: more wind aloft, the apparent wind comes from further aft at the masthead'), links + ln(205, 10, 205, 215, 'var(--line)', 1) + rechts, m.defs);
 }
 
-
 export function zeichnungSpalt(t: T): string {
   const m = marker(GRAU, AMBER, TEXT);
   const vor = profil(110, 36, 150, 22, 0.12, 0.4);
   const gross = profil(232, 100, 230, 13, 0.11, 0.45);
-  
-  
+
   const bei = (p: [number, number][], x: number): number | null => {
     for (let i = 1; i < p.length; i++) {
       const [x1, y1] = p[i - 1]!;
@@ -209,7 +192,7 @@ export function zeichnungSpalt(t: T): string {
     if (!ys.length) return vLE[1];
     return oben ? Math.min(...ys) : Math.max(...ys);
   };
-  
+
   const linie = (f: (x: number) => number, fenster = 5) => {
     const roh: number[] = [];
     for (let x = 6; x <= 614; x += 6) roh.push(f(x));
@@ -240,8 +223,6 @@ export function zeichnungSpalt(t: T): string {
   return svg2d(620, 215, t('Vorsegel und Großsegel: Upwash und Spalt', 'Headsail and mainsail: upwash and slot'), inhalt, m.defs);
 }
 
-
-
 type P2 = [number, number];
 
 function flaecheUndMitte(poly: readonly P2[]): { A: number; c: P2 } {
@@ -259,7 +240,6 @@ function flaecheUndMitte(poly: readonly P2[]): { A: number; c: P2 } {
   A /= 2;
   return { A: Math.abs(A), c: A === 0 ? [0, 0] : [cx / (6 * A), cy / (6 * A)] };
 }
-
 
 function unterhalb(poly: readonly P2[], h: number): P2[] {
   const out: P2[] = [];
@@ -281,7 +261,6 @@ const dreh = (p: P2, phi: number): P2 => {
   const a = (phi * Math.PI) / 180;
   return [p[0] * Math.cos(a) + p[1] * Math.sin(a), -p[0] * Math.sin(a) + p[1] * Math.cos(a)];
 };
-
 
 function gekraengt(rumpfPoly: readonly P2[], phi: number) {
   const A0 = flaecheUndMitte(unterhalb(rumpfPoly, 0)).A;
@@ -337,7 +316,6 @@ export function zeichnungStabilitaet(t: T): string {
     + tx(310, 272, t('Auftriebsschwerpunkt aus dem eingetauchten Querschnitt berechnet', 'Centre of buoyancy computed from the immersed section'), 'kp-rr-s'), m.defs);
 }
 
-
 export function zeichnungHebelarm(t: T): string {
   const X = (w: number) => 50 + w * 3.05;
   const Y = (gz: number) => 150 - gz * 110;
@@ -360,8 +338,6 @@ export function zeichnungHebelarm(t: T): string {
     + tx(X(180), Y(0) + 34, t('Krängung', 'Heel'), 'kp-rr-s', 'end')
     + tx(X(180), 20, t('schematisch, kein bestimmtes Boot', 'schematic, not a particular boat'), 'kp-rr-s', 'end'));
 }
-
-
 
 type Kiel = 'lang' | 'flosse';
 
@@ -391,7 +367,6 @@ function lateralDruckpunkt(art: Kiel): P2 {
   }
   return [x / A, y / A];
 }
-
 
 function lateralSzene(t: T, art: Kiel, mitSegeln: boolean, label: string): string {
   const m = marker(AMBER);
@@ -436,7 +411,6 @@ export const zeichnungFlosse = (t: T) => lateralSzene(t, 'flosse', false, t('Bes
 export const zeichnungDruckpunkte = (t: T) => lateralSzene(t, 'flosse', true,
   t('Segeldruckpunkt SD vor dem Lateraldruckpunkt LD (Vorlauf)', 'Centre of effort ahead of the centre of lateral resistance (lead)'));
 
-
 export function zeichnungGierig(t: T): string {
   const m = marker(TEXT, TEAL, AMBER, GRAU);
   const boot = (ox: number, oy: number) => `<path d="M${ox - 95} ${oy - 18} L${ox + 40} ${oy - 22} Q${ox + 95} ${oy - 12} ${ox + 110} ${oy} `
@@ -446,7 +420,7 @@ export function zeichnungGierig(t: T): string {
     const a = imUhr ? `M${x - r} ${y} A${r} ${r} 0 0 1 ${x} ${y - r}` : `M${x - r} ${y} A${r} ${r} 0 0 0 ${x} ${y + r}`;
     return `<path d="${a}" fill="none" stroke="${farbe}" stroke-width="2" marker-end="url(#${m.id(farbe)})"/>`;
   };
-  
+
   const a = 155;
   const links = boot(a, 120) + dot(a + 25, 120, TEXT, t('SD', 'CE')) + dot(a - 15, 120, AMBER, t('LD', 'CLR'))
     + pfeil2d(m, a + 25, 120, a + 25, 175, AMBER, 2.2) + pfeil2d(m, a - 15, 120, a - 15, 65, AMBER, 2.2)
@@ -463,9 +437,6 @@ export function zeichnungGierig(t: T): string {
     'Lee helm and weather helm: turning moments from side force and lateral resistance, and from drive and drag'), links + rechts + wind
     + ln(310, 60, 310, 220, 'var(--line)', 1), m.defs);
 }
-
-
-
 
 export function zeichnungAnstellwinkel(t: T): string {
   const m = marker(GRAU, TEXT);
@@ -494,7 +465,6 @@ export function zeichnungAnstellwinkel(t: T): string {
     + tx(8, 18, t('gestrichelt: Sehne · α: Anstellwinkel zum scheinbaren Wind', 'dashed: chord · α: angle of attack to the apparent wind'), 'kp-rr-s', 'start'), m.defs);
 }
 
-
 export function zeichnungProfiltiefe(t: T): string {
   const m = marker(GRAU);
   const panel = (ox: number, tiefe: number, lage: number, titel: string, werte: string) => {
@@ -513,7 +483,6 @@ export function zeichnungProfiltiefe(t: T): string {
     + ln(310, 20, 310, 175, 'var(--line)', 1)
     + panel(310, 0.1, 0.45, t('Starkwind: flach', 'Heavy air: flat'), t('a/b 9–12 %, Scheitel bei 45 %', 'a/b 9–12%, draft at 45%')), m.defs);
 }
-
 
 export function zeichnungTwist(t: T): string {
   const m = marker(TEXT);
@@ -542,7 +511,6 @@ export function zeichnungTwist(t: T): string {
     + tx(615, 208, t('Mast oben, Mittschiffslinie gestrichelt', 'Mast at the top, centreline dashed'), 'kp-rr-s', 'end'), m.defs);
 }
 
-
 export function zeichnungBedienung(t: T): string {
   const B = 480;
   const H = 330;
@@ -561,8 +529,7 @@ export function zeichnungBedienung(t: T): string {
   const segel = segelFlaeche(iso, [r.hals, r.kopfVor, r.schothornVor], false, 0.2) + strich(iso, r.mastFuss, r.mastTop, RIGG, 1.8)
     + strich(iso, r.baumFuss, r.baumEnde, RIGG, 1.8) + segelFlaeche(iso, [r.baumFuss, r.mastTop, r.baumEnde], false, 0.24);
   const leine = (a: V3, b: V3, farbe = AMBER) => strich(iso, a, b, farbe, 1.8);
-  
-  
+
   const anker: { p: V3; text: string; rechts: boolean }[] = [
     { p: r.mastTop, text: t('Fall', 'Halyard'), rechts: false },
     { p: zwischen(r.mastTop, heck, 0.4), text: t('Achterstag', 'Backstay'), rechts: false },
@@ -594,7 +561,6 @@ export function zeichnungBedienung(t: T): string {
   return isoSvg(B, H, t('Bedienelemente an Großsegel und Vorsegel', 'Controls on mainsail and headsail'), inhalt, '', 'kp-iso');
 }
 
-
 export function zeichnungHolepunkt(t: T): string {
   const panel = (ox: number, lage: 'vorn' | 'gut' | 'achtern') => {
     const tack: P2 = [ox + 178, 186];
@@ -602,7 +568,7 @@ export function zeichnungHolepunkt(t: T): string {
     const schothorn: P2 = [ox + 46, 172];
     const holeX = lage === 'vorn' ? ox + 40 : lage === 'gut' ? ox + 27 : ox + 12;
     const hole: P2 = [holeX, 196];
-    
+
     const fuss = lage === 'vorn' ? 20 : lage === 'gut' ? 9 : 2;
     const leech = lage === 'vorn' ? -3 : lage === 'gut' ? 6 : 20;
     const mitte = (a: P2, b: P2, aus: number, nx: number, ny: number): P2 => [(a[0] + b[0]) / 2 + nx * aus, (a[1] + b[1]) / 2 + ny * aus];
@@ -613,7 +579,7 @@ export function zeichnungHolepunkt(t: T): string {
     const leechC = mitte(kopf, schothorn, leech, -ly / ll, lx / ll);
     const segel = `<path d="M${tack[0]} ${tack[1]} L${kopf[0]} ${kopf[1]} Q${k(leechC[0])} ${k(leechC[1])} ${schothorn[0]} ${schothorn[1]} `
       + `Q${k(fussC[0])} ${k(fussC[1])} ${tack[0]} ${tack[1]} Z" fill="var(--text)" fill-opacity=".16" stroke="${TEXT}" stroke-width="1.6"/>`;
-    
+
     const dx = schothorn[0] - hole[0];
     const dy = schothorn[1] - hole[1];
     const vx = tack[0] - kopf[0];
@@ -632,7 +598,6 @@ export function zeichnungHolepunkt(t: T): string {
   return svg2d(620, 232, t('Holepunkt der Vorschot: vorn, richtig, achtern', 'Jib lead: forward, right, aft'),
     panel(0, 'vorn') + ln(206, 10, 206, 225, 'var(--line)', 1) + panel(207, 'gut') + ln(413, 10, 413, 225, 'var(--line)', 1) + panel(414, 'achtern'));
 }
-
 
 export function zeichnungTelltales(t: T): string {
   const panel = (ox: number, art: 'gut' | 'luv' | 'lee', titel: string, tun: string) => {
@@ -654,7 +619,6 @@ export function zeichnungTelltales(t: T): string {
     + panel(414, 'lee', t('Leefaden steigt', 'leeward lifts'), t('fieren oder anluven', 'ease or luff up'))
     + tx(8, 18, t('durchgezogen: Luvfaden · gestrichelt: Leefaden', 'solid: windward telltale · dashed: leeward telltale'), 'kp-rr-s', 'start'));
 }
-
 
 export function zeichnungKurs(t: T, windwinkel: number, titel: string): string {
   const m = marker(TEXT);
@@ -681,7 +645,6 @@ export function zeichnungKurs(t: T, windwinkel: number, titel: string): string {
   return isoSvg(300, 244, titel, inhalt, m.defs, 'kp-iso');
 }
 
-
 export function zeichnungVorsegel(t: T): string {
   const m = marker(GRAU);
   const X = (x: number) => 120 + x * 26;
@@ -690,9 +653,9 @@ export function zeichnungVorsegel(t: T): string {
   const H: P2 = [0.15, 11.2];
   const ul = Math.hypot(H[0] - T0[0], H[1] - T0[1]);
   const u: P2 = [(H[0] - T0[0]) / ul, (H[1] - T0[1]) / ul];
-  const n: P2 = [-u[1], u[0]]; 
+  const n: P2 = [-u[1], u[0]];
   const J = T0[0];
-  
+
   const segel = (faktor: number) => {
     const lp = faktor * J;
     const pz = 0.5 - n[1] * lp;

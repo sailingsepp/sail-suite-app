@@ -6,7 +6,6 @@ import type { GezeitenStation } from '@/core/gezeitenStationen';
 import type { CopernicusGitter } from '@/core/copernicusMarine';
 import { zonenVersatzMs, nf, alsUtc } from '@/core/time';
 
-
 const KM_JE_SM = 1.852;
 import { describeGezeitenTafel } from '@/briefing/gezeiten';
 import { gezeitenGrafikHtml, bindeGezeitenGrafik } from '@/ui/gezeitenGrafik';
@@ -14,8 +13,6 @@ import { holeGitterUm } from '@/data/copernicusMarine';
 import { istOnline } from './netz';
 import { STRINGS } from './strings';
 import { escapeHtml } from '@/core/html';
-
-
 
 type Position = { lat: number; lon: number } | null;
 
@@ -34,7 +31,6 @@ async function ladeStationen(): Promise<readonly GezeitenStation[] | null> {
   stationen = await import('@/core/gezeitenStationen').then((m) => m.GEZEITEN_STATIONEN).catch(() => null);
   return stationen;
 }
-
 
 function fuelleAuswahl(treffer: Stationstreffer[], mitEntfernung: boolean): void {
   const sel = $('tb-gz-pegel') as HTMLSelectElement | null;
@@ -73,9 +69,7 @@ function zeichne(): void {
   const lage = gezeitenLage(stationen, ort.lat, ort.lon, von, bis, gitter,
     { station: treffer.station, entfernungKm: pos ? treffer.entfernungKm : 0 });
   if (!lage) { inhalt.innerHTML = ''; return; }
-  
-  
-  
+
   const versatz = zonenVersatzMs(treffer.station.zeitzone, jetzt);
   const anzeige = lageVerschoben(lage, versatz);
   const jetztAnzeige = new Date(jetzt.getTime() + versatz);
@@ -112,14 +106,14 @@ async function holeWetteranteil(): Promise<void> {
   if (!istOnline()) { if (status) status.textContent = wort('gezeiten.wetterOffline'); return; }
   if (status) status.textContent = wort('gezeiten.wetterLaedt');
   const nr = ++abruf;
-  
+
   const g = await holeGitterUm([ort], 0.5);
   if (nr !== abruf) return;
   gitter = g;
   if (status) status.textContent = g ? '' : wort('gezeiten.wetterFehlt');
   zeichne();
   if (streifenAn) zeichneStreifen();
-  
+
   if (g && status && !g.wasserstandOhneGezeit) status.textContent = wort('gezeiten.wetterFehlt');
 }
 
@@ -129,15 +123,10 @@ function schliesse(): void {
   modal?.beimSchliessen();
 }
 
-
-
-
 const STREIFEN_TAKT_MS = 5 * 60_000;
 let streifenAn = false;
 let streifenGezeichnet = 0;
 let streifenLaedt = false;
-
-
 
 function zeichneStreifen(): boolean {
   const el = $('tb-gz-streifen');
@@ -148,8 +137,7 @@ function zeichneStreifen(): boolean {
   const gewaehlteStation = gewaehlt ? stationen.find((s) => s.id === gewaehlt) : undefined;
   const ref = pos ?? (gewaehlteStation ? { lat: gewaehlteStation.lat, lon: gewaehlteStation.lon } : null);
   if (!ref) {
-    
-    
+
     inhalt.innerHTML = `<p class="tb-gz-kopf">${escapeHtml(wort('gezeiten.streifenOhnePosition'))}</p>`;
     el.hidden = false;
     return true;
@@ -165,7 +153,7 @@ function zeichneStreifen(): boolean {
     { station: treffer.station, entfernungKm: pos ? treffer.entfernungKm : 0 });
   if (!lage) { el.hidden = true; return true; }
   const versatz = zonenVersatzMs(treffer.station.zeitzone, jetzt);
-  
+
   const sm = pos ? nf(treffer.entfernungKm / KM_JE_SM, 0, sprache) : '–';
   const kopf = wort(pos && treffer.entfernungKm > GEZEIT_MAX_KM ? 'gezeiten.streifenFern' : 'gezeiten.streifenPegel')
     .replace('{name}', treffer.station.name)
@@ -178,7 +166,6 @@ function zeichneStreifen(): boolean {
   el.hidden = false;
   return true;
 }
-
 
 export function gezeitenStreifen(an: boolean): void {
   const el = $('tb-gz-streifen');
@@ -203,7 +190,6 @@ export function gezeitenStreifen(an: boolean): void {
     if (zeichneStreifen()) streifenGezeichnet = Date.now();
   });
 }
-
 
 export function gezeitenNeuZeichnen(): void {
   if ($('tb-gezeiten-modal')?.hasAttribute('hidden') === false) zeichne();

@@ -1,12 +1,10 @@
 import { waehleAusschnitt, kachelnFuer, KACHEL_PX, type Ausschnitt } from '@/core/kachelkarte';
 
-
 export interface Kartenbild {
   datenUri: string;
   ausschnitt: Ausschnitt;
   seezeichen: boolean;
 }
-
 
 async function ladeKachel(url: string, zeitMs: number): Promise<HTMLImageElement | null> {
   try {
@@ -35,7 +33,7 @@ export async function kartenbild(
   canvas.height = hoehePx;
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
-  ctx.fillStyle = '#aad3df'; 
+  ctx.fillStyle = '#aad3df';
   ctx.fillRect(0, 0, breitePx, hoehePx);
 
   const grund = await Promise.all(kacheln.map((k) =>
@@ -43,8 +41,6 @@ export async function kartenbild(
   if (!grund.some(Boolean)) return null;
   grund.forEach((img, i) => { if (img) ctx.drawImage(img, kacheln[i]!.dx, kacheln[i]!.dy, KACHEL_PX, KACHEL_PX); });
 
-  
-  
   let seezeichen = false;
   const see = await Promise.all(kacheln.map((k) =>
     ladeKachel(`https://tiles.openseamap.org/seamark/${k.z}/${k.x}/${k.y}.png`, 10_000)));
@@ -56,7 +52,7 @@ export async function kartenbild(
     if (pctx) {
       see.forEach((img, i) => { if (img) pctx.drawImage(img, kacheln[i]!.dx, kacheln[i]!.dy, KACHEL_PX, KACHEL_PX); });
       try {
-        pctx.getImageData(0, 0, 1, 1); 
+        pctx.getImageData(0, 0, 1, 1);
         ctx.drawImage(probe, 0, 0);
         seezeichen = true;
       } catch {  }
@@ -66,6 +62,6 @@ export async function kartenbild(
   try {
     return { datenUri: canvas.toDataURL('image/jpeg', 0.86), ausschnitt: a, seezeichen };
   } catch {
-    return null; 
+    return null;
   }
 }

@@ -1,13 +1,11 @@
 import type { Stunde, Stundenwetter } from '@/core/zielwetter';
 import { RECHENMODELL, VERGLEICHSMODELL } from './openMeteo';
 
-
 const MARINE = [
   'wave_height', 'wave_period', 'wave_direction', 'wind_wave_height', 'wind_wave_period', 'wind_wave_direction',
   'swell_wave_height', 'swell_wave_period', 'swell_wave_direction', 'sea_surface_temperature',
 ] as const;
 type MarineFeld = typeof MARINE[number];
-
 
 async function holeMarine(lat: number, lon: number): Promise<Map<string, Partial<Record<MarineFeld, number | null>>> | null> {
   const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}`
@@ -38,7 +36,6 @@ const FELDER = [
 type Feld = typeof FELDER[number];
 
 const hatWerte = (a: unknown): a is unknown[] => Array.isArray(a) && a.some((v) => typeof v === 'number');
-
 
 export function reihenAusAntwort(h: Record<string, unknown>): Partial<Record<Feld, unknown[]>> {
   const aus: Partial<Record<Feld, unknown[]>> = {};

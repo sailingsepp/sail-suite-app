@@ -1,26 +1,23 @@
 import { destPoint, distNM } from './geo';
 
-
 export interface StreamRoute {
-  
+
   punkte: [number, number][];
-  
+
   ziel: string | null;
-  
+
   ankunft: number | null;
-  
+
   restSm: number | null;
 }
 
-
 export const STREAM_ROUTE_PUNKTE_MAX = 300;
-
 
 export function streamRouteAus(
   route: { wegpunkte: readonly { lat: number; lon: number; name: string }[]; naechster: number },
   werte: { etz: number | null; dtz: number | null } | null,
   platzhalter: readonly string[],
-  
+
   zielName: string | null = null,
 ): StreamRoute | null {
   const wp = route.wegpunkte.slice(Math.max(0, route.naechster - 1)).slice(0, STREAM_ROUTE_PUNKTE_MAX);
@@ -35,12 +32,10 @@ export function streamRouteAus(
   };
 }
 
-
 export function kurslinienEnde(lat: number, lon: number, cog: number | null, sog: number | null, minuten = 60): [number, number] | null {
   if (cog == null || sog == null || !(sog >= 0.5)) return null;
   return destPoint(lat, lon, cog, (sog * minuten) / 60);
 }
-
 
 export function restUndAnkunft(
   r: StreamRoute,

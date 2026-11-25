@@ -10,22 +10,20 @@ import type {
 export interface Tagesfenster {
   dateStr: string;
   results: Ablegezeit[];
-  
+
   best: Ablegezeit | null;
   istNachtschlag: boolean;
   fehler: string | null;
-  
+
   hellVon: Date | null;
   hellBis: Date | null;
-  
+
   messinaGewaehlt?: true;
-  
+
   messinaNacht?: true;
 }
 
-
 const unfahrbarFuerMessina = (r: Ablegezeit): boolean => r.safetyFail;
-
 
 export function messinaNachtBis(
   dateStr: string, startPunkt: Punkt, daemmerung: Daemmerungsstufe, utcOffsetSeconds: number, forecastEnd: Date,
@@ -36,20 +34,18 @@ export function messinaNachtBis(
   return bis < forecastEnd ? bis : forecastEnd;
 }
 
-
 export function ergaenzeMessinaNacht(
   results: Ablegezeit[], nachEnde: Date, bis: Date, stepMin: number,
   rechne: (t: Date) => Ablegezeit, unfahrbar: (r: Ablegezeit) => boolean,
 ): { results: Ablegezeit[]; verlaengert: boolean } {
   if (!results.some((r) => r.messinaEinfahrt) || messinaAblegezeit(results, unfahrbar)) return { results, verlaengert: false };
   const mehr = [...results];
-  
+
   for (let t = aufRaster(new Date(nachEnde.getTime() + 1), stepMin); t <= bis; t = new Date(t.getTime() + stepMin * 60_000)) mehr.push(rechne(new Date(t)));
   if (mehr.length === results.length) return { results, verlaengert: false };
   mehr.sort((a, b) => a.score - b.score);
   return { results: mehr, verlaengert: true };
 }
-
 
 export function berechneTagesfenster(
   dateStr: string,
@@ -66,13 +62,11 @@ export function berechneTagesfenster(
   forecastEnd: Date,
   jetzt: Date,
   sprache: Sprache = 'de',
-  
+
   copernicusGitter?: CopernicusGitter | null,
 ): Tagesfenster {
   const sonnenstand = sonnenzeiten(startPunkt.lat, startPunkt.lon, dateStr, DAEMMERUNGSWINKEL[daemmerung]);
-  
-  
-  
+
   const hellVon = sonnenstand ? zuRevierzeit(sonnenstand.auf, utcOffsetSeconds) : null;
   const hellBis = sonnenstand ? zuRevierzeit(sonnenstand.unter, utcOffsetSeconds) : null;
 
@@ -104,8 +98,7 @@ export function berechneTagesfenster(
   }
 
   if (dateStr === localDateStr(jetzt) && jetzt > windowStart) windowStart = jetzt;
-  
-  
+
   windowStart = aufRaster(windowStart, stepMin);
   if (windowStart > windowEnd) return leer('bereits vorbei', 'already past', istNachtschlag);
 
@@ -116,8 +109,7 @@ export function berechneTagesfenster(
   if (results.length === 0) return leer('kein gültiges Zeitfenster', 'no valid time window', istNachtschlag);
 
   results.sort((a, b) => a.score - b.score);
-  
-  
+
   const { results: alle, verlaengert } = istNachtschlag
     ? { results, verlaengert: false }
     : ergaenzeMessinaNacht(results, windowEnd, messinaNachtBis(dateStr, startPunkt, daemmerung, utcOffsetSeconds, forecastEnd),

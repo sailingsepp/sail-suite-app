@@ -1,22 +1,17 @@
 import { windBand, beaufortUntergrenzeKn } from '@/briefing/wind';
 import type { Sprache } from '@/core/types';
 
-
-
-
-
 export interface BeaufortZeile {
   stufe: number;
-  
+
   name: string;
   kn: string;
-  
+
   welle: string;
   see: string;
 }
 
 const KN = ['< 1', '1–3', '4–6', '7–10', '11–16', '17–21', '22–27', '28–33', '34–40', '41–47', '48–55', '56–63', '≥ 64'];
-
 
 const SEE_DE: readonly [string, string][] = [
   ['0', 'spiegelglatte See'],
@@ -34,7 +29,6 @@ const SEE_DE: readonly [string, string][] = [
   ['> 14', 'die Luft ist mit Schaum und Gischt angefüllt; die See ist vollständig weiß von treibender Gischt; die Sicht ist sehr stark herabgesetzt'],
 ];
 
-
 const SEE_EN: readonly [string, string][] = [
   ['0', 'Sea like a mirror.'],
   ['0.1', 'Ripples with the appearance of scales are formed, but without foam crests.'],
@@ -51,7 +45,6 @@ const SEE_EN: readonly [string, string][] = [
   ['> 14', 'The air is filled with foam and spray. Sea completely white with driving spray.'],
 ];
 
-
 export function beaufortKn(stufe: number): number {
   return stufe === 0 ? 0 : beaufortUntergrenzeKn(stufe);
 }
@@ -62,8 +55,6 @@ export function beaufortTabelle(sprache: Sprache): BeaufortZeile[] {
     stufe, name: windBand(beaufortKn(stufe), sprache).name, kn: KN[stufe]!, welle, see: text,
   }));
 }
-
-
 
 export interface DouglasZeile { wert: number; name: string; wmo: string; hoehe: string }
 
@@ -87,19 +78,16 @@ export function douglasTabelle(sprache: Sprache): DouglasZeile[] {
   }));
 }
 
-
-
 export interface Buchstabe {
   code: string;
   wort: string;
-  
+
   aussprache: string;
   morse: string;
-  
+
   nurKvr: boolean;
   bedeutung: string;
 }
-
 
 const BUCHSTABEN: readonly [string, string, string, string, boolean][] = [
   ['A', 'Alfa', 'AL FAH', '·–', false], ['B', 'Bravo', 'BRAH VOH', '–···', true],
@@ -116,7 +104,6 @@ const BUCHSTABEN: readonly [string, string, string, string, boolean][] = [
   ['W', 'Whiskey', 'WISS KEY', '·––', false], ['X', 'X-ray', 'ECKS RAY', '–··–', false],
   ['Y', 'Yankee', 'YANG KEY', '–·––', false], ['Z', 'Zulu', 'ZOO LOO', '––··', true],
 ];
-
 
 const BEDEUTUNG_DE: Record<string, string> = {
   A: 'Ich habe Taucher unten; halten Sie sich gut von mir frei und fahren Sie langsam.',
@@ -146,7 +133,6 @@ const BEDEUTUNG_DE: Record<string, string> = {
   Y: 'Mein Anker hält nicht (ich treibe vor Anker).',
   Z: 'Ich benötige einen Schlepper. Von Fischereifahrzeugen dicht beieinander auf Fangplätzen: „Ich setze Netze aus.“',
 };
-
 
 const BEDEUTUNG_EN: Record<string, string> = {
   A: 'I have a diver down; keep well clear at slow speed.',
@@ -182,7 +168,6 @@ export function buchstaben(sprache: Sprache): Buchstabe[] {
   return BUCHSTABEN.map(([code, wort, aussprache, morse, nurKvr]) => ({ code, wort, aussprache, morse, nurKvr, bedeutung: bed[code]! }));
 }
 
-
 export const ZIFFERN: readonly { code: string; morse: string; wort: string }[] = [
   { code: '1', morse: '·––––', wort: 'UNAONE' }, { code: '2', morse: '··–––', wort: 'BISSOTWO' },
   { code: '3', morse: '···––', wort: 'TERRATHREE' }, { code: '4', morse: '····–', wort: 'KARTEFOUR' },
@@ -190,8 +175,6 @@ export const ZIFFERN: readonly { code: string; morse: string; wort: string }[] =
   { code: '7', morse: '––···', wort: 'SETTESEVEN' }, { code: '8', morse: '–––··', wort: 'OKTOEIGHT' },
   { code: '9', morse: '––––·', wort: 'NOVENINE' }, { code: '0', morse: '–––––', wort: 'NADAZERO' },
 ];
-
-
 
 export interface Kombination { oben: string; unten: string; code: string; bedeutung: string; hinweis: string }
 
@@ -211,8 +194,6 @@ export function kombinationen(sprache: Sprache): Kombination[] {
     { oben: 'G', unten: 'W', code: 'GW', bedeutung: 'Mensch über Bord. Bitte ergreifen Sie Maßnahmen, ihn aufzunehmen (Position wenn nötig angeben).', hinweis: 'Pub. 102 Kap. 2 „Rescue“. Einbuchstabig: „O“ = Mensch über Bord.' },
   ];
 }
-
-
 
 export type Quelle = readonly [titel: string, url: string];
 

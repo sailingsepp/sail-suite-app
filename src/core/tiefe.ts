@@ -1,31 +1,26 @@
-
-
-
 const G = 9.80665;
 
-
 export type Tiefenguete =
-  
+
   | 'vermessen'
-  
+
   | 'gitter'
-  
+
   | 'land'
-  
+
   | 'unbekannt';
 
 export interface Tiefenpunkt {
-  
+
   tiefeM: number | null;
   guete: Tiefenguete;
-  
+
   quelle?: string;
-  
+
   spanneM?: number;
-  
+
   versatzM?: number;
 }
-
 
 export function deuteTiefe(antwort: {
   avg?: number | null;
@@ -51,37 +46,29 @@ export function deuteTiefe(antwort: {
   return punkt;
 }
 
-
 export const KLARWASSER_MIN_M = 3;
-
 
 export function ersteKlareTiefe(
   werte: readonly unknown[],
   schrittM: number,
   mindestensM = KLARWASSER_MIN_M,
 ): { tiefeM: number; versatzM: number } | null {
-  
-  
+
   for (let i = 1; i < werte.length; i++) {
     const v = werte[i];
     if (typeof v !== 'number' || !Number.isFinite(v)) continue;
-    
-    
+
     if (-v < mindestensM) continue;
     return { tiefeM: -v, versatzM: Math.round(i * schrittM) };
   }
   return null;
 }
 
-
-
-
 export function marge(tiefgangM: number): number {
   return 0.5 + 0.1 * Math.max(0, tiefgangM);
 }
 
 export type Untiefenstufe = 'frei' | 'knapp' | 'zu-flach';
-
 
 export function unterkiel(
   tiefeM: number | null, tiefgangM: number, margeM = marge(tiefgangM),
@@ -93,12 +80,11 @@ export function unterkiel(
 }
 
 export interface Untiefe {
-  
+
   cum: number;
   tiefeM: number;
   stufe: Untiefenstufe;
 }
-
 
 export function untiefen(
   profil: { cum: number; tiefeM: number | null }[], tiefgangM: number, margeM = marge(tiefgangM),
@@ -114,37 +100,34 @@ export function untiefen(
     if (!lauf || p.tiefeM < lauf.tiefeM) {
       lauf = { cum: p.cum, tiefeM: p.tiefeM, stufe };
     }
-    
+
     if (stufe === 'zu-flach') lauf.stufe = 'zu-flach';
   }
   if (lauf) raus.push(lauf);
   return raus;
 }
 
-
-
 export interface Ankerrechnung {
-  
+
   ketteM: number;
-  
+
   schwojkreisM: number;
-  
+
   verhaeltnis: number;
-  
+
   senkrechtM: number;
 }
-
 
 export function ankerkette(
   tiefeM: number,
   opt: {
-    
+
     bugM?: number;
-    
+
     hubM?: number;
-    
+
     laengeM?: number;
-    
+
     verhaeltnis?: number;
   } = {},
 ): Ankerrechnung {
@@ -153,27 +136,21 @@ export function ankerkette(
   const ketteM = senkrecht * verhaeltnis;
   return {
     ketteM,
-    
-    
-    
-    
+
     schwojkreisM: ketteM + (opt.laengeM ?? 12),
     verhaeltnis,
     senkrechtM: senkrecht,
   };
 }
 
-
-
-
 export function wellenlaenge(periodeS: number, tiefeM: number): number {
   if (!(periodeS > 0)) return 0;
   const L0 = (G * periodeS * periodeS) / (2 * Math.PI);
   if (!(tiefeM > 0)) return 0;
-  if (tiefeM >= L0 / 2) return L0;          
+  if (tiefeM >= L0 / 2) return L0;
 
   const omega = (2 * Math.PI) / periodeS;
-  let k = omega / Math.sqrt(G * tiefeM);    
+  let k = omega / Math.sqrt(G * tiefeM);
   for (let i = 0; i < 40; i++) {
     const t = Math.tanh(k * tiefeM);
     const f = G * k * t - omega * omega;
@@ -185,7 +162,6 @@ export function wellenlaenge(periodeS: number, tiefeM: number): number {
   }
   return (2 * Math.PI) / k;
 }
-
 
 export function auflaufbeiwert(periodeS: number, tiefeM: number): number {
   if (!(periodeS > 0) || !(tiefeM > 0)) return 1;
@@ -202,22 +178,21 @@ export function auflaufbeiwert(periodeS: number, tiefeM: number): number {
 }
 
 export interface Flachwasserlage {
-  
+
   wirkt: boolean;
-  
+
   spuertGrund: boolean;
-  
+
   laengeM: number;
-  
+
   steilheit: number;
-  
+
   steilheitTief: number;
-  
+
   brecherHoeheM: number;
-  
+
   bricht: boolean;
 }
-
 
 export function flachwasser(hsM: number, periodeS: number, tiefeM: number | null): Flachwasserlage {
   const L0 = (G * periodeS * periodeS) / (2 * Math.PI);
@@ -243,26 +218,21 @@ export function flachwasser(hsM: number, periodeS: number, tiefeM: number | null
   };
 }
 
-
-
 export type Ankertauglichkeit = 'gut' | 'flach' | 'tief' | 'zu-tief' | 'unbekannt';
-
 
 export function ankertauglich(
   tiefeM: number | null, tiefgangM: number, ketteM = 60,
 ): Ankertauglichkeit {
   if (tiefeM === null || !Number.isFinite(tiefeM)) return 'unbekannt';
   if (tiefeM < tiefgangM + marge(tiefgangM)) return 'flach';
-  
+
   const maxTiefe = ketteM / 4 - 1.5;
   if (tiefeM > maxTiefe) return 'zu-tief';
   if (tiefeM > ketteM / 5 - 1.5) return 'tief';
   return 'gut';
 }
 
-
 export const LIEGEPLATZ_RAND_NM = 0.2;
-
 
 export const ZUFAHRT_MAX_NM = 1.0;
 
@@ -276,7 +246,6 @@ export function profilOhneLiegeplaetze<T extends { cum: number; tiefeM?: number 
   const bis = Math.min(ende - LIEGEPLATZ_RAND_NM, Math.max(letzteKlar, ende - ZUFAHRT_MAX_NM));
   return profil.filter((p) => p.cum >= von && p.cum <= bis);
 }
-
 
 export const UFERZELLE_UNTER_M = 1;
 

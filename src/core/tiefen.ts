@@ -1,6 +1,5 @@
 import { KARTE_KACHEL_GRAD, landKachelName } from './kartenKacheln';
 
-
 export const TIEFEN_M = [5, 10, 20, 50] as const;
 
 export const BAENDER_BIS_M = [2, 2.5, 3, 3.5, 4, 5, 10, 20, 50] as const;
@@ -8,16 +7,14 @@ export const BAENDER_BIS_M = [2, 2.5, 3, 3.5, 4, 5, 10, 20, 50] as const;
 export const TIEFGANG_RESERVE_M = 1;
 export const TIEFE_FAKTOR = 100_000;
 
-
 export const LINIE_AB_ZOOM: Readonly<Record<(typeof TIEFEN_M)[number], number>> = { 5: 12, 10: 10, 20: 9, 50: 9 };
 export const FLAECHEN_AB_ZOOM = 9;
 
-
 export interface TiefenFarben {
   b5: string; b10: string; b20: string; b50: string; tiefgang: string; linie: string; linieFlach: string;
-  
+
   zahl: string; zahlHalo: string;
-  
+
   tiefgangStreifen: string;
 }
 export const TIEFEN_TAG: TiefenFarben = {
@@ -32,13 +29,11 @@ export const TIEFEN_NACHT: TiefenFarben = {
   tiefgangStreifen: '#5E1A3E',
 };
 
-
 export function tiefgangStufe(tiefgangM: number | null | undefined): number | null {
   if (tiefgangM === null || tiefgangM === undefined || !Number.isFinite(tiefgangM) || tiefgangM <= 0) return null;
   const grenze = tiefgangM + TIEFGANG_RESERVE_M;
   return BAENDER_BIS_M.find((b) => b >= grenze - 1e-9) ?? BAENDER_BIS_M[BAENDER_BIS_M.length - 1]!;
 }
-
 
 export function bandFarbe(bisM: number, stufe: number | null, f: TiefenFarben): string {
   if (stufe !== null && bisM <= stufe + 1e-9) return f.tiefgang;
@@ -48,7 +43,6 @@ export function bandFarbe(bisM: number, stufe: number | null, f: TiefenFarben): 
 export function tiefeKachelName(i: number, j: number): string {
   return landKachelName(i, j).replace(/^land-/, 'tiefe-');
 }
-
 
 export function tiefenZellen(gebiete: readonly (readonly [number, number, number, number])[]): { i: number; j: number }[] {
   const g = KARTE_KACHEL_GRAD;
@@ -61,7 +55,6 @@ export function tiefenZellen(gebiete: readonly (readonly [number, number, number
   return [...da.values()].sort((a, b) => a.i - b.i || a.j - b.j);
 }
 
-
 export function zelleHatTiefenlinien(tiefen: ArrayLike<number>): boolean {
   let min = Infinity, max = -Infinity;
   for (let k = 0; k < tiefen.length; k++) {
@@ -70,23 +63,20 @@ export function zelleHatTiefenlinien(tiefen: ArrayLike<number>): boolean {
     if (t < min) min = t;
     if (t > max) max = t;
   }
-  if (max <= 0) return false; 
+  if (max <= 0) return false;
   return min < TIEFEN_M[TIEFEN_M.length - 1]!;
 }
-
 
 export function zahlAbZoom(tiefeM: number): number | null {
   const ab = LINIE_AB_ZOOM[tiefeM as keyof typeof LINIE_AB_ZOOM];
   return ab === undefined ? null : Math.max(11, ab + 1);
 }
 
-
 export const ZAHL_ABSTAND_PX = 300;
 
 const ZAHL_START: Readonly<Record<number, number>> = { 5: 0.5, 10: 0.8, 20: 0.2, 50: 0.35 };
 
 export interface ZahlStelle { x: number; y: number; winkel: number }
-
 
 export function zahlStellen(xy: ArrayLike<number>, tiefeM: number, abstandPx = ZAHL_ABSTAND_PX): ZahlStelle[] {
   const n = xy.length / 2;
@@ -112,7 +102,6 @@ export function zahlStellen(xy: ArrayLike<number>, tiefeM: number, abstandPx = Z
   return aus;
 }
 
-
 export function aufrechterWinkel(winkel: number, drehungRad: number): number {
   let s = winkel + drehungRad;
   s = ((s % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
@@ -121,20 +110,16 @@ export function aufrechterWinkel(winkel: number, drehungRad: number): number {
   return s - drehungRad;
 }
 
-
 export const ZAHL_NEU_AB_GRAD = 20;
-
 
 export const HAFEN_PUFFER_M = 250;
 
 export const STREIFEN_ABSTAND_PX = 6;
 
-
 export function hafenPufferPx(latDeg: number, z: number): number {
   const mpp = (40_075_016.686 * Math.cos((latDeg * Math.PI) / 180)) / (256 * 2 ** z);
   return HAFEN_PUFFER_M / mpp;
 }
-
 
 export function streifenLagen(x0: number, y0: number, von: number, bis: number, abstand = STREIFEN_ABSTAND_PX): number[] {
   const rest = (((x0 + y0) % abstand) + abstand) % abstand;
@@ -143,8 +128,6 @@ export function streifenLagen(x0: number, y0: number, von: number, bis: number, 
   for (let c = erste; c <= bis; c += abstand) aus.push(c);
   return aus;
 }
-
-
 
 export const GLAETTEN_AB_ZOOM = 12;
 
@@ -158,20 +141,19 @@ export function glaetteTiefenzug(
   const n = p.length / 2;
   if (n < 3) return p;
   const lat = (i: number) => p[2 * i]!, lon = (i: number) => p[2 * i + 1]!;
-  
+
   const ring = zu || (lat(0) === lat(n - 1) && lon(0) === lon(n - 1));
-  const m = ring && lat(0) === lat(n - 1) && lon(0) === lon(n - 1) ? n - 1 : n; 
+  const m = ring && lat(0) === lat(n - 1) && lon(0) === lon(n - 1) ? n - 1 : n;
   const fest = (i: number) => aufZellrand(lat(i), lon(i), zelle);
 
   const cosLat = Math.cos((((zelle.s + zelle.n) / 2) * Math.PI) / 180);
-  
+
   const schneide = (aus: number[], la: number, lo: number, lb: number, ob: number, grenze: number): void => {
     const laengeM = Math.hypot((lb - la) * M_JE_GRAD, (ob - lo) * M_JE_GRAD * cosLat);
     const t = laengeM > 0 ? Math.min(0.25, grenze / laengeM) : 0.25;
     aus.push(la + t * (lb - la), lo + t * (ob - lo), lb - t * (lb - la), ob - t * (ob - lo));
   };
 
-  
   const offen = (a: number[]): number[] => {
     let z = a;
     for (let d = 0; d < maxM.length && z.length >= 6; d++) {
@@ -183,11 +165,10 @@ export function glaetteTiefenzug(
     return z;
   };
 
-  
   const schliesse = (z: number[]): Float64Array => Float64Array.from(zu ? z : [...z, z[0]!, z[1]!]);
 
   if (!ring) {
-    
+
     const aus: number[] = [];
     let start = 0;
     for (let i = 1; i < n; i++) {
@@ -204,7 +185,7 @@ export function glaetteTiefenzug(
   const feste: number[] = [];
   for (let i = 0; i < m; i++) if (fest(i)) feste.push(i);
   if (!feste.length) {
-    
+
     let z: number[] = [];
     for (let i = 0; i < m; i++) z.push(lat(i), lon(i));
     for (let d = 0; d < maxM.length; d++) {
@@ -218,21 +199,20 @@ export function glaetteTiefenzug(
     }
     return schliesse(z);
   }
-  
+
   const aus: number[] = [];
   for (let f = 0; f < feste.length; f++) {
     const von = feste[f]!, bis = feste[(f + 1) % feste.length]!;
-    
+
     const schritte = (bis - von + m) % m || m;
     const abschnitt: number[] = [];
     for (let s = 0; s <= schritte; s++) { const k = (von + s) % m; abschnitt.push(lat(k), lon(k)); }
     const g = offen(abschnitt);
-    
+
     for (let q = 0; q < g.length - 2; q++) aus.push(g[q]!);
   }
   return schliesse(aus);
 }
-
 
 export function aufZellrand(lat: number, lon: number, zelle: { s: number; w: number; n: number; o: number }): boolean {
   return Math.abs(lat - zelle.s) < RAND_EPS || Math.abs(lat - zelle.n) < RAND_EPS
@@ -240,7 +220,6 @@ export function aufZellrand(lat: number, lon: number, zelle: { s: number; w: num
 }
 
 export type KurvenBefehl = ['M' | 'L', number, number] | ['Q', number, number, number, number] | ['Z'];
-
 
 export function kurvenBefehle(xy: ArrayLike<number>, ring: boolean, fest: (i: number) => boolean): KurvenBefehl[] {
   const n = xy.length / 2;

@@ -1,10 +1,6 @@
-
-
 export const ABTASTRATE = 8000;
 
-
 export interface Note { f: number; ab: number }
-
 
 const OKTAVE = 0.25;
 
@@ -13,7 +9,6 @@ const EINSATZ_S = 0.008;
 const AUS_S = 0.03;
 
 const PEGEL = 0.7;
-
 
 export function glockenKlang(noten: readonly Note[], dauerS: number, tauS: number, rate = ABTASTRATE): Int16Array {
   const n = Math.round(rate * dauerS);
@@ -37,7 +32,6 @@ export function glockenKlang(noten: readonly Note[], dauerS: number, tauS: numbe
   for (let i = 0; i < n; i++) aus[i] = Math.max(-32768, Math.min(32767, Math.round(roh[i]! * faktor * 32767)));
   return aus;
 }
-
 
 export const KLANG_BESTAETIGUNG = { noten: [{ f: 880, ab: 0 }, { f: 1175, ab: 0.11 }], dauerS: 0.6, tauS: 0.12 } as const;
 

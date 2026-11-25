@@ -3,7 +3,6 @@ import { SEKTOREN, TRENNZONEN, FAHRBAHN_PFEILE, KREISVERKEHR } from '@/core/mess
 import { MESSINA_EINFAHRT } from '@/core/messinaStrom';
 import { aktuelleSprache } from '@/shell/sprache';
 
-
 const FARBE = '#C2185B';
 const AB_ZOOM = 10;
 
@@ -18,7 +17,6 @@ const TEXT = {
   },
 } as const;
 const t = () => TEXT[aktuelleSprache()];
-
 
 export function addVtgEbene(karte: L.Map, optionen: { pfeile?: boolean } = {}): L.LayerGroup {
   const ebene = L.layerGroup();

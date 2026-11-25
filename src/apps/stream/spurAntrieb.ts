@@ -1,7 +1,5 @@
 import { wechselAusEintraegen, type Antrieb } from '@/core/antriebsbilanz';
 
-
-
 type Punkt3 = readonly [number, number, number];
 
 export interface WechselStelle { t: number; lat: number; lon: number; antrieb: Antrieb }

@@ -1,13 +1,11 @@
 import { API_BASIS } from '@/shell/api';
 
-
-
 export type ZeitQuelle = 'exif' | 'kamera' | 'datei' | 'hand';
 export type OrtQuelle = 'exif' | 'geraet' | 'spur' | 'hand';
 
 export interface CrewFoto {
   id: string;
-  
+
   t: number;
   breite: number;
   hoehe: number;
@@ -16,7 +14,7 @@ export interface CrewFoto {
   zeitQuelle: ZeitQuelle;
   ortQuelle: OrtQuelle | null;
   text: string | null;
-  
+
   ort?: string;
   von: { vorname: string; nachname: string } | null;
   eigenes: boolean;
@@ -62,7 +60,6 @@ export async function ladeCrewFotoHoch(token: string, toernId: string, f: NeuesF
   }
 }
 
-
 export async function setzeCrewFotoOrt(token: string, toernId: string, id: string, ort: string): Promise<boolean> {
   try {
     const r = await fetch(`${pfad(toernId)}/${encodeURIComponent(id)}/ort`, {
@@ -85,7 +82,6 @@ export async function loescheCrewFoto(token: string, toernId: string, id: string
     return false;
   }
 }
-
 
 export async function holeCrewFotoBlob(token: string, toernId: string, id: string): Promise<Blob | null> {
   try {

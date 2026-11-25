@@ -9,7 +9,6 @@ import { aktuelleSprache, aufSprachwechsel } from '@/shell/sprache';
 import { STRINGS } from './strings';
 import { GEFAHR_TYPEN, TONNEN_TYPEN, diensteVon } from '@/briefing/seezeichenText';
 
-
 const PANE = 'tbObjekte';
 export const OBJEKTE_ZOOM_AB = 12;
 
@@ -57,7 +56,6 @@ export function initKartenObjekte(netz: () => boolean): void {
   bald();
 }
 
-
 let luecke: HTMLElement | null = null;
 function lueckeAnlegen(k: L.Map): HTMLElement {
   const el = L.DomUtil.create('div', 'tb-gefahr-luecke');
@@ -76,13 +74,11 @@ function bald(): void {
   geplant = window.setTimeout(() => { geplant = 0; void zeichne(); }, 200);
 }
 
-
 const IALA_A: Record<string, string> = {
   port: 'red', starboard: 'green', preferred_channel_port: 'green;red;green', preferred_channel_starboard: 'red;green;red',
   north: 'black;yellow', east: 'black;yellow;black', south: 'yellow;black', west: 'yellow;black;yellow',
   isolated_danger: 'black;red;black', safe_water: 'red;white', special_purpose: 'yellow',
 };
-
 
 function tonneSvg(t: Tags): string {
   const typ = t['seamark:type'] ?? '';
@@ -108,7 +104,6 @@ function tonneSvg(t: Tags): string {
   return `<svg viewBox="0 0 12 18" width="14" height="21" aria-hidden="true">${toppSvg}<g stroke="#0B1E2D" stroke-width=".6">${baender}</g>`
     + `<rect x="${x}" y="${oben}" width="${b}" height="${h}" fill="none" stroke="#0B1E2D" stroke-width=".8"/></svg>`;
 }
-
 
 function gefahrSvg(g: Gefahr): string {
   const stand = g.merkmale?.[`seamark:${g.art}:water_level`] ?? '';
@@ -159,13 +154,12 @@ async function zeichne(): Promise<void> {
   }
 }
 
-
 export async function objektAm(k: L.Map, ll: L.LatLng, client: { x: number; y: number } | null): Promise<KartenObjekt | null> {
   const z = k.getZoom();
   if (z < HAFEN_ZOOM_AB) return null;
   let ziel = ll;
   if (client) {
-    
+
     const trifft = (r: DOMRect) => r.width > 0 && client.x >= r.left - 6 && client.x <= r.right + 6 && client.y >= r.top - 6 && client.y <= r.bottom + 6;
     for (const el of k.getContainer().querySelectorAll<HTMLElement>('.tb-kn[data-lat]')) {
       if ([el, ...el.querySelectorAll<HTMLElement>('*')].some((x) => trifft(x.getBoundingClientRect()))) {
@@ -189,7 +183,7 @@ export async function objektAm(k: L.Map, ll: L.LatLng, client: { x: number; y: n
     else if (istHafen(tags)) pruefe({ art: 'hafen', lat, lon, tags, dienste: [] });
   }
   if (z >= OBJEKTE_ZOOM_AB) {
-    
+
     const d = 0.01;
     const um = gefahren.length ? gefahren
       : (await gefahrenImGebiet({ swLat: ziel.lat - d, swLon: ziel.lng - d, neLat: ziel.lat + d, neLon: ziel.lng + d }, !online()).catch(() => null))?.gefahren ?? [];

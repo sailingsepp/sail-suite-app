@@ -1,13 +1,9 @@
-
-
 :root { --vp-linie-stark: rgba(122, 168, 184, .35); }
 [data-theme="nacht"] { --vp-linie-stark: var(--line); }
 
 main.vp { max-width: none; padding: 0; }
 main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18px auto; padding-left: 16px; padding-right: 16px; }
 .vp-plan[hidden] { display: none; }
-
-
 
 .vp-plan { display: flex; flex-direction: column; }
 .vp-links { display: contents; }
@@ -25,8 +21,6 @@ main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18p
 .vp-toernplan { order: 3; padding: 14px 16px 24px; border-top: 1px solid var(--line); }
 .vp-nur-breit { display: none; }
 .vp-seite-recht { display: none; }
-
-
 
 @media (min-width: 900px) {
   body.voyageplan.vp-plan-offen { height: 100dvh; display: flex; flex-direction: column; padding-bottom: 0; overflow: hidden; }
@@ -54,7 +48,6 @@ main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18p
   .vp-seite-recht { display: block; margin: 28px 0 0; text-align: center; font-size: 12px; color: var(--muted); }
   .vp-seite-recht a { color: var(--teal); }
 
-  
   .vp-griff-zeile { display: block; flex: none; height: 12px; position: relative; cursor: row-resize; touch-action: none; }
   .vp-griff-zeile::before {
     content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--line);
@@ -71,8 +64,6 @@ main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18p
   .vp-griff-spalte:hover, .vp-griff-spalte.dragging { background: var(--teal); }
   .vp-griff-zeile:focus-visible, .vp-griff-spalte:focus-visible { outline: 2px solid var(--amber); outline-offset: -2px; }
 }
-
-
 
 .vp-karten-werkzeuge {
   position: absolute; left: 12px; bottom: 24px; z-index: 1000; margin: 0;
@@ -109,7 +100,6 @@ main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18p
 .vp-legende-gewaehlt { background: var(--amber); border-color: var(--amber); border-radius: 2px; }
 .vp-legende-route { background: transparent; border-color: var(--teal); border-radius: 2px; }
 
-
 .vp-punkt-liegeplatz span {
   display: block; width: 14px; height: 14px; margin: 1px; border-radius: 50%; box-sizing: border-box;
   background: var(--panel); border: 2px solid var(--teal); cursor: pointer;
@@ -130,15 +120,12 @@ main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18p
 }
 .leaflet-tooltip.vp-tip::before { display: none; }
 
-
 .vp-route { stroke: var(--teal); }
 .vp-route-schatten { stroke: var(--bg); }
 .vp-route.vp-route-gewaehlt { stroke: var(--amber); stroke-width: 5px; stroke-dasharray: none; opacity: 1; }
 .vp-karte-marke span { background: color-mix(in srgb, var(--amber) 62%, white); }
 .vp-karte-marke-aktiv span { background: var(--amber); border: 2px solid var(--bg); transform: scale(1.15); }
 .vp-karte-pfeil span { color: var(--teal); }
-
-
 
 .vp-seite-kopf { flex: none; padding: 16px 18px 12px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
 .vp-seite-titel { display: grid; gap: 3px; min-width: 0; }
@@ -174,8 +161,6 @@ main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18p
 }
 .vp-ansicht-reiter [aria-selected="true"] .vp-nr, .vp-abschnitt.offen .vp-nr { background: var(--amber); color: var(--bg); }
 
-
-
 .vp-seite-inhalt { padding: 14px 18px 18px; }
 .vp-vorgaben { display: grid; gap: 10px; }
 .vp-vorgaben[hidden], .vp-planansicht[hidden] { display: none; }
@@ -202,7 +187,6 @@ main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18p
 .vp-abschnitt-inhalt { padding: 12px 14px 14px; border-top: 1px solid var(--line); display: grid; gap: 12px; }
 .vp-abschnitt-inhalt[hidden] { display: none; }
 .vp-weiter { display: flex; justify-content: flex-end; }
-
 
 .vp-abschnitt .vp-punkt { display: grid; gap: 5px; margin: 0; }
 .vp-abschnitt .vp-punkt-titel { font-size: 12.5px; margin: 0; }
@@ -232,7 +216,6 @@ main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18p
 }
 .vp-rahmen-abweichung[hidden] { display: none; }
 .vp-rahmen-abweichung p { margin: 0; }
-
 
 .vp-optionen-leiste { display: flex; gap: 6px; flex-wrap: wrap; }
 .vp-optionen-leiste [hidden] { display: none; }
@@ -274,7 +257,6 @@ main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18p
 .vp-link-knopf[hidden] { display: none; }
 .vp-link-knopf:hover { color: var(--amber); }
 .vp-abschnitt .vp-karte-waehlen { margin: 0; }
-
 
 .vp-abschnitt .vp-planung { display: grid; gap: 14px; }
 .vp-segment {
@@ -350,8 +332,6 @@ main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18p
   padding: 8px 10px; color: var(--text); font: inherit; width: 100%; box-sizing: border-box;
 }
 
-
-
 .vp-plan-rechnet, .vp-plan-leer { padding: 30px 12px; text-align: center; display: grid; gap: 8px; justify-items: center; }
 .vp-plan-rechnet[hidden], .vp-plan-leer[hidden], .vp-plan-ohne-tag[hidden], .vp-tag[hidden] { display: none; }
 .vp-plan-rechnet-stand { margin: 0; font-size: 14px; font-weight: 600; color: var(--akzent); }
@@ -398,7 +378,6 @@ main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18p
 .vp-tag-tauschen label { display: grid; gap: 4px; color: var(--muted); }
 .vp-tag-tauschen .btn { min-height: 40px; }
 
-
 .vp-seite-fuss { flex: none; padding: 12px 18px; border-top: 1px solid var(--line); background: var(--bg); }
 .vp-fuss-vorgaben, .vp-fuss-plan { display: flex; gap: 8px; align-items: center; }
 
@@ -409,8 +388,6 @@ main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18p
 .vp-fuss-haupt { flex: 1; font-size: 14px; }
 .vp-symbol-knopf { width: 46px; padding: 0; display: inline-flex; align-items: center; justify-content: center; flex: none; }
 .vp-symbol-knopf svg { width: 18px; height: 18px; margin: 0; }
-
-
 
 .vp-toernplan-kopf { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; margin-bottom: 10px; min-height: 36px; }
 .vp-plan .vp-toernplan-kopf h3 { margin: 0; font-size: 15px; color: var(--akzent); }
@@ -437,7 +414,6 @@ main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18p
 .vp-toernplan h4 { margin: 18px 0 8px; font-size: 13px; color: var(--muted); }
 .vp-toernplan .vp-status:empty { display: none; }
 
-
 .vp-toernplan .vp-lade-anzeige {
   flex-direction: row; flex-wrap: wrap; align-items: center; gap: 20px; text-align: left;
   padding: 14px 16px; margin: 0 0 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
@@ -454,7 +430,6 @@ main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18p
 @keyframes vp-fortschritt-wandern { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
 .vp-toernplan .vp-lade-anzeige-text { margin: 0; padding: 0; max-width: none; font-size: 13px; line-height: 1.5; }
 .vp-toernplan .vp-lade-abbrechen { min-height: 44px; min-width: 140px; }
-
 
 .vp-toernplan .vp-wochentabelle { display: block; margin: 0; }
 .vp-woche-liste { display: grid; gap: 4px; }
@@ -515,14 +490,14 @@ main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18p
   .vp-woche-kopfzeile { padding: 0 12px 4px 15px; }
   .vp-woche-kopfzeile span:nth-child(4) { text-align: right; }
   .vp-woche-zeile { padding: 8px 12px; }
-  
+
   .vp-woche-zeile.vp-ueb-zeile { grid-template-columns: 150px minmax(180px, 1fr) 64px 96px 176px; row-gap: 2px; }
   .vp-ueb-zeile > .vp-woche-tag, .vp-ueb-zeile > .vp-woche-dauer, .vp-ueb-zeile > .vp-woche-ablegen { white-space: nowrap; }
   .vp-ueb-zeile > .vp-woche-info { grid-column: 2 / -1; font-size: 12px; }
 }
 @media (max-width: 899px) {
   .vp-woche-kopfzeile, .vp-woche-link { display: none; }
-  
+
   .vp-woche-zeile {
     position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px;
     min-height: 52px; padding: 10px 12px 10px 48px; box-sizing: border-box;
@@ -535,15 +510,13 @@ main.vp > #vp-laedt, main.vp > .vp-hinweis-block { max-width: 720px; margin: 18p
     order: 4; font-size: 12px; font-weight: 400; color: var(--muted);
   }
   .vp-woche-zeile .vp-woche-lage { order: 5; margin-left: auto; font-size: 12px; }
-  
+
   .vp-woche-zeile > .vp-woche-info { order: 6; flex-basis: 100%; min-width: 0; font-size: 12px; }
   .vp-woche-zeile .vp-woche-namen { min-width: 0; overflow-wrap: anywhere; }
   .vp-nur-karte { display: inline; }
   .vp-woche-zeile .vp-leerwert { display: none; }
 }
 
-
 .vp-abschnitt .vp-stufe[aria-pressed="true"] { background: var(--amber); color: #1a1207; border-color: var(--amber); font-weight: 700; }
-
 
 .vp-etappen-formular[hidden] { display: none; }

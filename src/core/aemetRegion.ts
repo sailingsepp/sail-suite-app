@@ -1,16 +1,13 @@
-
-
-
 export const NAH_KM = 40;
 
 type P = readonly [number, number];
 
 const REGIONEN: { gruppe: string; linie: P[] }[] = [
-  
+
   { gruppe: 'Cataluña', linie: [[42.4274, 3.1589], [41.3826, 2.1771], [41.1172, 1.2546], [40.5439, 0.4808]] },
-  
+
   { gruppe: 'Valencia y Murcia', linie: [[40.4704, 0.4746], [39.4697, -0.3763], [38.8408, 0.1061], [38.3436, -0.4882], [37.6155, -0.9875], [37.41, -1.5805]] },
-  
+
   { gruppe: 'Andalucía Oriental y Melilla', linie: [[37.3608, -1.6637], [36.7212, -2.1932], [36.8686, -2.312], [36.7451, -3.5208], [36.7648, -4.4422], [36.377, -5.249]] },
   { gruppe: 'Andalucía Oriental y Melilla', linie: [[35.2919, -2.9409]] },
 ];
@@ -33,7 +30,6 @@ function linieKm(lat: number, lon: number, linie: P[]): number {
   return min;
 }
 
-
 export function aemetRegionAn(lat: number, lon: number): string | null {
   const b = BALEAREN;
   if (lat >= b.s - b.rand && lat <= b.n + b.rand && lon >= b.w - b.rand && lon <= b.o + b.rand) return b.gruppe;
@@ -44,7 +40,6 @@ export function aemetRegionAn(lat: number, lon: number): string | null {
   }
   return best && best.km <= NAH_KM ? best.gruppe : null;
 }
-
 
 export function aemetRegionenEntlang(punkte: { lat: number; lon: number }[]): string[] {
   const out: string[] = [];

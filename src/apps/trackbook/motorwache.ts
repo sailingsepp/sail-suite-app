@@ -16,9 +16,6 @@ import { ANSAGE } from '@/core/ansagen';
 import { klangJetzt, mikrofonSoll } from './mikrofon';
 import type { Zustand } from './aufzeichnung';
 
-
-
-
 const RUHE_NACH_NEIN_MS = 20 * 60_000;
 
 const RUHE_NACH_HAND_MS = 5 * 60_000;
@@ -28,7 +25,6 @@ const BEOBACHTUNGEN_MAX = 200;
 const $ = (id: string) => document.getElementById(id);
 const wort = (schluessel: string): string =>
   STRINGS[aktuelleSprache()][schluessel] ?? schluessel;
-
 
 interface WachBeobachtung extends Beobachtung {
   lat: number | null;
@@ -45,14 +41,11 @@ let boot: BoatPolar | undefined;
 let letzteMessung: KlangMessung | null = null;
 let setzeAntriebFn: (a: 'segel' | 'motor', erkanntBei?: { t: number; lat: number; lon: number }) => void = () => {};
 
-
 export function motorwacheToern(t: Toern | null): void {
   boot = t?.schiff?.polarId ? boatById(t.schiff.polarId) : undefined;
 }
 
-
 export function letzterKlang(): KlangMessung | null { return letzteMessung; }
-
 
 function begruendung(
   was: 'motor' | 'segel', k: KlangMessung, sog: number, twa: number | null, seit: number, de: boolean,
@@ -88,7 +81,7 @@ function zeigeFrage(
   if (ja) ja.textContent = wort(was === 'motor' ? 'motorwache.jaMotor' : 'motorwache.jaSegel');
   $('tb-motor-modal')?.removeAttribute('hidden');
   motorModal?.beimOeffnen();
-  
+
   sagFrage(was);
 }
 
@@ -111,14 +104,12 @@ function schliesseFrage(): void {
 
 let motorModal: ModalHandle | null = null;
 
-
 export function pruefeMotorwache(z: Zustand, a: SpurAuswertung): void {
-  
+
   const laeuft = z.betriebsart === 'laeuft';
   mikrofonSoll(laeuft);
   if (!laeuft) return;
 
-  
   if (z.position) versorgeWetter(z.position.lat, z.position.lon, z.fahrt?.id);
   if (offen) return;
 
@@ -150,7 +141,6 @@ export function pruefeMotorwache(z: Zustand, a: SpurAuswertung): void {
   zeigeFrage(was, klang, z.sog, twa, wechselBei(z, was, { t: jetzt, lat: pos.lat, lon: pos.lon }));
 }
 
-
 function wechselBei(
   z: Zustand, was: 'motor' | 'segel', jetzt: { t: number; lat: number; lon: number },
 ): { t: number; lat: number; lon: number } {
@@ -167,13 +157,11 @@ function wechselBei(
   return mitOrt ? { t, lat: mitOrt.lat!, lon: mitOrt.lon! } : { ...jetzt, t };
 }
 
-
 export function motorwacheVonHand(): void {
   beobachtungen = [];
   abgelehntBis = Date.now() + RUHE_NACH_HAND_MS;
   schliesseFrage();
 }
-
 
 export function motorwacheZuruecksetzen(): void {
   beobachtungen = [];
@@ -191,12 +179,11 @@ export function initMotorwache(
 
   $('btn-motor-ja')?.addEventListener('click', () => {
     const was = offen;
-    
+
     const erkanntBei = offenSeit;
     schliesseFrage();
     if (was) setzeAntriebFn(was, erkanntBei ?? undefined);
-    
-    
+
     beobachtungen = [];
   });
 

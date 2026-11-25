@@ -1,4 +1,3 @@
-
 import { aktuelleSprache } from '@/shell/sprache';
 import { distNM } from '@/core/geo';
 import { waehlePolare, polareFuerSchiff } from '@/core/polarwahl';
@@ -17,7 +16,6 @@ import type { KostenkartenBericht } from './kostenkarte';
 import { lateinisch } from '@/core/umschrift';
 import { zeitraumText } from '@/core/zeitraum';
 
-
 export interface EtappeEntwurf {
   id: string;
   vonName: string;
@@ -27,41 +25,37 @@ export interface EtappeEntwurf {
   wegpunkte: EtappenWegpunkt[];
   fixiert: boolean;
   gewaehlt: boolean;
-  
+
   art?: 'fahrt' | 'hafentag';
-  
+
   abfahrtZeit?: string | null;
-  
+
   ankunftDatum?: string | null;
   ankunftZeit?: string | null;
 }
 
 export const app = {
-  
+
   toern: null as ToernZeile | null,
-  
+
   toernGespeichert: null as ToernZeile | null,
   nurLesen: true,
   etappen: [] as EtappeEntwurf[],
-  
+
   crewFunktionen: null as Crewfunktion[] | null,
-  
+
   letzterBericht: null as KostenkartenBericht | null,
 };
-
 
 export function setzeToern(zeile: ToernZeile): void {
   app.toernGespeichert = zeile;
   app.toern = mitRahmen(zeile);
-  
+
   setzeTiefgang(zeile.schiff?.tiefgangM ?? null);
-  
-  
-  
+
   const info = $('vp-toern-info');
   if (info) info.textContent = toernBeschreibung(app.toern);
 }
-
 
 let rahmenSpeichern: Promise<unknown> = Promise.resolve();
 export function merkeRahmenSpeichern<T>(p: Promise<T>): Promise<T> {
@@ -71,7 +65,6 @@ export function merkeRahmenSpeichern<T>(p: Promise<T>): Promise<T> {
 export function rahmenGespeichert(): Promise<unknown> {
   return rahmenSpeichern;
 }
-
 
 export async function schreibeAnkunftAlsBis(token: string, ankunft: string): Promise<boolean> {
   const roh = app.toernGespeichert;
@@ -92,10 +85,8 @@ export function wort(schluessel: string, werte?: Record<string, string>): string
 
 export const $ = (id: string): HTMLElement | null => document.getElementById(id);
 
-
 export const wunschlisteEins = erstelleWunschlisteInstanz('');
 export const wunschlisteZwei = erstelleWunschlisteInstanz('-2');
-
 
 export function aktualisiereWunschlistenKontext(): void {
   const kontext = wunschlisteKontext();
@@ -103,24 +94,18 @@ export function aktualisiereWunschlistenKontext(): void {
   wunschlisteZwei.setzeKontext(kontext);
 }
 
-
 export function toernBeschreibung(toern: ToernZeile): string {
   const teile = [toern.revier, zeitraumText(toern.von, toern.bis)].filter(Boolean);
   return teile.join(' · ');
 }
 
-
-
 export function datumIso(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-
 export function planungJetzt(): Required<PlanungEinstellungen> {
   return mitVorgaben(app.toern?.planung ?? null);
 }
-
-
 
 export function tankVorschlag(toern: ToernZeile, fahrtKn: number): { angabe: KraftstoffAngabe; reichweiteSm: number } | null {
   const angabe = kraftstoffFuerSchiff(toern.schiff);
@@ -128,7 +113,7 @@ export function tankVorschlag(toern: ToernZeile, fahrtKn: number): { angabe: Kra
 }
 
 export function standardSchiffConfig(toern: ToernZeile): SchiffConfig {
-  
+
   const vorschlag = polareFuerSchiff(toern.schiff) ?? waehlePolare({});
   return {
     model: 'polar',
@@ -136,7 +121,7 @@ export function standardSchiffConfig(toern: ToernZeile): SchiffConfig {
     motorSpeed: 6,
     minSailWind: 8,
     boat: vorschlag.boot,
-    crewFactor: toern.crew_faktor ?? 0.75, 
+    crewFactor: toern.crew_faktor ?? 0.75,
     ...(toern.crew_zumutbarkeit != null ? { crewZumutbarkeit: toern.crew_zumutbarkeit } : {}),
     sailPref: 0.6,
     useCurrent: true,
@@ -146,7 +131,6 @@ export function standardSchiffConfig(toern: ToernZeile): SchiffConfig {
   };
 }
 
-
 export function wunschlisteKontext(): WunschlisteKontext | null {
   if (!app.toern) return null;
   const vomToern = app.toern.start_hafen;
@@ -155,14 +139,12 @@ export function wunschlisteKontext(): WunschlisteKontext | null {
     toern: app.toern,
     cfg: standardSchiffConfig(app.toern),
     start: vomToern ? { lat: vomToern.lat, lon: vomToern.lon } : (erste?.wegpunkte[0] ?? null),
-    
+
     startName: lateinisch(vomToern?.name ?? (erste?.vonName || '')),
   };
 }
 
-
 const GLEICHER_ORT_SM = 0.1;
-
 
 export function rueckgabehafenFuerRechner(): { ort: { lat: number; lon: number }; name: string } | null {
   const r = app.toern?.rueckgabe_hafen;
@@ -172,13 +154,11 @@ export function rueckgabehafenFuerRechner(): { ort: { lat: number; lon: number }
   return { ort: { lat: r.lat, lon: r.lon }, name: lateinisch(r.name) };
 }
 
-
 export function starthafenAlsZiel(start: { lat: number; lon: number } | null | undefined): { ort: { lat: number; lon: number }; name: string } | null {
   const s = app.toern?.start_hafen;
   if (!s || !start || distNM(s.lat, s.lon, start.lat, start.lon) < GLEICHER_ORT_SM) return null;
   return { ort: { lat: s.lat, lon: s.lon }, name: lateinisch(s.name) };
 }
-
 
 export function ohneUmkehrpunktFuerToern(): boolean {
   return app.toern?.yachtnutzung === 'eigene-yacht' && !app.toern.bis;

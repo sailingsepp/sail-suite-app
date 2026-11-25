@@ -1,9 +1,6 @@
 import { kuestenlinienUmGebiet, BUDGET_INTERAKTIV } from '@/data/overpass';
 import type { Punkt } from '@/core/types';
 
-
-
-
 const HALB_GRAD = 0.25;
 
 const PAUSE_MS = 120_000;
@@ -20,7 +17,6 @@ export function beiKuesteGeladen(cb: () => void): void {
 }
 
 const enthaelt = (a: Ausschnitt, p: Punkt) => p.lat > a.s && p.lat < a.n && p.lon > a.w && p.lon < a.e;
-
 
 export function kuesteFuer(von: Punkt, nach: Punkt): [Punkt, Punkt][] | null {
   if (geladen && enthaelt(geladen, von) && enthaelt(geladen, nach)) return geladen.linien;

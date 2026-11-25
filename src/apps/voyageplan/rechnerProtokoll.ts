@@ -1,4 +1,3 @@
-
 import type { Wunschziel, Endziel } from '@/core/wunschziele';
 import type { Hafenknoten, Kandidatennetz } from '@/core/hafennetz';
 import {
@@ -17,113 +16,105 @@ import type { PlanungEinstellungen } from './planung';
 
 export interface RechnerAnfrage {
   start: { ort: Punkt; name: string };
-  
+
   rueckgabehafen?: { ort: Punkt; name: string } | null;
-  
+
   uebernahmeIso?: string | null;
   rueckgabeIso?: string | null;
-  
+
   ohneUmkehrpunkt?: boolean;
-  
+
   offenesEnde?: boolean;
   wunschziele: Wunschziel[];
   endziel: Endziel | null;
-  
+
   zweiteOption?: OptionWunsch | null;
   gesamtFahrtage: number;
-  
+
   startDatumIso: string;
   cfg: SchiffConfig;
   limits: Grenzwerte;
   obergrenzeSm: number | null;
   maxStundenProTag: number;
   sprache: Sprache;
-  
+
   nachtVorgaben?: NachtVorgaben | null;
-  
+
   planung?: Required<PlanungEinstellungen> | null;
-  
+
   ruhetagIndizes?: readonly number[];
   zweiteOptionRuhetagIndizes?: readonly number[];
-  
+
   zeitbudgetMs?: number | null;
-  
+
   fixierungen?: readonly { tag: number; ort: Punkt; name: string }[];
 }
 
-
 export interface OptionWunsch {
-  
+
   name: string;
   wunschziele: Wunschziel[];
   endziel: Endziel | null;
 }
 
-
 export interface OptionEingabe extends OptionWunsch {
-  
+
   schluessel: string;
 }
-
 
 export const OPTION_SCHLUESSEL_1 = 'automatik';
 export const OPTION_SCHLUESSEL_2 = 'automatik-2';
 
-
 export const AUTOMATIK_SCHLUESSEL: readonly string[] = [OPTION_SCHLUESSEL_1, OPTION_SCHLUESSEL_2];
 
-
 export interface OptionErgebnis {
-  
+
   schluessel: string;
   name: string;
   ergebnis: WochenplanErgebnis | null;
   begruendung: Begruendungsspur | null;
   reihenfolge: readonly ReihungsSchritt[];
-  
+
   umkehrpunkt: UmkehrpunktErgebnis | null;
-  
+
   keinPlanGrund?: KeinPlanGrund;
 }
 
-
 export type KeinPlanGrund =
-  
+
   | { art: 'poiOhneBasis'; name: string }
-  
+
   | { art: 'ortOhneLiegeplatz'; name: string }
-  
+
   | { art: 'grenzuebertritt'; name: string }
-  
+
   | { art: 'tagesmeilenNull' }
-  
+
   | { art: 'keineKandidaten' }
-  
+
   | { art: 'keineHaefenGeladen' }
-  
+
   | { art: 'keinWetter'; ohneWetter: number; kanten: number; kontingent?: 'tag' | 'stunde' }
-  
+
   | { art: 'zielUnerreichbar'; name: string; lockerung?: Lockerung }
-  
+
   | { art: 'zielOhneZufahrt'; name: string; lockerung?: Lockerung }
-  
+
   | { art: 'unklar'; ohneWetter: number; kanten: number; lockerung?: Lockerung };
 
-
 export type Lockerung =
-  
+
   | { art: 'reserve'; tage: number; ruhetage?: number }
   | { art: 'umkehrpunkt' }
   | { art: 'ruhetage'; tage: number }
   | { art: 'ohneWunsch'; name: string }
-  
+
   | {
     art: 'staerker'; naechte?: number;
     lang?: { tage: number; stunden: number; dunkelAblegen: number; ablegenErlaubt: boolean };
   }
-  
-  | { art: 'keine'; stunden: number; geprueftBis?: number; geprueftNaechte?: number };
 
+  | { art: 'keine'; stunden: number; geprueftBis?: number; geprueftNaechte?: number };
 
 export function lockerungTextSchluessel(
   grund: KeinPlanGrund,
@@ -131,8 +122,7 @@ export function lockerungTextSchluessel(
   if (!('lockerung' in grund) || !grund.lockerung) return null;
   const l = grund.lockerung;
   switch (l.art) {
-    
-    
+
     case 'reserve': {
       const ruhe = l.ruhetage ?? 0;
       if (l.tage > 0 && ruhe > 0) {
@@ -173,7 +163,6 @@ export function lockerungTextSchluessel(
   }
 }
 
-
 export function ermittleKeinPlanGrund(
   netz: Kandidatennetz, kosten: Kostenkarte, bericht: KostenkartenBericht,
   gesamtFahrtage: number, pflichtIndizes: readonly number[],
@@ -199,7 +188,6 @@ export function ermittleKeinPlanGrund(
   return { art: 'unklar', ohneWetter, kanten: bericht.kanten };
 }
 
-
 export function keinPlanTextSchluessel(grund: KeinPlanGrund): { schluessel: string; werte: Record<string, string> } {
   switch (grund.art) {
     case 'poiOhneBasis':
@@ -215,13 +203,12 @@ export function keinPlanTextSchluessel(grund: KeinPlanGrund): { schluessel: stri
     case 'keineHaefenGeladen':
       return { schluessel: 'automatik.keinPlanKeineHaefen', werte: {} };
     case 'keinWetter':
-      
+
       if (grund.kontingent) {
         return { schluessel: grund.kontingent === 'tag' ? 'automatik.keinPlanKontingentTag' : 'automatik.keinPlanKontingentStunde', werte: {} };
       }
       return { schluessel: 'automatik.keinPlanKeinWetter', werte: { n: String(grund.kanten) } };
-    
-    
+
     case 'zielUnerreichbar':
       return { schluessel: grund.lockerung ? 'automatik.keinPlanZielZuWeit' : 'automatik.keinPlanZiel', werte: { name: grund.name } };
     case 'zielOhneZufahrt':
@@ -234,7 +221,6 @@ export function keinPlanTextSchluessel(grund: KeinPlanGrund): { schluessel: stri
   }
 }
 
-
 export function ohneWetterTextSchluessel(
   bericht: KostenkartenBericht,
 ): { schluessel: string; werte: Record<string, string> } | null {
@@ -245,17 +231,13 @@ export function ohneWetterTextSchluessel(
   };
 }
 
-
 export function kuesteUnbekanntTextSchluessel(bericht: KostenkartenBericht): string | null {
   return bericht.kuesteUnbekannt ? 'automatik.kuesteUnbekannt' : null;
 }
 
-
-
 export function haefenTeilpaketTextSchluessel(bericht: KostenkartenBericht): string | null {
   return bericht.haefenTeilpaket ? 'automatik.haefenTeilpaket' : null;
 }
-
 
 export function haefenUnbekanntTextSchluessel(bericht: KostenkartenBericht): string | null {
   return bericht.haefenUnbekannt ? 'automatik.haefenUnbekannt' : null;
@@ -264,7 +246,6 @@ export function haefenUnbekanntTextSchluessel(bericht: KostenkartenBericht): str
 export function kuesteRueckfallTextSchluessel(bericht: KostenkartenBericht): string | null {
   return bericht.kuesteRueckfall ? 'automatik.kuesteRueckfall' : null;
 }
-
 
 export function zeitbudgetTextSchluessel(
   bericht: KostenkartenBericht,
@@ -275,7 +256,6 @@ export function zeitbudgetTextSchluessel(
     werte: { min: String(Math.round((bericht.zeitbudgetMs ?? 0) / 60_000)), n: String(bericht.uebersprungen), m: String(bericht.kanten) },
   };
 }
-
 
 export function netzGedeckeltTextSchluessel(
   bericht: KostenkartenBericht,
@@ -291,74 +271,71 @@ export type RechnerAntwort =
   | {
       lage: 'gefunden'; ergebnis: WochenplanErgebnis; netz: Kandidatennetz;
       reihenfolge: readonly ReihungsSchritt[]; begruendung: Begruendungsspur;
-      
+
       bericht: KostenkartenBericht;
-      
+
       umkehrpunkt: UmkehrpunktErgebnis | null;
-      
+
       optionen?: readonly OptionErgebnis[];
-      
+
       vergleich?: {
         kennzahlen: readonly OptionKennzahlen[]; entscheidungspunkt: Entscheidungspunkt;
-        
+
         empfehlung?: OptionsEmpfehlung | null;
       } | null;
-      
+
       grenzuebertritte?: readonly { tag: number; vonName: string; nachName: string }[];
-      
-      
+
       zufahrtErsatz?: readonly { wunsch: string; basis: string; sm: number }[];
-      
+
       wetterHafentage?: readonly {
         tag: number; ort: string; windKn: number | null; boeKn: number | null; windDeg: number | null;
         schutz: 'revier' | 'geschuetzt' | 'teilweise' | 'offen' | null;
       }[];
-      
+
       abwetterOhneWunsch?: { wuensche: readonly string[]; tage: readonly number[] };
       poiBasen?: readonly {
         poi: string; basis: string;
-        
+
         tag: number | null;
         smJeWeg: number;
-        
+
         wetter: { windKn: number; boeKn: number; richtungDeg: number | null } | null;
-        
+
         oeffnungszeiten?: {
-          
+
           quelle: string | null;
           urteil: { urteil: 'ganztag' | 'teilweise' | 'zu'; intervalle: readonly string[] };
         };
       }[];
-      
+
       fixierungBrichtUmkehrpunkt?: true;
-      
+
       skipperGuide?: readonly {
         knotenIndex: number; name: string; text: string; seite: string; quelle: string; stand: string | null;
       }[];
     }
-  
+
   | { lage: 'keinPlanGefunden'; grund: KeinPlanGrund; bericht: KostenkartenBericht }
   | { lage: 'fehler'; text: string }
-  
-  | { lage: 'abgebrochen' };
 
+  | { lage: 'abgebrochen' };
 
 export interface RechnerFortschritt {
   art: 'fortschritt';
-  
+
   phase: 'haefen' | 'wetter' | 'suche' | 'nachrechnen';
-  
+
   schritt?: 'kandidaten' | 'kueste' | 'inseln' | 'skipperguide' | 'staaten' | 'ensemble' | 'gitter' | 'tageslicht' | 'netz';
-  
+
   erledigt?: number;
   gesamt?: number;
-  
+
   knoten?: number;
   kanten?: number;
-  
+
   zeitbudgetMs?: number;
 }
-
 
 export type RechnerNachricht = RechnerAntwort | RechnerFortschritt;
 
@@ -366,13 +343,9 @@ export function istFortschritt(n: RechnerNachricht): n is RechnerFortschritt {
   return (n as RechnerFortschritt).art === 'fortschritt';
 }
 
-
-
 export const K_BESTE = 20;
 
-
 export const STANDARD_RADIUS_NM = 8;
-
 
 export function baueePflichtknoten(
   start: { ort: Punkt; name: string }, wunschziele: readonly Wunschziel[], endziel: Endziel | null,
@@ -382,7 +355,6 @@ export function baueePflichtknoten(
   if (endziel) knoten.push({ name: endziel.name, ort: endziel.ort, art: 'hafen' });
   return knoten;
 }
-
 
 export function wunschzielArtigeListe(wunschziele: readonly Wunschziel[], endziel: Endziel | null): Wunschziel[] {
   const liste = [...wunschziele];
@@ -395,17 +367,15 @@ export function wunschzielArtigeListe(wunschziele: readonly Wunschziel[], endzie
   return liste;
 }
 
-
 export function wunschzielIndizes(wunschziele: readonly Wunschziel[], endziel: Endziel | null): number[] {
   const indizes = wunschziele.map((_, i) => i + 1);
   if (endziel) indizes.push(wunschziele.length + 1);
   return indizes;
 }
 
-
 export function baueOptionsPflichtknoten(
   start: { ort: Punkt; name: string }, optionen: readonly OptionWunsch[],
-  
+
   rueckgabehafen?: { ort: Punkt; name: string } | null,
 ): Hafenknoten[] {
   const knoten: Hafenknoten[] = [{ name: start.name, ort: start.ort, art: 'hafen' }];
@@ -417,14 +387,12 @@ export function baueOptionsPflichtknoten(
   return knoten;
 }
 
-
 export function zielKnotenIndex(
   optionen: readonly OptionWunsch[], hatRueckgabehafen: boolean,
 ): number {
   if (!hatRueckgabehafen) return 0;
   return 1 + optionen.reduce((n, o) => n + o.wunschziele.length + (o.endziel ? 1 : 0), 0);
 }
-
 
 export function wunschzielIndizesJeOption(optionen: readonly OptionWunsch[]): number[][] {
   const ergebnis: number[][] = [];
@@ -437,11 +405,9 @@ export function wunschzielIndizesJeOption(optionen: readonly OptionWunsch[]): nu
   return ergebnis;
 }
 
-
 export function alleWunschzielArtigeListe(optionen: readonly OptionWunsch[]): Wunschziel[] {
   return optionen.flatMap((option) => wunschzielArtigeListe(option.wunschziele, option.endziel));
 }
-
 
 export function schaetzeMaxTagesetappeSm(
   cfg: SchiffConfig, maxStundenProTag: number, obergrenzeSm: number | null,
@@ -450,11 +416,9 @@ export function schaetzeMaxTagesetappeSm(
   return Math.max(cfg.motorSpeed, cfg.speedKn) * maxStundenProTag;
 }
 
-
 export function suchraumHalbachseSm(maxTagesetappeSm: number, gesamtFahrtage: number): number {
   return (maxTagesetappeSm * gesamtFahrtage) / 2;
 }
-
 
 export function suchraumHalbachseFuerKetteSm(
   maxTagesetappeSm: number, gesamtFahrtage: number, start: Punkt, ziel: Punkt, pflichtpunkte: readonly Punkt[],
@@ -467,7 +431,6 @@ export function suchraumHalbachseFuerKetteSm(
   return Math.min(woche, kette + maxTagesetappeSm);
 }
 
-
 export const ZEITBUDGET_MS = 6 * 60_000;
 
 export interface BoundingBox {
@@ -477,13 +440,12 @@ export interface BoundingBox {
   neLon: number;
 }
 
-
 export function vervollstaendigeBegruendung(
   spur: Begruendungsspur, etappen: readonly WochenplanEtappe[], entscheidend: ReihungsSchritt | null,
   netz: Kandidatennetz,
-  
+
   zweitbesteEtappen: readonly WochenplanEtappe[] = [],
-  
+
   langerTagAbSm: number | null = null,
 ): Begruendungsspur {
   const etappeJeTag = new Map(etappen.map((e) => [e.tag, e]));
@@ -495,17 +457,13 @@ export function vervollstaendigeBegruendung(
         ? entscheidendeKennzahlFuerTag(etappe, entscheidend, zweitbesteJeTag.get(tagesBegruendung.tag) ?? null)
         : null;
       const unbekannt = etappe ? unbekannteStellenFuerEtappe(etappe, netz) : [];
-      
-      
-      
-      
+
       const langerTag = etappe && langerTagAbSm != null && !etappe.istHafentag && etappe.sm > langerTagAbSm
         ? [{ tag: etappe.tag, kennzahl: 'langer_tag', wert: etappe.sm, einheit: 'sm' }] : [];
       return { ...tagesBegruendung, entscheidend: [...langerTag, ...(kennzahl ? [kennzahl] : [])], unbekannt };
     }),
   };
 }
-
 
 export function suchraumBoundingBox(pflichtpunkte: readonly Punkt[], halbachseSm: number): BoundingBox {
   const lats = pflichtpunkte.map((p) => p.lat);

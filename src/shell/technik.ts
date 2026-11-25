@@ -1,4 +1,3 @@
-
 import { ladePdfjs } from './handbuch';
 import { initModal, type ModalHandle } from './modal';
 import { aktuelleSprache, aufSprachwechsel } from './sprache';
@@ -22,7 +21,6 @@ const wort = (s: string, e: Record<string, string | number> = {}): string =>
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 
 type PdfAufgabe = ReturnType<Awaited<ReturnType<typeof ladePdfjs>>['getDocument']>;
-
 
 const OHNE_TEXT_AB = 0.5;
 
@@ -54,7 +52,6 @@ function gleicheYacht(a: string, b: string): boolean {
   return normalisiere(a).replace(/\s+/g, ' ').trim() === normalisiere(b).replace(/\s+/g, ' ').trim();
 }
 
-
 function fuerYacht(yacht: string): Handbuch[] {
   return handbuecher.filter((h) => !h.yacht.trim() || gleicheYacht(h.yacht, yacht));
 }
@@ -75,8 +72,6 @@ function verwirfIndex(): void {
   index = null;
   indexLaedt = null;
 }
-
-
 
 function zeichneFilter(): void {
   const sel = $<HTMLSelectElement>('in-technik-filter');
@@ -99,8 +94,6 @@ function filterAuswahl(): { handbuecher?: Set<string> } {
   if (w.startsWith('h:')) return { handbuecher: new Set([w.slice(2)]) };
   return {};
 }
-
-
 
 function zeichneListe(): void {
   const ul = $('tk-liste');
@@ -132,8 +125,6 @@ async function ladeListe(): Promise<void> {
   zeichneListe();
   zeichneFilter();
 }
-
-
 
 function zeichneTreffer(treffer: Treffer[], anfrage: string): void {
   const ol = $('tk-treffer');
@@ -172,7 +163,7 @@ async function sucheJetzt(): Promise<void> {
   const status = $('tk-suchstatus');
   if (!index && status) status.textContent = wort('technik.indexLaedt');
   const ix = await holeIndex();
-  
+
   if (($<HTMLInputElement>('in-technik-suche')?.value ?? '') !== anfrage) return;
   zeichneTreffer(suche(ix, anfrage, filterAuswahl()), anfrage);
 }
@@ -181,8 +172,6 @@ function planeSuche(): void {
   if (suchUhr) clearTimeout(suchUhr);
   suchUhr = setTimeout(() => { void sucheJetzt(); }, 150);
 }
-
-
 
 function setzeStatus(text: string, fehler = false): void {
   const s = $('tk-status');
@@ -243,7 +232,7 @@ async function indexiere(): Promise<void> {
 
   const doppelt = handbuecher.find((h) => h.dateiname === f.name && h.bytes === f.size);
   if (doppelt) { setzeStatus(wort('technik.doppelt', { titel: doppelt.titel }), true); return; }
-  
+
   if (!(await speicherFrei(f.size * 1.3))) { setzeStatus(wort('technik.speicherVoll'), true); return; }
 
   laeuft = true;
@@ -300,8 +289,6 @@ async function loesche(id: string): Promise<void> {
   setzeStatus(wort('technik.geloescht', { titel: h.titel }));
   planeSuche();
 }
-
-
 
 const ansicht: {
   el: HTMLDivElement | null; griff: ModalHandle | null; handbuch: Handbuch | null; aufgabe: PdfAufgabe | null;
@@ -402,7 +389,7 @@ async function zeichneSeite(): Promise<void> {
     const dok = await ansicht.aufgabe.promise;
     const seite = await dok.getPage(ansicht.seite);
     if (lauf !== ansicht.zeichnet) return;
-    
+
     const breite = Math.min(900, (buehne.clientWidth || 320) - 20);
     const basis = seite.getViewport({ scale: 1 });
     const dpr = window.devicePixelRatio || 1;
@@ -431,7 +418,6 @@ async function zeichneSeite(): Promise<void> {
 
 interface TextStueck { str?: string; transform?: number[]; width?: number; fontName?: string }
 
-
 function markiereAufSeite(
   ctx: CanvasRenderingContext2D,
   util: { transform: (a: number[], b: number[]) => number[] },
@@ -459,9 +445,6 @@ function markiereAufSeite(
   }
   ctx.restore();
 }
-
-
-
 
 function inhalt(): string {
   const t = (s: string) => escapeHtml(wort(s));
@@ -507,7 +490,6 @@ function inhalt(): string {
 
 let panel: HTMLDivElement | null = null;
 
-
 function zeigeIn(behaelter: HTMLElement): void {
   if (!panel) {
     panel = document.createElement('div');
@@ -520,8 +502,6 @@ function zeigeIn(behaelter: HTMLElement): void {
   }
   if (panel.parentElement !== behaelter) behaelter.appendChild(panel);
 }
-
-
 
 let fenster: HTMLDivElement | null = null;
 let fensterGriff: ModalHandle | null = null;
@@ -544,7 +524,7 @@ function holeFenster(): HTMLDivElement {
     <div class="tk-rumpf"></div>`;
   document.body.appendChild(v);
   v.querySelector('#btn-technik-zu')!.addEventListener('click', schliesseFenster);
-  
+
   v.addEventListener('touchstart', () => {}, { passive: true });
   fenster = v;
   fensterGriff = initModal(v, schliesseFenster);
@@ -552,7 +532,7 @@ function holeFenster(): HTMLDivElement {
 }
 
 function schliesseMenue(): void {
-  
+
   if (document.getElementById('menu-panel')?.hidden === false) document.getElementById('btn-menu')?.click();
 }
 
@@ -562,7 +542,7 @@ function oeffneFenster(): void {
   schliesseMenue();
   v.hidden = false;
   document.documentElement.classList.add('tk-offen');
-  
+
   fensterGriff?.beimOeffnen(document.getElementById('btn-menu'), $('btn-technik-zu'));
   aufgeschlagen();
 }
@@ -574,8 +554,6 @@ function schliesseFenster(): void {
   document.documentElement.classList.remove('tk-offen');
   fensterGriff?.beimSchliessen();
 }
-
-
 
 function aufgeschlagen(): void {
   filterVonHand = false;
@@ -639,7 +617,6 @@ function verdrahte(): void {
 
   void ladeListe();
 }
-
 
 export function initTechnik(opt: {
   yacht?: () => string | null;

@@ -2,10 +2,7 @@ import { Iso } from '@/kompendium/iso';
 import { fahrzeug, imSchiff, masse, rigg, strich, type Fahrzeug } from '@/kompendium/yacht';
 import { seeflagge, FLAGGE_B, FLAGGE_H } from '@/core/seeflaggen';
 
-
-
 const C30 = Math.cos(Math.PI / 6);
-
 
 export function isoKurs(peilung: number): number {
   const b = (peilung * Math.PI) / 180;
@@ -13,7 +10,6 @@ export function isoKurs(peilung: number): number {
   const uy = (Math.sin(b) / C30 + 2 * Math.cos(b)) / 2;
   return ((Math.atan2(ux, uy) * 180) / Math.PI + 360) % 360;
 }
-
 
 export const MARKE_PX = 84;
 export const MARKE_ANKER: [number, number] = [42, 60];
@@ -24,9 +20,7 @@ const ISO = () => new Iso(4.2, 32, 46);
 
 const L_MARKE = 8;
 
-
 const LICHT_R = 2.2;
-
 
 function lichterfuehrung(iso: Iso, f: Fahrzeug, motor: boolean): string {
   const m = masse(L_MARKE);
@@ -34,7 +28,7 @@ function lichterfuehrung(iso: Iso, f: Fahrzeug, motor: boolean): string {
     const [x, y, zz] = imSchiff(f, lx, ly, z);
     return iso.licht(x, y, zz, farbe, LICHT_R);
   };
-  
+
   const out = [
     licht(-L_MARKE * 0.48, 0, m.fb, 'W'),
     licht(L_MARKE * 0.3, m.B * 0.42, m.fb, 'R'),
@@ -43,7 +37,6 @@ function lichterfuehrung(iso: Iso, f: Fahrzeug, motor: boolean): string {
   if (motor) out.push(licht(m.mast + 0.05, 0, m.fb + m.H * 0.55, 'W'));
   return out.join('');
 }
-
 
 const FLAGGE_AM_STAG = 0.42;
 const FLAGGE_HOCH = 1.0;
@@ -54,20 +47,17 @@ const STAG = '#0B1E2D';
 const FLAGGE_AUSWEHEN = 40;
 type V3 = readonly [number, number, number];
 
-
 function flaggeAmStag(iso: Iso, f: Fahrzeug, code: string): string {
   const fl = seeflagge(code);
   if (!fl) return '';
   const m = masse(L_MARKE);
   const heck = imSchiff(f, -L_MARKE * 0.46, 0, m.fb);
   const top = rigg(f, 0).mastTop;
-  
+
   const a: [number, number, number] = [0, 1, 2].map((i) => heck[i]! + (top[i]! - heck[i]!) * FLAGGE_AM_STAG) as [number, number, number];
   const stagLaenge = Math.hypot(top[0] - heck[0], top[1] - heck[1], top[2] - heck[2]);
   const runter = [0, 1, 2].map((i) => ((heck[i]! - top[i]!) / stagLaenge) * FLAGGE_HOCH) as [number, number, number];
-  
-  
-  
+
   const w = (FLAGGE_AUSWEHEN * Math.PI) / 180;
   const flaeche = (v: V3) => {
     const [x0, y0] = iso.p(0, 0, 0);
@@ -103,7 +93,6 @@ function flaggeAmStag(iso: Iso, f: Fahrzeug, code: string): string {
   return `<g class="marke-flagge">${teile.join('')}${rand}</g>`;
 }
 
-
 export function yachtMarke(kurs: number | null, mitSegel = true, lichter: 'segel' | 'motor' | null = null, flagge: string | null = null): string {
   const stufe = stufeVon(kurs);
   const code = seeflagge(flagge) ? flagge!.trim().toUpperCase() : null;
@@ -115,7 +104,7 @@ export function yachtMarke(kurs: number | null, mitSegel = true, lichter: 'segel
   const f: Fahrzeug = { x: 0, y: 0, kurs: k, art: 'segel', windAus: k + 50, L: L_MARKE, marke: true, ohneSegel: !mitSegel };
   const svg = `<svg viewBox="0 0 64 64" width="${MARKE_PX}" height="${MARKE_PX}" aria-hidden="true">`
     + fahrzeug(iso, f)
-    
+
     + (code && mitSegel ? strich(iso, imSchiff(f, -L_MARKE * 0.46, 0, masse(L_MARKE).fb), rigg(f, 0).mastTop, STAG, 0.7) : '')
     + (code ? flaggeAmStag(iso, f, code) : '')
     + (lichter ? lichterfuehrung(iso, f, lichter === 'motor') : '') + '</svg>';
@@ -123,11 +112,10 @@ export function yachtMarke(kurs: number | null, mitSegel = true, lichter: 'segel
   return svg;
 }
 
-
 export function markePunkt(kurs: number | null, teil: 'heck' | 'bug' | 'bb' | 'stb'): [number, number] {
   const f = { x: 0, y: 0, kurs: isoKurs(stufeVon(kurs)), art: 'segel' as const, L: L_MARKE };
   const B = masse(L_MARKE).B;
-  
+
   const [lx, ly] = teil === 'heck' ? [-L_MARKE / 2, 0] : teil === 'bug' ? [L_MARKE / 2, 0] : [0, (teil === 'bb' ? 1 : -1) * B / 2];
   const w = imSchiff(f, lx, ly, 0);
   const [x, y] = ISO().p(w[0], w[1], 0);

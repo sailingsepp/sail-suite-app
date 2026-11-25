@@ -1,13 +1,9 @@
-
-
-
 type Reiter = 'uebersicht' | 'crew' | 'statistik' | 'kasse' | 'technik';
 const REITER: readonly Reiter[] = ['uebersicht', 'crew', 'statistik', 'kasse', 'technik'];
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T | null {
   return document.getElementById(id) as T | null;
 }
-
 
 export function zeigeReiter(name: Reiter): void {
   for (const r of REITER) {
@@ -18,7 +14,6 @@ export function zeigeReiter(name: Reiter): void {
     if (feld) feld.hidden = !an;
   }
 }
-
 
 export function fuelleToerndaten(werte: {
   revier?: string | null; zeitraum?: string | null; nutzung?: string | null;
@@ -42,7 +37,6 @@ export function fuelleToerndaten(werte: {
   setze('vb-wert-rolle', werte.rolle);
 }
 
-
 export function fuelleEinladung(werte: {
   name: string; revier?: string | null; zeitraum?: string | null;
   start?: string | null; nutzung?: string | null;
@@ -63,10 +57,6 @@ export function fuelleEinladung(werte: {
   setze('vb-einladung-start', werte.start);
   setze('vb-einladung-nutzung', werte.nutzung);
 }
-
-
-
-
 
 function spiegleZusammen(vonId: string, nachId: string): void {
   const von = el(vonId);
@@ -89,14 +79,12 @@ function zeigeRevierKarte(): void {
   karte.hidden = liste.hidden || liste.children.length === 0;
 }
 
-
 export function initUmbau(): void {
-  
+
   document.querySelectorAll<HTMLButtonElement>('[data-reiter]').forEach((b) => {
     b.addEventListener('click', () => zeigeReiter(b.dataset['reiter'] as Reiter));
   });
 
-  
   document.querySelectorAll<HTMLButtonElement>('[data-klapp]').forEach((b) => {
     b.addEventListener('click', () => {
       const feld = el(b.dataset['klapp'] as string);
@@ -107,9 +95,6 @@ export function initUmbau(): void {
     });
   });
 
-  
-  
-  
   const zwilling: Array<[string, string]> = [
     ['btn-crew-einladen-2', 'btn-crew-einladen'],
   ];
@@ -119,7 +104,6 @@ export function initUmbau(): void {
     if (k && o) k.addEventListener('click', () => o.click());
   }
 
-  
   const beobachte = (id: string, fn: () => void) => {
     const knoten = el(id);
     if (!knoten) return;

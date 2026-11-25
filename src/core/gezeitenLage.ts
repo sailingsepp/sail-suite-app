@@ -9,30 +9,29 @@ import {
   type ModellWasserstand,
 } from './copernicusMarine';
 
-
 export interface GezeitenLage {
   quelle: 'pegel' | 'modell';
-  
+
   station: { daten: GezeitenStation; entfernungKm: number } | null;
   kennwerte: Gezeitenkennwerte | null;
-  
+
   bezug: 'ngzw' | 'mw';
   kurve: Tidenpunkt[];
   extreme: Tidenextrem[];
-  
+
   tidenhub: number;
   springNipp: SpringNippLage | null;
   deklination: SpringNippLage | null;
-  
+
   mitWetter: Tidenpunkt[];
-  
+
   modell: ModellWasserstand[];
 }
 
 export function gezeitenLage(
   stationen: readonly GezeitenStation[], lat: number, lon: number, von: UtcDate, bis: UtcDate,
   gitter?: CopernicusGitter | null,
-  
+
   erzwungen?: Stationstreffer | null,
 ): GezeitenLage | null {
   const treffer = erzwungen ?? bezugsStation(stationen, lat, lon);
@@ -43,13 +42,11 @@ export function gezeitenLage(
   if (treffer) {
     const s = treffer.station;
     const k = kennwerte(s);
-    const ueberNgzw = -k.lat; 
+    const ueberNgzw = -k.lat;
     const kurve = tidenkurve(s, von, bis, 10).map((p) => ({ zeit: p.zeit, hoeheM: p.hoeheM + ueberNgzw }));
     const extreme = tidenextreme(s, von, bis).map((e) => ({ ...e, hoeheM: e.hoeheM + ueberNgzw }));
     const mitte = new Date((von.getTime() + bis.getTime()) / 2);
-    
-    
-    
+
     const mitWetter = modell.filter((m) => imFenster(m.zeit)).map((m) => ({
       zeit: m.zeit,
       hoeheM: kurveBei(kurve, m.zeit) + m.wetterM,
@@ -62,8 +59,6 @@ export function gezeitenLage(
     };
   }
 
-  
-  
   const reihe = modell.filter((m): m is ModellWasserstand & { gezeitM: number } =>
     imFenster(m.zeit) && m.gezeitM != null);
   if (reihe.length < 6) return null;
@@ -77,7 +72,6 @@ export function gezeitenLage(
   };
 }
 
-
 function kurveBei(kurve: readonly Tidenpunkt[], t: Date): number {
   const ms = t.getTime();
   for (let i = 1; i < kurve.length; i++) {
@@ -89,7 +83,6 @@ function kurveBei(kurve: readonly Tidenpunkt[], t: Date): number {
   }
   return NaN;
 }
-
 
 export function lageVerschoben(lage: GezeitenLage, ms: number): GezeitenLage {
   const d = (t: Date) => new Date(t.getTime() + ms);

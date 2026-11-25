@@ -1,4 +1,3 @@
-
 import type { Punkt } from '@/core/types';
 import { queryOverpass } from './overpass';
 import { distNM } from '@/core/geo';
@@ -6,14 +5,13 @@ import { distNM } from '@/core/geo';
 export const POI_OEFFNUNGSZEITEN_RADIUS_M = 300;
 
 export interface PoiOeffnungszeitenTreffer {
-  
+
   tagRoh: string;
-  
+
   name: string | null;
-  
+
   distM: number;
 }
-
 
 export async function holeOeffnungszeitenNaheOrt(
   punkt: Punkt, radiusM = POI_OEFFNUNGSZEITEN_RADIUS_M,

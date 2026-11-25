@@ -1,4 +1,3 @@
-
 import { sampleRoute, bearingDeg } from '@/core/geo';
 import { berechneTagesfenster, type Tagesfenster } from '@/core/tagesfenster';
 import {
@@ -39,7 +38,6 @@ import type {
 } from '@/core/types';
 import type { Daemmerungsstufe } from '@/core/sun';
 
-
 function kennzahlenOhneWetter(datum: Date): EtappenKennzahlen {
   return {
     totalHrs: null, vmgShareAnteil: null, motorShareAnteil: null, dunkelShareAnteil: null,
@@ -49,15 +47,11 @@ function kennzahlenOhneWetter(datum: Date): EtappenKennzahlen {
   };
 }
 
-
 const MODELL_BLIND_MALUS_FAKTOR = 1.2;
-
 
 export const WINDPROBEN_SCHRITT_H = 3;
 
-
 export const NEBENLAEUFIGE_ABRUFE = 6;
-
 
 export async function parallelMitGrenze<T>(
   grenze: number, aufgaben: readonly (() => Promise<T>)[],
@@ -77,10 +71,7 @@ export async function parallelMitGrenze<T>(
   return ergebnis;
 }
 
-
 export type KantenAusgang = 'gerechnet' | 'kein-fenster' | 'fehlgeschlagen' | 'nur-geruest';
-
-
 
 export interface HarteBereitschaften {
   kreuzen: Bereitschaft;
@@ -88,43 +79,41 @@ export interface HarteBereitschaften {
 }
 
 export interface KostenkartenBericht {
-  
+
   kanten: number;
   gerechnet: number;
   keinFenster: number;
   fehlgeschlagen: number;
   nurGeruest: number;
-  
+
   kuesteUnbekannt?: true;
-  
+
   zeitbudgetErreicht?: true;
   zeitbudgetMs?: number;
   uebersprungen?: number;
-  
+
   kandidatenGedeckelt?: { vorher: number; behalten: number };
-  
+
   nachrechnungUebersprungen?: true;
-  
+
   kuesteRueckfall?: true;
-  
+
   haefenTeilpaket?: true;
-  
+
   haefenUnbekannt?: true;
 }
 
 export interface KostenkartenErgebnis {
   kosten: Kostenkarte;
-  
+
   bericht: KostenkartenBericht;
-  
+
   vorherrschenderWindDeg: number | null;
-  
+
   windproben: readonly Windprobe[];
-  
+
   ausgaenge: readonly KantenAusgang[];
 }
-
-
 
 export function nachtOderLangerTag(f: Tagesfenster, dateStr: string, nachtfahrtBudget: number): Tagesfenster {
   if (!f.istNachtschlag) return f;
@@ -139,27 +128,23 @@ function legtImDunkelnAb(f: Tagesfenster, ablegen: Date): boolean {
   return ablegen < f.hellVon || ablegen > f.hellBis;
 }
 
-
 function ankerplatzArtVon(knoten: { art: 'marina' | 'hafen' | 'bucht' }): AnkerplatzArt {
   if (knoten.art === 'marina') return 'marina';
   if (knoten.art === 'bucht') return 'bucht';
   return null;
 }
 
-
 export interface ToernRaender {
-  
+
   uebernahme?: Date | null;
-  
+
   rueckgabe?: Date | null;
 }
-
 
 function besteAblegezeit(f: Tagesfenster, spaetesteAnkunft: Date | null): Ablegezeit | null {
   if (!spaetesteAnkunft) return f.best;
   return f.results.find((r) => r.arrival <= spaetesteAnkunft) ?? null;
 }
-
 
 function zielortEintraege(
   knoten: Hafenknoten, inseln: readonly string[],
@@ -173,22 +158,19 @@ function zielortEintraege(
   return [...new Set(alle)];
 }
 
-
 export interface Liegeschutz {
-  
+
   schutzWellenanlaufNM: number | null;
-  
+
   revierSchutzhafen: boolean;
-  
+
   maxWindKn: number;
   maxGustKn: number;
-  
+
   windDeg: number;
 }
 
-
 const LIEGE_TAG_VON = 8, LIEGE_TAG_BIS = 20, LIEGE_NACHT_BIS = 7;
-
 
 export function liegeschutzJeOrtUndTag(
   netz: Kandidatennetz, gitter: RevierwindErgebnis | null, kueste: Kuestenlinie | null,
@@ -233,7 +215,6 @@ export function liegeschutzJeOrtUndTag(
   return out;
 }
 
-
 export function zuschlagReisst(windKn: number, boeKn: number, limits: { mean: number; gust: number }): boolean {
   return anzeigeKn(windKn) >= STURM_MITTEL || anzeigeKn(boeKn) >= STURM_BOE || windKn > limits.mean || boeKn > limits.gust;
 }
@@ -247,7 +228,6 @@ function alsDatumStr(d: Date): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
-
 export function kehreStrecke(punkte: readonly StreckenPunkt[]): StreckenPunkt[] {
   const gesamtSm = punkte[punkte.length - 1]?.cum ?? 0;
   const rueck: StreckenPunkt[] = punkte
@@ -260,15 +240,13 @@ export function kehreStrecke(punkte: readonly StreckenPunkt[]): StreckenPunkt[] 
   return rueck;
 }
 
-
 interface Knotenpaar {
-  
+
   a: number;
   b: number;
-  
+
   kanten: { index: number; vorwaerts: boolean }[];
 }
-
 
 function ungerichtetePaare(netz: Kandidatennetz): Knotenpaar[] {
   const paare = new Map<string, Knotenpaar>();
@@ -285,7 +263,6 @@ function ungerichtetePaare(netz: Kandidatennetz): Knotenpaar[] {
   return [...paare.values()];
 }
 
-
 interface Lauf {
   netz: Kandidatennetz;
   kosten: Map<string, EtappenBewertung>;
@@ -293,11 +270,11 @@ interface Lauf {
   gesamtFahrtage: number;
   modellJeTag: ReadonlyMap<string, number>;
   inselJeKnoten: ReadonlyMap<number, readonly string[]>;
-  
+
   windproben: Windprobe[];
   speicher: KostenkartenSpeicher | null;
   gitter: RevierwindErgebnis | null;
-  
+
   harteBereitschaften: HarteBereitschaften;
   raender: ToernRaender;
   startDatum: Date;
@@ -306,22 +283,20 @@ interface Lauf {
   daemmerung: Daemmerungsstufe;
   stepMin: number;
   sprache: Sprache;
-  
+
   kueste: Kuestenlinie | null;
   vorgaben: NachtVorgaben;
   tageslichtJeKnoten: ReadonlyMap<number, Tageslicht>;
 }
 
-
 interface Streckenwetter {
-  
+
   schluessel: string;
   punkte: StreckenPunkt[];
   windData: StundenWind[];
   utcOffsetSeconds: number;
   forecastEnd: Date;
 }
-
 
 function rechneKante(
   lauf: Lauf, kanteIndex: number, von: Hafenknoten, nach: Hafenknoten, nachIndex: number,
@@ -331,10 +306,6 @@ function rechneKante(
   const jetzt = nowInRevier(utcOffsetSeconds);
   let eingetragen = 0;
 
-  
-  
-  
-  
   const streckeEintraege = eintraegeFuerStrecke(von.name, nach.name);
   const zielEintraege = zielortEintraege(nach, lauf.inselJeKnoten.get(nachIndex) ?? []);
   const crewZumutbarkeitProzent = lauf.cfg.crewZumutbarkeit != null ? lauf.cfg.crewZumutbarkeit * 100 : null;
@@ -343,10 +314,6 @@ function rechneKante(
     const datum = datumPlusTage(lauf.startDatum, t - 1);
     const dateStr = alsDatumStr(datum);
 
-    
-    
-    
-    
     const bewertungSchluessel = lauf.speicher ? stabilerSchluessel({
       v: BEWERTUNGSREGEL_VERSION, wetter: wetter.schluessel, dateStr,
       von: [von.name, von.ort], nach: [nach.name, nach.ort, nach.art],
@@ -362,117 +329,58 @@ function rechneKante(
       if (gemerkt) { lauf.kosten.set(kostenSchluessel(kanteIndex, t), gemerkt); eingetragen++; }
       continue;
     }
-    
-    
-    
+
     const merkeKeine = (): void => { if (bewertungSchluessel) lauf.speicher!.bewertung.lege(bewertungSchluessel, null); };
-    
-    
-    
-    
+
     const uebernahme = lauf.raender.uebernahme;
     const jetztHier = t === 1 && uebernahme && uebernahme > jetzt ? uebernahme : jetzt;
     const f = nachtOderLangerTag(berechneTagesfenster(
       dateStr, lauf.daemmerung, lauf.stepMin, punkte[0]!, punkte, windData, null, lauf.cfg, lauf.limits,
       daylight, utcOffsetSeconds, forecastEnd, jetztHier, lauf.sprache,
     ), dateStr, lauf.vorgaben.nachtfahrtBudget);
-    
-    
-    
+
     const gegenRueckgabe = t === lauf.gesamtFahrtage || (f.istNachtschlag && t === lauf.gesamtFahrtage - 1);
     const b = besteAblegezeit(f, gegenRueckgabe ? lauf.raender.rueckgabe ?? null : null);
-    
-    if (!b || istUnfahrbarToern(b)) { merkeKeine(); continue; } 
-    
-    
-    
-    
-    
-    
+
+    if (!b || istUnfahrbarToern(b)) { merkeKeine(); continue; }
+
     if (lauf.harteBereitschaften.kreuzen === 'nie' && b.beatShare > 0) { merkeKeine(); continue; }
     if (lauf.harteBereitschaften.motoren === 'nie' && b.motorShare > 0) { merkeKeine(); continue; }
-    
-    
+
     const sm = lauf.netz.kanten[kanteIndex]!.sm;
 
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
     if (f.istNachtschlag && lauf.vorgaben.nachtfahrtBudget === 0) { merkeKeine(); continue; }
 
-    
-    
-    
     if (legtImDunkelnAb(f, b.departure) && !istZulaessig(lauf.vorgaben.ablegenBeiDunkelheit)) { merkeKeine(); continue; }
 
-    
-    
-    
-    
-    
-    
-    
     if (b.isDaylight === false
         && !anlegenBeiDunkelheitErlaubt(lauf.vorgaben.anlegenBeiDunkelheit, ankerplatzArtVon(nach))) { merkeKeine(); continue; }
-    
 
     const monat = datum.getMonth() + 1;
     const lokalwind = lokalwindFuerEtappe(b, monat);
 
-    
-    
-    
-    
     const zuschlagKnWert = Math.max(0, ...streckeEintraege
       .filter((e) => e.folge === 'zuschlag' && e.wirkung && bedingungAktiv(e.bedingung, lokalwind, b.maxWind))
       .map((e) => zuschlagKn(e.wirkung!, b.maxWind)));
     const effektiverWindKn = b.maxWind + zuschlagKnWert;
     const effektiverGustKn = b.maxGust + zuschlagKnWert;
-    
-    
-    
-    
+
     if (zuschlagReisst(effektiverWindKn, effektiverGustKn, lauf.limits)) { merkeKeine(); continue; }
 
-    
-    
-    
-    
     const ausgeschlossen = zielEintraege.some((e) => wirktAlsAusschluss(
       e, lokalwind, b.maxWind, REVIER_MIN_WIND, crewZumutbarkeitProzent,
     ));
     if (ausgeschlossen) { merkeKeine(); continue; }
 
-    
-    
     const revierSchutzhafen = zielEintraege.some((e) => wirktAlsSchutz(e, lokalwind, b.maxWind));
 
-    
-    
-    
-    
-    
-    
     const modellBlindAktiv = streckeEintraege
       .some((e) => e.folge === 'modell-blind' && bedingungAktiv(e.bedingung, lokalwind, b.maxWind));
     const score = modellBlindAktiv ? b.score * MODELL_BLIND_MALUS_FAKTOR : b.score;
 
-    
-    
-    
-    
-    
-    
     const zielWind = windData[windData.length - 1];
     const nachtwind = zielWind ? nachtwindRichtung(zielWind, nachtfenster(b.arrival, daylight)) : null;
-    
+
     const schutzWellenanlaufNM = nachtwind == null || lauf.kueste == null
       ? null : luvFetchNM(nach.ort, nachtwind, lauf.kueste);
 
@@ -483,21 +391,15 @@ function rechneKante(
         totalHrs: b.totalHrs, vmgShareAnteil: b.vmgShare, motorShareAnteil: b.motorShare,
         dunkelShareAnteil: b.dunkelShare, maxWindKn: b.maxWind, maxGustKn: b.maxGust, maxHsM: b.maxHs,
         schutzWellenanlaufNM, revierSchutzhafen,
-        
-        
+
         modellUebereinstimmungProzent: lauf.modellJeTag.get(dateStr) ?? null,
-        
-        
-        
-        
-        
+
         ablegeZeitIso: naiveIso(b.departure),
-        
+
         ...(legtImDunkelnAb(f, b.departure) ? { ablegenImDunkeln: true as const } : {}),
-        
-        
+
         lage: b.hasStorm || b.score > guenstigGrenze(b) ? 'brauchbar' : 'guenstig',
-        
+
         ...(b.hasStorm ? { gewitter: true as const } : {}),
       },
     };
@@ -507,7 +409,6 @@ function rechneKante(
   }
   return eingetragen > 0 ? 'gerechnet' : 'kein-fenster';
 }
-
 
 async function holeTageslichtJeKnoten(
   netz: Kandidatennetz, speicher: KostenkartenSpeicher | null,
@@ -524,8 +425,7 @@ async function holeTageslichtJeKnoten(
       map.set(index, await gemerkt(speicher, 'tageslicht', knoten.ort,
         () => fetchDaylight(knoten.ort.lat, knoten.ort.lon)));
     } catch {
-      
-      
+
     } finally {
       melde(++erledigt, ziele.length);
     }
@@ -533,51 +433,42 @@ async function holeTageslichtJeKnoten(
   return map;
 }
 
-
 export async function befuelleKostenkarte(
   netz: Kandidatennetz, gesamtFahrtage: number, startDatum: Date,
   cfg: SchiffConfig, limits: Grenzwerte, daemmerung: Daemmerungsstufe, stepMin: number,
   sampleStepNM: number, sprache: Sprache,
-  
+
   kueste: Kuestenlinie | null,
-  
+
   vorgaben: NachtVorgaben = VORGABEN_5_1,
   heute: Date = new Date(),
-  
+
   raender: ToernRaender = {},
-  
+
   modellJeTag: ReadonlyMap<string, number> = new Map(),
-  
+
   inselJeKnoten: ReadonlyMap<number, readonly string[]> = new Map(),
-  
+
   meldeFortschritt: (erledigt: number, gesamt: number, was?: 'wetter' | 'tageslicht') => void = () => {},
-  
+
   speicher: KostenkartenSpeicher | null = null,
-  
+
   gitter: RevierwindErgebnis | null = null,
-  
+
   harteBereitschaften: HarteBereitschaften = { kreuzen: 'gern', motoren: 'gern' },
-  
+
   abbruch: () => boolean = () => false,
   zeitbudgetMs = 0,
 ): Promise<KostenkartenErgebnis> {
   const grenzTag = datumPlusTage(heute, GERECHNET_BIS_TAG);
-  
-  
-  
+
   const heuteTag = datumPlusTage(heute, 0);
   const gerechnet = (datum: Date): boolean => datum >= heuteTag && datum <= grenzTag;
   const kosten = new Map<string, EtappenBewertung>();
 
-  
-  
-  
   const gerechneteTage = Array.from({ length: gesamtFahrtage }, (_, i) => i + 1)
     .filter((t) => gerechnet(datumPlusTage(startDatum, t - 1)));
 
-  
-  
-  
   const ausgaenge = new Array<KantenAusgang>(netz.kanten.length).fill('nur-geruest');
   const windproben: Windprobe[] = [];
   let uebersprungen = 0;
@@ -591,8 +482,7 @@ export async function befuelleKostenkarte(
     let erledigt = 0;
     meldeFortschritt(0, paare.length, 'wetter');
     await parallelMitGrenze(NEBENLAEUFIGE_ABRUFE, paare.map((paar) => async (): Promise<void> => {
-      
-      
+
       if (abbruch()) {
         for (const k of paar.kanten) { ausgaenge[k.index] = 'fehlgeschlagen'; uebersprungen++; }
         meldeFortschritt(++erledigt, paare.length, 'wetter');
@@ -604,18 +494,14 @@ export async function befuelleKostenkarte(
     }));
   }
 
-  
-  
-  
   const normalwindKn = Math.max(polarSpeed(NORMALWIND_KN, NORMALWIND_TWA, cfg.crewFactor, cfg.boat), cfg.motorSpeed);
   const faktor = aufschlagFaktor(kosten);
   netz.kanten.forEach((kante, kanteIndex) => {
     for (let t = 1; t <= gesamtFahrtage; t++) {
       const datum = datumPlusTage(startDatum, t - 1);
-      if (gerechnet(datum)) continue; 
+      if (gerechnet(datum)) continue;
       const geschaetzteFahrzeitHrs = kante.sm / normalwindKn;
-      
-      
+
       kosten.set(kostenSchluessel(kanteIndex, t), {
         score: geschaetzteFahrzeitHrs * SCORE_PRO_FAHRTSTUNDE * faktor,
         sm: kante.sm, istNachtschlag: kante.nacht === true, regime: 'geruest',
@@ -634,7 +520,6 @@ export async function befuelleKostenkarte(
   };
 }
 
-
 function aufschlagFaktor(kosten: ReadonlyMap<string, EtappenBewertung>): number {
   let scoreSumme = 0, stundenSumme = 0;
   for (const eintrag of kosten.values()) {
@@ -647,7 +532,6 @@ function aufschlagFaktor(kosten: ReadonlyMap<string, EtappenBewertung>): number 
   return scoreSumme / reinerStundenanteil;
 }
 
-
 async function rechnePaar(
   lauf: Lauf, paar: Knotenpaar, sampleStepNM: number,
 ): Promise<Record<number, KantenAusgang>> {
@@ -658,20 +542,13 @@ async function rechnePaar(
   if (!a || !b) return alle('fehlgeschlagen');
 
   try {
-    
-    
+
     const weg = kantenWeg(lauf.netz, paar.a, paar.b);
     const punkte = sampleRoute(weg, sampleStepNM);
-    
-    
-    
-    
+
     const wetterSchluessel = weg.map((p) => `${p.lat.toFixed(4)},${p.lon.toFixed(4)}`).join('|')
       + `|${sampleStepNM}|${stundenSchluessel(new Date())}`;
-    
-    
-    
-    
+
     const ausGitter = lauf.gitter ? punkte.map((p) => windAmPunkt(lauf.gitter!.gitter, p)) : null;
     const gitterDeckt = ausGitter != null && ausGitter.every((w) => w != null);
     let abruf = gitterDeckt
@@ -687,14 +564,9 @@ async function rechnePaar(
     }
     const { hourly: windData, utcOffsetSeconds } = await abruf;
     const zeitreihe = windData[0]?.time;
-    
-    
+
     if (!zeitreihe || zeitreihe.length === 0) return alle('fehlgeschlagen');
-    
-    
-    
-    
-    
+
     const forecastEnd = nDate(zeitreihe[zeitreihe.length - 1]!);
 
     const erste = windData[0];
@@ -707,8 +579,7 @@ async function rechnePaar(
 
     const quelle = gitterDeckt ? 'gitter' : 'punkt';
     const hin: Streckenwetter = { schluessel: `${wetterSchluessel}|${quelle}|hin`, punkte, windData, utcOffsetSeconds, forecastEnd };
-    
-    
+
     let zurueck: Streckenwetter | null = null;
 
     const ergebnis: Record<number, KantenAusgang> = {};
@@ -728,9 +599,7 @@ async function rechnePaar(
     }
     return ergebnis;
   } catch {
-    
-    
-    
+
     return alle('fehlgeschlagen');
   }
 }

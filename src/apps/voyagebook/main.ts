@@ -1,4 +1,4 @@
-import '@/shell/tokens.css'; 
+import '@/shell/tokens.css';
 import './style.css';
 import './vollbild.css';
 
@@ -63,14 +63,10 @@ import { fehlendeAngaben, nimmtLetztenSkipper, type FehlendeAngabe } from './toe
 import { lateinisch } from '@/core/umschrift';
 import { ladebildGezeichnet, ladebildWeg } from '@/shell/ladebild';
 
-
-
-
 await ladebildGezeichnet();
 initIcons();
 initUmbau();
 setzeAppTexte({ titel: TITLE, beschreibung: DESCRIPTION, strings: STRINGS, tour: TOUR_STEPS });
-
 
 aktiviereLesestand();
 initOfflineHinweis();
@@ -103,7 +99,6 @@ function wort(schluessel: string, werte?: Record<string, string>): string {
 
 const $ = (id: string) => document.getElementById(id);
 
-
 const token = liesSitzungsToken();
 const params = new URLSearchParams(window.location.search);
 const einladungsToken = params.get('einladung');
@@ -111,10 +106,7 @@ if (!token && !einladungsToken) {
   window.location.href = `/?login=1&next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
 }
 
-
-
 type Ansicht = 'liste' | 'detail' | 'einladung';
-
 
 const BREIT = window.matchMedia('(min-width: 1100px)');
 
@@ -130,9 +122,6 @@ function zeigeAnsicht(a: Ansicht): void {
   if (einladung) einladung.hidden = a !== 'einladung';
 }
 
-
-
-
 function markiereInListe(id: string | null): void {
   document.querySelectorAll<HTMLElement>('#vb-toernliste .vb-toern-zeile').forEach((z) => {
     const an = z.dataset['id'] === id;
@@ -140,8 +129,6 @@ function markiereInListe(id: string | null): void {
     if (an) z.setAttribute('aria-current', 'true'); else z.removeAttribute('aria-current');
   });
 }
-
-
 
 async function zeigeSpeicherstand(): Promise<void> {
   const el = $('vb-speicher-hinweis');
@@ -209,16 +196,12 @@ async function ladeListe(): Promise<void> {
     for (const t of archiv) liste.appendChild(zeile(t));
   }
   markiereInListe(aktuellerToern?.id ?? null);
-  
+
   if (BREIT.matches && !aktuellerToern && $('vb-detail-ansicht')?.hidden) {
     const erster = offene[0] ?? archiv[0];
     if (erster) void oeffneDetail(erster.id);
   }
 }
-
-
-
-
 
 const toernOverlay = $('toern-overlay');
 const toernStatus = $('toern-status');
@@ -240,8 +223,7 @@ function zeigeFotoVorschau(url: string | null): void {
     img.removeAttribute('src');
     return;
   }
-  
-  
+
   img.onload = () => { wrap.hidden = false; };
   img.onerror = () => { wrap.hidden = true; };
   img.src = url;
@@ -259,10 +241,6 @@ function feldZahl(n: number | null | undefined): string | undefined {
 function leseToernFeld(id: string): string {
   return ((document.getElementById(id) as HTMLInputElement | null)?.value ?? '').trim();
 }
-
-
-
-
 
 const CREW_VORGABE = 0.75;
 
@@ -299,11 +277,9 @@ function zahlAus(id: string): number | undefined {
   return roh && Number.isFinite(n) ? n : undefined;
 }
 
-
 function aktuellerVorschlag(): PolarVorschlag | null {
   return polareFuerSchiff({ typ: leseToernFeld('in-toern-typ'), laengeM: zahlAus('in-toern-laenge') });
 }
-
 
 function zeigeKraftstoffVorschlag(): void {
   const k = kraftstoffFuerSchiff({ typ: leseToernFeld('in-toern-typ'), laengeM: zahlAus('in-toern-laenge'), motorPS: zahlAus('in-toern-motor') });
@@ -337,7 +313,6 @@ function zeigePolarHinweis(): void {
   el.textContent = wort(schluessel, { b: v.boot.name });
 }
 
-
 const AUS_LISTE: [string, keyof Yachttyp][] = [
   ['in-toern-laenge', 'loaM'],
   ['in-toern-breite', 'breiteM'],
@@ -346,7 +321,6 @@ const AUS_LISTE: [string, keyof Yachttyp][] = [
   ['in-toern-motor', 'motorPS'],
   ['in-toern-baujahr', 'baujahrAb'],
 ];
-
 
 function uebernimmTypwerte(typ: Yachttyp | undefined): void {
   if (!typ) return;
@@ -367,11 +341,9 @@ for (const [id] of AUS_LISTE) {
   });
 }
 
-
 function raeumeAutoMarken(): void {
   for (const [id] of AUS_LISTE) delete (document.getElementById(id) as HTMLInputElement | null)?.dataset['auto'];
 }
-
 
 const TYP_VORSCHLAEGE_MAX = 8;
 
@@ -405,11 +377,7 @@ function initTypAutocomplete(): void {
   function auswaehlen(name: string): void {
     input!.value = name;
     schliessen();
-    
-    
-    
-    
-    
+
     geradeAusgewaehlt = true;
     input!.dispatchEvent(new Event('input', { bubbles: true }));
     geradeAusgewaehlt = false;
@@ -450,8 +418,7 @@ function initTypAutocomplete(): void {
     else if (e.key === 'Enter') { if (aktiv >= 0) { e.preventDefault(); auswaehlen(treffer[aktiv]!); } }
     else if (e.key === 'Escape') { schliessen(); }
   });
-  
-  
+
   input.addEventListener('blur', () => setTimeout(schliessen, 150));
 }
 initTypAutocomplete();
@@ -497,11 +464,9 @@ function leseSchiffAusFormular(): SchiffDaten {
   return schiff;
 }
 
-
 function istProfilVollstaendig(p: { vorname?: string; nachname?: string } | null): boolean {
   return Boolean(p?.vorname && p?.nachname);
 }
-
 
 async function pruefeProfilUndOeffneNeuerToern(): Promise<void> {
   if (!token) return;
@@ -514,9 +479,6 @@ async function pruefeProfilUndOeffneNeuerToern(): Promise<void> {
   oeffneNeuerToern();
 }
 
-
-
-
 let formularStart: ToernHafen | null = null;
 let formularEnde: ToernHafen | null = null;
 
@@ -527,19 +489,16 @@ let startGeaendert = false;
 let endeGeaendert = false;
 let formularLandEnde: string | null = null;
 
-
 function startRevierFormular(): string | null {
   if (startGeaendert && formularStart) return toernRevierText(formularLand, formularStart.lat, formularStart.lon, aktuelleSprache());
   return startRevierTeil(aktuellerToern?.revier);
 }
-
 
 function abgeleitetesRevier(): string | null {
   if (!startGeaendert && !endeGeaendert) return null;
   const ziel = formularEnde ? { ...formularEnde, land: formularLandEnde } : null;
   return toernRevierStrecke(startRevierFormular(), formularStart, ziel, aktuelleSprache());
 }
-
 
 async function revierZumSpeichern(): Promise<string | null> {
   return revierFuerToern({
@@ -556,14 +515,13 @@ function zeigePunkte(): void {
       wert.textContent = hafen ? lateinisch(hafen.name) : wort('neu.punktLeer');
       wert.classList.toggle('leer', !hafen);
     }
-    
+
     const knopf = $(`btn-${praefix}-waehlen`);
     if (knopf) knopf.textContent = wort(hafen ? 'neu.punktAendern' : 'neu.punktWaehlen');
-    
+
     if (hafen) wert?.removeAttribute('aria-invalid');
   }
-  
-  
+
   const revierZeile = $('vb-revier-abgeleitet');
   if (revierZeile) {
     const revier = abgeleitetesRevier() ?? (startGeaendert || endeGeaendert ? null : aktuellerToern?.revier ?? null);
@@ -584,8 +542,7 @@ async function waehlePunkt(welcher: 'start' | 'ende'): Promise<void> {
   if (welcher === 'start') {
     formularStart = hafen;
     startGeaendert = true;
-    
-    
+
     formularLand = wahl.land;
     if (!flaggeVonHand) {
       const code = landcodeAusRevier(wahl.land);
@@ -598,7 +555,6 @@ async function waehlePunkt(welcher: 'start' | 'ende'): Promise<void> {
   }
   zeigePunkte();
 }
-
 
 let flaggeVonHand = false;
 function zeigeFlagge(): void {
@@ -626,16 +582,14 @@ function initToernPunkte(): void {
   $('btn-start-waehlen')?.addEventListener('click', () => void waehlePunkt('start'));
   $('btn-ende-waehlen')?.addEventListener('click', () => void waehlePunkt('ende'));
   $('in-toern-meine-funktion')?.addEventListener('change', zeigeSkipperFeld);
-  
+
   $('btn-ende-wie-start')?.addEventListener('click', () => {
     if (!formularStart) return;
     formularEnde = { ...formularStart };
     zeigePunkte();
   });
-  
-  
-}
 
+}
 
 function zeigeSkipperFeld(): void {
   const feld = $('feld-skipper');
@@ -645,7 +599,6 @@ function zeigeSkipperFeld(): void {
   feld.hidden = !anlegen || meineFunktion === 'skipper';
   zeigeSkipperForm();
 }
-
 
 function markiereFehlende(fehlt: readonly FehlendeAngabe[]): void {
   const ziele: Record<FehlendeAngabe, string> = {
@@ -662,10 +615,7 @@ function markiereFehlende(fehlt: readonly FehlendeAngabe[]): void {
 }
 
 function oeffneNeuerToern(): void {
-  
-  
-  
-  
+
   schliesseKarte();
   toernBearbeitenId = null;
   raeumeAutoMarken();
@@ -681,23 +631,17 @@ function oeffneNeuerToern(): void {
   flaggeVonHand = false;
   zeigeFlagge();
   zeigePunkte();
-  
-  
+
   setzeToernFeld('in-toern-yachtnutzung', 'bareboat-charter');
   const crewAngeben = document.getElementById('in-toern-crew-angeben') as HTMLInputElement | null;
   if (crewAngeben) crewAngeben.checked = false;
   zeigeCrewErfahrungFelder(false);
-  
-  
-  
-  
-  
+
   setzeToernFeld('in-toern-crewfaktor', String(CREW_VORGABE));
   setzeToernFeld('in-toern-crewzumutbarkeit', String(CREW_VORGABE));
   const crewfaktorOut = $('out-toern-crewfaktor'); if (crewfaktorOut) crewfaktorOut.textContent = crewProzent(CREW_VORGABE);
   const crewzumOut = $('out-toern-crewzumutbarkeit'); if (crewzumOut) crewzumOut.textContent = crewProzent(CREW_VORGABE);
-  
-  
+
   fuelleFunktionsfeld('in-toern-meine-funktion', { funktion: 'skipper', form: null });
   setzeToernFeld('in-toern-skipper-form', '');
   const meineFunktionFeld = $('feld-meine-funktion');
@@ -721,7 +665,7 @@ function oeffneNeuerToern(): void {
 
 function oeffneToernBearbeiten(art: KartenArt = 'toern'): void {
   if (!aktuellerToern || aktuellerToern.archiviert_am) return;
-  
+
   if (offeneKarte()) { oeffneKarte(art); return; }
   toernBearbeitenId = aktuellerToern.id;
   raeumeAutoMarken();
@@ -741,7 +685,7 @@ function oeffneToernBearbeiten(art: KartenArt = 'toern'): void {
     const crewAngeben = document.getElementById('in-toern-crew-angeben') as HTMLInputElement | null;
     if (crewAngeben) crewAngeben.checked = angegeben;
     zeigeCrewErfahrungFelder(angegeben);
-    
+
     const faktor = aktuellerToern.crew_faktor ?? CREW_VORGABE;
     const zumutbarkeit = aktuellerToern.crew_zumutbarkeit ?? CREW_VORGABE;
     setzeToernFeld('in-toern-crewfaktor', String(faktor));
@@ -752,7 +696,7 @@ function oeffneToernBearbeiten(art: KartenArt = 'toern'): void {
   setzeToernFeld('in-toern-schiffsname', aktuellerToern.schiff.name);
   setzeToernFeld('in-toern-typ', aktuellerToern.schiff.typ);
   setzeToernFeld('in-toern-mmsi', aktuellerToern.schiff.mmsi);
-  
+
   flaggeVonHand = !!aktuellerToern.schiff.flagge;
   setzeToernFeld('in-toern-flagge', aktuellerToern.schiff.flagge ?? landcodeAusRevier(aktuellerToern.revier));
   zeigeFlagge();
@@ -764,8 +708,7 @@ function oeffneToernBearbeiten(art: KartenArt = 'toern'): void {
   setzeToernFeld('in-toern-baujahr', aktuellerToern.schiff.baujahr?.toString());
   setzeToernFeld('in-toern-verbrauch', feldZahl(aktuellerToern.schiff.verbrauchLh));
   setzeToernFeld('in-toern-tank', aktuellerToern.schiff.tankL?.toString());
-  
-  
+
   const meineFunktionFeld = $('feld-meine-funktion');
   if (meineFunktionFeld) meineFunktionFeld.hidden = true;
   zeigeSkipperFeld();
@@ -781,7 +724,7 @@ function oeffneToernBearbeiten(art: KartenArt = 'toern'): void {
   if (aendernKnopf) aendernKnopf.textContent = wort('neu.aendern');
   zeigePolarHinweis();
   if (toernStatus) toernStatus.textContent = '';
-  
+
   const kurz = $('vb-form-yacht-kurz');
   if (kurz) kurz.textContent = [aktuellerToern.schiff.name, aktuellerToern.schiff.typ].filter(Boolean).join(' · ') || wort('detail.yachtKeine');
   oeffneKarte(art);
@@ -795,8 +738,7 @@ function schliesseNeuerToern(): void {
 
 async function speichereToernFormular(): Promise<void> {
   const name = leseToernFeld('in-toern-name');
-  
-  
+
   const anlegen = !toernBearbeitenId;
   const fehlt = fehlendeAngaben({
     name, von: leseToernFeld('in-toern-von'), bis: leseToernFeld('in-toern-bis'),
@@ -809,26 +751,16 @@ async function speichereToernFormular(): Promise<void> {
   markiereFehlende(fehlt);
   if (fehlt.length) return;
   if (!token) return;
-  
-  
-  
-  
-  
-  
-  
-  
+
   try {
-    
-    
-    
+
     const revierNeu = startGeaendert || endeGeaendert;
     const revier = revierNeu ? await revierZumSpeichern() : null;
     const von = leseToernFeld('in-toern-von');
     const bis = leseToernFeld('in-toern-bis');
     const yachtnutzung = leseToernFeld('in-toern-yachtnutzung') as ToernYachtnutzung;
     const schiff = leseSchiffAusFormular();
-    
-    
+
     const crewAngegeben = (document.getElementById('in-toern-crew-angeben') as HTMLInputElement | null)?.checked ?? false;
     const crewFaktor = crewAngegeben ? parseFloat(leseToernFeld('in-toern-crewfaktor')) : null;
     const crewZumutbarkeit = crewAngegeben ? parseFloat(leseToernFeld('in-toern-crewzumutbarkeit')) : null;
@@ -837,8 +769,7 @@ async function speichereToernFormular(): Promise<void> {
     if (toernBearbeitenId) {
       const aktualisiert = await aendereToern(token, toernBearbeitenId, {
         name,
-        
-        
+
         ...(revierNeu ? { revier } : {}),
         ...(startGeaendert ? { start_hafen: formularStart } : {}),
         rueckgabe_hafen: formularEnde,
@@ -855,8 +786,7 @@ async function speichereToernFormular(): Promise<void> {
       }
       zielId = aktualisiert.id;
     } else {
-      
-      
+
       const meineWahl = leseAuswahlWert(leseToernFeld('in-toern-meine-funktion'));
       const meineFunktion = meineWahl?.funktion as ToernFunktion | undefined;
       const skipperForm = leseToernFeld('in-toern-skipper-form');
@@ -881,7 +811,7 @@ async function speichereToernFormular(): Promise<void> {
         ...(crewAngegeben ? { crew_faktor: crewFaktor, crew_zumutbarkeit: crewZumutbarkeit } : {}),
       });
       if (!neu.toern) {
-        
+
         if (toernStatus) toernStatus.textContent = wort(neu.status === 507 ? 'neu.grenze' : 'neu.fehler');
         return;
       }
@@ -889,13 +819,6 @@ async function speichereToernFormular(): Promise<void> {
       await ladeListe();
     }
 
-    
-    
-    
-    
-    
-    
-    
     let fotoFehlt = false;
     if (gewaehlteFotoDatei) {
       const klein = await verkleinere(gewaehlteFotoDatei).then((k) => k.blob).catch(() => gewaehlteFotoDatei);
@@ -921,7 +844,6 @@ $('btn-neuer-toern')?.addEventListener('click', () => { void pruefeProfilUndOeff
 $('btn-toerndaten-bearbeiten')?.addEventListener('click', () => oeffneToernBearbeiten('toern'));
 $('btn-yacht-bearbeiten')?.addEventListener('click', () => oeffneToernBearbeiten('yacht'));
 $('btn-form-zur-yacht')?.addEventListener('click', () => oeffneKarte('yacht'));
-
 
 document.querySelectorAll<HTMLElement>('[data-fakt]').forEach((k) => k.addEventListener('click', () => {
   const fakt = k.dataset['fakt'];
@@ -963,19 +885,11 @@ $('toern-schliessen')?.addEventListener('click', schliesseNeuerToern);
 $('btn-toern-abbrechen')?.addEventListener('click', schliesseNeuerToern);
 $('btn-toern-anlegen')?.addEventListener('click', () => { void speichereToernFormular(); });
 
-
-
-
-
-
-
 let aktuellerToern: ToernZeile | null = null;
 
 initStreamDialog(() => token, () => aktuellerToern);
 
 const crewFotos = initCrewFotos(() => token, () => aktuellerToern);
-
-
 
 {
   const behaelter = $('vb-reiter-technik');
@@ -1004,7 +918,6 @@ const YACHTNUTZUNG_WORT: Record<ToernYachtnutzung, string> = {
   'crewed-charter': 'yachtnutzung.crewedCharter',
 };
 
-
 function revierText(t: ToernZeile): string | null {
   return t.revier;
 }
@@ -1025,7 +938,6 @@ function meineRolleText(): string | null {
   return mich ? funktionsText(mich) : null;
 }
 
-
 function zeigeRevierHinweise(revier: string | null): void {
   const liste = $('vb-revier-hinweise');
   if (!liste) return;
@@ -1039,20 +951,17 @@ function zeigeRevierHinweise(revier: string | null): void {
   liste.hidden = hinweise.length === 0;
 }
 
-
 function zeigeAktivKnopf(t: ToernZeile): void {
   const knopf = $('btn-toern-aktiv') as HTMLButtonElement | null;
   if (!knopf) return;
   const aktiv = Boolean(t.istAktiv);
-  
-  
+
   knopf.hidden = Boolean(t.beendet) || (Boolean(t.archiviert_am) && !aktiv);
-  
+
   knopf.setAttribute('aria-checked', String(aktiv));
   const abzeichen = $('vb-detail-aktiv-abzeichen');
   if (abzeichen) abzeichen.hidden = !aktiv;
 }
-
 
 function zeigeNurLesen(t: ToernZeile): void {
   const archiviert = Boolean(t.archiviert_am);
@@ -1079,13 +988,11 @@ function zeigeNurLesen(t: ToernZeile): void {
   sperreTankliste(archiviert);
 }
 
-
 const zielrevierVersucht = new Set<string>();
-
 
 function ergaenzeZielrevier(toern: ToernZeile): void {
   if (!token || toern.archiviert_am || toern.besitzer !== liesEigeneNutzerId()) return;
-  
+
   const nachgezogen = revierNachgezogen(toern.revier, toern.start_hafen, toern.rueckgabe_hafen);
   if (nachgezogen && nachgezogen !== toern.revier && !zielrevierVersucht.has(`${toern.id}:see`)) {
     zielrevierVersucht.add(`${toern.id}:see`);
@@ -1126,18 +1033,16 @@ async function oeffneDetail(id: string): Promise<void> {
     return;
   }
   aktuellerToern = toern;
-  
+
   setzeTiefgang(toern.schiff?.tiefgangM ?? null);
   zeigeAktivKnopf(toern);
   zeigeNurLesen(toern);
-  
-  
-  
+
   const nachrichtBlock = $('vb-nachricht-block');
   if (nachrichtBlock) nachrichtBlock.hidden = toern.besitzer !== liesEigeneNutzerId();
   if (nameEl) nameEl.textContent = toern.name;
   if (infoEl) {
-    
+
     const start = lateinisch(toern.start_hafen?.name);
     const ende = lateinisch(toern.rueckgabe_hafen?.name);
     const teile = [
@@ -1154,16 +1059,13 @@ async function oeffneDetail(id: string): Promise<void> {
   await ladeCrew(id);
   void ladeBordkasse(token, toern.id, Boolean(toern.archiviert_am));
   await ladeStatistik(token, toern);
-  
+
   void crewFotos.lade(toern);
-  
-  
+
   await ladeMotordaten(token, toern, () => void ladeStatistik(token, toern));
   await ladeBriefing(id);
   await ladeToernplan(id);
 
-  
-  
   fuelleToerndaten({
     revier: revierText(toern),
     zeitraum: zeitraumText(toern),
@@ -1176,9 +1078,7 @@ async function oeffneDetail(id: string): Promise<void> {
   }, wort('detail.keineAngabe'));
 }
 
-
 let letzteCrew: CrewEintrag[] = [];
-
 
 function statusText(status: string): string {
   return STRINGS[aktuelleSprache()]['status.' + status] ?? status;
@@ -1189,19 +1089,15 @@ function crewName(m: CrewEintrag): string {
   return [m.profil.vorname, m.profil.nachname].filter(Boolean).join(' ');
 }
 
-
-
 function funktionsText(m: { funktion: string; funktionForm?: 'w' | 'm' | null }): string {
   return wort(funktionSchluessel(m.funktion, m.funktionForm));
 }
-
 
 function fuelleFunktionsfeld(id: string, aktuell?: { funktion: string; form?: 'w' | 'm' | null } | null): void {
   const sel = document.getElementById(id) as HTMLSelectElement | null;
   if (!sel) return;
   fuelleFunktionsAuswahl(sel, aktuelleSprache(), wort, aktuell ?? leseFunktionsAuswahl(sel));
 }
-
 
 function zeigeSkipperForm(): void {
   const feld = $('feld-skipper-form');
@@ -1212,11 +1108,9 @@ function crewHatVollenNamen(m: CrewEintrag): boolean {
   return !!(m.profil && 'vorname' in m.profil && m.profil.vorname && m.profil.nachname);
 }
 
-
 function initialen(name: string): string {
   return name.split(/\s+/).filter(Boolean).map((w) => w[0]!).join('').slice(0, 2).toUpperCase();
 }
-
 
 let offeneCrewId: string | null = null;
 
@@ -1231,7 +1125,6 @@ function oeffneCrewZeile(id: string | null): void {
     if (an) z.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   });
 }
-
 
 async function speichereCrewZeile(m: CrewEintrag, zeile: HTMLElement): Promise<boolean> {
   if (!token || !aktuellerToern) return false;
@@ -1261,7 +1154,6 @@ async function speichereCrewZeile(m: CrewEintrag, zeile: HTMLElement): Promise<b
   if (!erg) { if (status) status.textContent = wort('crewEdit.fehler'); return false; }
   return true;
 }
-
 
 async function ladeCrew(toernId: string): Promise<void> {
   if (!token) return;
@@ -1346,7 +1238,7 @@ async function ladeCrew(toernId: string): Promise<void> {
         einladen.addEventListener('click', () => { void einladeMitglied(toernId, m.id); });
         aktionen.appendChild(einladen);
       }
-      
+
       if (binBesitzer && m.rolle !== 'besitzer') {
         const entfernen = document.createElement('button');
         entfernen.type = 'button';
@@ -1364,17 +1256,15 @@ async function ladeCrew(toernId: string): Promise<void> {
   if (offeneCrewId) oeffneCrewZeile(offeneCrewId);
 }
 
-
 async function fuelleRolle(): Promise<void> {
   const el = $('vb-wert-rolle');
   const rolle = meineRolleText();
   if (el) { el.textContent = rolle ?? wort('detail.keineAngabe'); el.classList.toggle('vb-wert-leer', !rolle); }
 }
 
-
 async function entferneCrewmitglied(toernId: string, m: CrewEintrag): Promise<void> {
   if (!token) return;
-  
+
   const frage = aktuellerToern
     ? wort(entfernenFrageSchluessel(aktuellerToern, m.status === 'platzhalter'), { name: crewName(m) })
     : wort('detail.crewEntfernenFrage.angelegt', { name: crewName(m) });
@@ -1385,12 +1275,10 @@ async function entferneCrewmitglied(toernId: string, m: CrewEintrag): Promise<vo
   if (ok) await ladeCrew(toernId);
 }
 
-
 async function einladeMitglied(toernId: string, mitgliedId?: string): Promise<void> {
   if (!token) return;
   const status = $('vb-crew-status');
-  
-  
+
   const funktionSelect = document.getElementById('in-crew-funktion') as HTMLSelectElement | null;
   const wahl = mitgliedId ? null : leseFunktionsAuswahl(funktionSelect);
   const erg = await erzeugeEinladung(token, toernId, mitgliedId, wahl?.funktion as ToernFunktion | undefined, wahl?.form ?? null);
@@ -1399,8 +1287,7 @@ async function einladeMitglied(toernId: string, mitgliedId?: string): Promise<vo
     return;
   }
   const link = `https://sail-suite.app/voyagebook/?einladung=${encodeURIComponent(erg.token)}`;
-  
-  
+
   const titel = aktuellerToern?.name ?? wort('neu.titel');
   try {
     if (typeof navigator.share === 'function') {
@@ -1444,8 +1331,6 @@ $('btn-crew-dazu')?.addEventListener('click', () => {
   })();
 });
 
-
-
 const crewlisteOverlay = $('crewliste-overlay');
 const crewlisteModalEl = $('crewliste-modal');
 const crewlisteModal = crewlisteModalEl ? initModal(crewlisteModalEl, () => schliesseCrewliste()) : null;
@@ -1455,12 +1340,10 @@ function schliesseCrewliste(): void {
   crewlisteModal?.beimSchliessen();
 }
 
-
 function anlage9Feld(profil: CrewEintrag['profil'], feld: 'geburtsdatum' | 'staatsbuergerschaft' | 'passnummer'): string {
   if (!profil || !(feld in profil)) return '';
   return (profil as Record<string, string | undefined>)[feld] ?? '';
 }
-
 
 function siehtVolleCrew(): boolean {
   if (aktuellerToern?.besitzer === liesEigeneNutzerId()) return true;
@@ -1507,14 +1390,13 @@ function baueCrewlisteKarte(m: CrewEintrag, nurName = false): HTMLElement {
     </label>
     <p class="vb-status" data-status role="status" aria-live="polite"></p>
   `;
-  
+
   if (nurName) {
     for (const feld of ['geburtsdatum', 'staatsbuergerschaft', 'passnummer']) {
       karte.querySelector<HTMLElement>(`[data-feld="${feld}"]`)?.setAttribute('hidden', '');
     }
   }
-  
-  
+
   if (aktuellerToern?.archiviert_am || nurName) {
     karte.querySelectorAll<HTMLInputElement | HTMLSelectElement>('input, select')
       .forEach((f) => { f.disabled = true; });
@@ -1566,11 +1448,10 @@ function oeffneCrewliste(): void {
   const ziel = $('vb-crewliste-voll');
   if (!ziel) return;
   ziel.innerHTML = '';
-  
-  
+
   const voll = siehtVolleCrew();
   for (const m of letzteCrew) ziel.appendChild(baueCrewlisteKarte(m, !voll && !m.istIchSelbst));
-  
+
   const hinweis = $('crewliste-hinweis');
   if (hinweis) hinweis.hidden = !voll;
   const nurNameHinweis = $('crewliste-nur-name');
@@ -1586,7 +1467,6 @@ $('btn-crewliste-oeffnen-2')?.addEventListener('click', oeffneCrewliste);
 $('crewliste-schliessen')?.addEventListener('click', schliesseCrewliste);
 $('btn-crewliste-schliessen2')?.addEventListener('click', schliesseCrewliste);
 crewlisteOverlay?.addEventListener('click', (ev) => { if (ev.target === crewlisteOverlay) schliesseCrewliste(); });
-
 
 async function sendeNachrichtAnCrew(): Promise<void> {
   if (!token || !aktuellerToern) return;
@@ -1615,7 +1495,7 @@ $('btn-nachricht-senden')?.addEventListener('click', () => { void sendeNachricht
 
 $('btn-crewliste-pdf')?.addEventListener('click', () => {
   if (!aktuellerToern) return;
-  
+
   const tab = pdfZiel(wort('crewliste.pdfLaedt'));
   void (async () => {
     if (!aktuellerToern) return;
@@ -1631,7 +1511,6 @@ $('btn-crewliste-pdf')?.addEventListener('click', () => {
     }
   })();
 });
-
 
 $('btn-kasse-pdf')?.addEventListener('click', () => {
   if (!aktuellerToern) return;
@@ -1649,13 +1528,9 @@ $('btn-kasse-pdf')?.addEventListener('click', () => {
   })();
 });
 
-
-
-
 function briefingQuelle(b: GeteiltesBriefing): 'coursecast' | 'voyageplan' | null {
   return b.quelle ?? (/: (Wochenplan|Week plan)$/.test(b.titel) ? 'voyageplan' : null);
 }
-
 
 function zeigeBriefingQuelle(briefings: readonly GeteiltesBriefing[]): void {
   const quellen = new Set(briefings.map(briefingQuelle));
@@ -1675,11 +1550,9 @@ function zeigeBriefingQuelle(briefings: readonly GeteiltesBriefing[]): void {
   }
 }
 
-
 function briefingEintrag(b: GeteiltesBriefing, sprache: string, offen: boolean): HTMLElement {
   const datum = b.fuer_datum ? new Date(`${b.fuer_datum}T00:00:00`).toLocaleDateString(sprache) : '–';
-  
-  
+
   const zeitpunkt = new Date(b.erstellt_am).toLocaleDateString(sprache);
   const eintrag = document.createElement('details');
   eintrag.className = 'vb-briefing-eintrag';
@@ -1693,8 +1566,7 @@ function briefingEintrag(b: GeteiltesBriefing, sprache: string, offen: boolean):
   kopf.append(name, meta);
   eintrag.appendChild(kopf);
   b.abschnitte.forEach((a, i) => {
-    
-    
+
     const abschnitt = document.createElement('details');
     abschnitt.className = 'vb-briefing-abschnitt';
     abschnitt.open = i === 0;
@@ -1708,7 +1580,6 @@ function briefingEintrag(b: GeteiltesBriefing, sprache: string, offen: boolean):
   });
   return eintrag;
 }
-
 
 function briefingKurz(briefings: readonly GeteiltesBriefing[], sprache: string): string {
   const teile: string[] = [];
@@ -1725,7 +1596,6 @@ function briefingKurz(briefings: readonly GeteiltesBriefing[], sprache: string):
   }
   return teile.join(' · ');
 }
-
 
 async function ladeToernplan(toernId: string): Promise<void> {
   if (!token) return;
@@ -1771,7 +1641,7 @@ async function ladeToernplan(toernId: string): Promise<void> {
   liste.className = 'vb-toernplan-liste';
   for (const z of zeilen) {
     const li = document.createElement('li');
-    
+
     const zeile = document.createElement(z.von && z.nach && z.datum ? 'a' : 'div');
     zeile.className = 'vb-plan-zeile';
     const nr = document.createElement('span');
@@ -1796,14 +1666,12 @@ async function ladeToernplan(toernId: string): Promise<void> {
     pfeil.setAttribute('aria-hidden', 'true');
     zeile.append(nr, tag, strecke, sm, pfeil);
     if (zeile instanceof HTMLAnchorElement) {
-      
-      
+
       zeile.href = tagesplanungUrl(z.von!, z.nach!, z.datum!, z.wegpunkte.slice(1, -1));
       zeile.title = wort('detail.toernplanTagesplanung');
     }
     li.appendChild(zeile);
-    
-    
+
     if (z.wegpunkte.length >= 2) {
       const nav = document.createElement('a');
       nav.className = 'vb-plan-nav';
@@ -1842,8 +1710,7 @@ async function ladeBriefing(toernId: string): Promise<void> {
     const zusammen = briefingKurz(briefings, sprache);
     ziel.dataset['zusammen'] = zusammen;
     ziel.dataset['kurz'] = `${zusammen}; ${wort('detail.briefingKurzDetails')}`;
-    
-    
+
     for (const b of briefings) ziel.appendChild(briefingEintrag(b, sprache, briefings.length === 1));
   } catch {
     ziel.textContent = wort('detail.briefingFehler');
@@ -1888,8 +1755,6 @@ $('btn-toern-loeschen')?.addEventListener('click', () => {
   })();
 });
 
-
-
 async function bearbeiteEinladung(einladungsToken: string): Promise<void> {
   zeigeAnsicht('einladung');
   const textEl = $('vb-einladung-text');
@@ -1903,8 +1768,7 @@ async function bearbeiteEinladung(einladungsToken: string): Promise<void> {
     if (btn) btn.hidden = true;
     return;
   }
-  
-  
+
   fuelleEinladung({
     name: vorschau.toernName,
     revier: vorschau.revier,
@@ -1920,10 +1784,7 @@ async function bearbeiteEinladung(einladungsToken: string): Promise<void> {
   if (textEl) {
     textEl.textContent = wort('einladung.text', { name: vorschau.toernName, funktion: funktionsText(vorschau) });
   }
-  
-  
-  
-  
+
   const fotoWrap = $('vb-einladung-foto');
   const fotoImg = document.getElementById('vb-einladung-foto-bild') as HTMLImageElement | null;
   if (fotoWrap && fotoImg) {
@@ -1946,10 +1807,7 @@ async function bearbeiteEinladung(einladungsToken: string): Promise<void> {
           return;
         }
         btn.hidden = true;
-        
-        
-        
-        
+
         const profil = await holeEigenesProfil(token);
         if (!istProfilVollstaendig(profil)) {
           const next = `/voyagebook/?willkommen=${encodeURIComponent(erg.toernId)}`;
@@ -1963,15 +1821,12 @@ async function bearbeiteEinladung(einladungsToken: string): Promise<void> {
   }
 }
 
-
-
 aufSprachwechsel(() => {
   zeichneBordkasse();
-  
+
   for (const id of ['in-crew-funktion', 'in-toern-meine-funktion', 'in-crew-edit-funktion']) fuelleFunktionsfeld(id);
   zeigeSkipperForm();
-  
-  
+
   zeigePolarHinweis();
 
   const einladungOffen = $('vb-einladung-ansicht')?.hidden === false;
@@ -1982,23 +1837,14 @@ aufSprachwechsel(() => {
     return;
   }
   if (detailOffen) {
-    
-    
-    
+
     if (aktuellerToern) void oeffneDetail(aktuellerToern.id);
     return;
   }
   void ladeListe();
 });
 
-
-
-
-
-
 const willkommenToernId = params.get('willkommen');
-
-
 
 const neuerToernNachProfil = params.get('neuerToern') === '1';
 
@@ -2009,9 +1855,7 @@ if (einladungsToken) {
   void (async () => {
     await ladeListe();
     await oeffneDetail(willkommenToernId);
-    
-    
-    
+
     if (!token) return;
     const toern = await holeToern(token, willkommenToernId);
     const status = $('vb-detail-status');
@@ -2025,16 +1869,13 @@ if (einladungsToken) {
   void ladeListe();
 }
 
-
-
-
 function zeigeYacht(t: ToernZeile): void {
   const s = t.schiff;
   const kraftstoff = kraftstoffFuerSchiff({ typ: s.typ, laengeM: s.laengeM, motorPS: s.motorPS });
   const name = $('vb-yacht-name');
   const typ = $('vb-yacht-typ');
   if (name) {
-    
+
     const flagge = seeflaggeSvg(flaggeDesToerns(s, t.revier), 18, aktuelleSprache());
     name.innerHTML = (flagge ? `${flagge} ` : '') + escapeHtml(s.name || wort('detail.yachtOhneName'));
   }
@@ -2045,7 +1886,7 @@ function zeigeYacht(t: ToernZeile): void {
     ['detail.yachtLaenge', zahl(s.laengeM, 'm')], ['detail.yachtBreite', zahl(s.breiteM, 'm')],
     ['detail.yachtTiefgang', zahl(s.tiefgangM, 'm')], ['detail.yachtVerdraengung', zahl(s.verdraengungT, 't')],
     ['detail.yachtMotor', zahl(s.motorPS, 'PS', 0)], ['detail.yachtBaujahr', s.baujahr ? String(s.baujahr) : null],
-    
+
     ['detail.yachtVerbrauch', s.verbrauchLh != null ? zahl(s.verbrauchLh, 'l/h') : (kraftstoff ? zahl(kraftstoff.verbrauchLh, 'l/h') + ' (' + wort(kraftstoff.verbrauchQuelle === 'modell' ? 'detail.modelldurchschnitt' : 'detail.richtwert') + ')' : null)],
     ['detail.yachtTank', s.tankL != null ? zahl(s.tankL, 'l', 0) : (kraftstoff ? zahl(kraftstoff.tankL, 'l', 0) + ' (' + wort(kraftstoff.tankQuelle === 'modell' ? 'detail.herstellerangabe' : 'detail.richtwert') + ')' : null)],
     ['detail.yachtFlagge', ((c) => (c ? [c, seeflagge(c)?.name[aktuelleSprache()]].filter(Boolean).join(' · ') : null))(flaggeDesToerns(s, t.revier))],
@@ -2062,7 +1903,7 @@ function zeigeYacht(t: ToernZeile): void {
       ? wort('detail.polareReferenz', { b: waehlePolare({}).boot.name })
       : wort(v.guete === 'exakt' ? 'detail.polareExakt' : v.guete === 'aehnlich' ? 'detail.polareAehnlich' : 'detail.polareGeschaetzt', { b: v.boot.name });
   }
-  
+
   const bild = $('vb-yacht-foto-bild') as HTMLImageElement | null;
   const leer = $('vb-yacht-foto-leer');
   if (bild && leer) {
@@ -2081,7 +1922,6 @@ function schliesseMehrMenue(): void {
   $('btn-toern-mehr')?.setAttribute('aria-expanded', 'false');
 }
 
-
 function passeMehrMenueEin(panel: HTMLElement): void {
   panel.style.removeProperty('right');
   panel.style.removeProperty('left');
@@ -2092,7 +1932,6 @@ function passeMehrMenueEin(panel: HTMLElement): void {
   const links = Math.max(rand, Math.min(r.left, window.innerWidth - rand - r.width));
   if (Math.abs(links - r.left) > 0.5) { panel.style.right = 'auto'; panel.style.left = `${Math.round(links - eltern.left)}px`; }
 }
-
 
 function initMehrMenue(): void {
   const knopf = $('btn-toern-mehr');
@@ -2108,7 +1947,6 @@ function initMehrMenue(): void {
   document.addEventListener('click', (e) => { if (!panel.hidden && !panel.contains(e.target as Node)) schliesseMehrMenue(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panel.hidden) { schliesseMehrMenue(); knopf.focus(); } });
 }
-
 
 (() => {
   const main = $('vb-main');
@@ -2126,9 +1964,6 @@ function initMehrMenue(): void {
   }
 })();
 
-
-
-
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then((reg) => {
@@ -2139,9 +1974,7 @@ if ('serviceWorker' in navigator) {
     .catch((err) => console.warn('Service Worker nicht registriert:', err));
 }
 
-
 ladebildWeg();
-
 
 $('in-toern-tiefgang')?.addEventListener('input', (e) => {
   const v = parseFloat((e.target as HTMLInputElement).value.replace(',', '.'));

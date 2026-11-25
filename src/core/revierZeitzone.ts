@@ -1,6 +1,5 @@
 import { distNM } from './geo';
 
-
 export const ZEITZONE_BIS_SM = 300;
 
 export function naechsteZeitzone(
@@ -17,11 +16,10 @@ export function naechsteZeitzone(
   return beste;
 }
 
-
 export function tagInZone(t: number, zone: string | null): string {
   if (zone) {
     try {
-      
+
       return new Intl.DateTimeFormat('en-CA', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(t));
     } catch {  }
   }

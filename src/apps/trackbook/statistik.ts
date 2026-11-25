@@ -7,8 +7,6 @@ import { aktuelleSprache } from '@/shell/sprache';
 import { initModal, type ModalHandle } from '@/shell/modal';
 import { STRINGS } from './strings';
 
-
-
 const $ = (id: string): HTMLElement | null => document.getElementById(id);
 const wort = (schluessel: string): string =>
   STRINGS[aktuelleSprache()][schluessel] ?? schluessel;
@@ -21,7 +19,6 @@ function schliesse(): void {
   m.hidden = true;
   modalGriff?.beimSchliessen();
 }
-
 
 function zeile(
   label: string,
@@ -38,8 +35,7 @@ function zeile(
 }
 
 function block(b: Berichtsblock, titel: string, sprache: 'de' | 'en'): string {
-  
-  
+
   if (b.nm <= 0.05) {
     return `<h3 class="tb-stat-titel">${titel}</h3>`
       + `<p class="tb-hinweis">${wort('statistik.nochNichts')}</p>`;
@@ -49,8 +45,7 @@ function block(b: Berichtsblock, titel: string, sprache: 'de' | 'en'): string {
     zeile(wort('statistik.segel'), b.segel.nm, b.segel.prozent, b.segel.knoten, sprache),
     zeile(wort('statistik.motor'), b.motor.nm, b.motor.prozent, b.motor.knoten, sprache),
   ];
-  
-  
+
   if (b.offen.nm > 0.05) {
     zeilen.push(zeile(wort('statistik.offen'), b.offen.nm, b.offen.prozent, b.offen.knoten, sprache));
   }
@@ -62,7 +57,6 @@ function block(b: Berichtsblock, titel: string, sprache: 'de' | 'en'): string {
     + `<th scope="col">${wort('statistik.spalteSchnitt')}</th>`
     + `</tr></thead><tbody>${zeilen.join('')}</tbody></table>`;
 }
-
 
 export async function zeigeStatistik(toernId: string | null,
   position: { lat: number; lon: number } | null): Promise<void> {
@@ -90,9 +84,7 @@ export async function zeigeStatistik(toernId: string | null,
         ...(f.manuellePausen ? { manuellePausen: f.manuellePausen } : {}),
       });
     }
-    
-    
-    
+
     const letzteAusSpur = mitSpur
       .flatMap((f) => f.fixe)
       .reduce<{ lat: number; lon: number; t: number } | null>(
@@ -102,8 +94,7 @@ export async function zeigeStatistik(toernId: string | null,
     const ort = position ?? (letzteAusSpur ? { lat: letzteAusSpur.lat, lon: letzteAusSpur.lon } : null);
     const sprache = aktuelleSprache();
     const bericht = navigatorbericht(mitSpur, Date.now(), ort);
-    
-    
+
     const liter = (await holeToern(toernId).catch(() => null))?.dieselGetanktL;
     const jeStunde = dieselJeStunde(liter, bericht.gesamt.motor.stunden);
     const diesel = liter !== undefined && jeStunde !== null

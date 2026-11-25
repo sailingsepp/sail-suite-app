@@ -1,13 +1,9 @@
-
-
 export type WarnQuelle = 'dhmz' | 'hnms' | 'meteomar';
-
 
 export type Teilgebiet =
   | { art: 'laenge'; seite: 'west' | 'ost'; grad: number }
   | { art: 'breite'; seite: 'nord' | 'sued'; grad: number }
   | { art: 'haelfte'; seite: 'nord' | 'sued' | 'west' | 'ost' };
-
 
 export type Warnzeit =
   | { art: 'utc'; vonMs: number; bisMs: number }
@@ -17,37 +13,32 @@ export type Warnzeit =
 
 export interface Warnangabe {
   quelle: WarnQuelle;
-  
+
   wortlaut: string;
-  
+
   richtungen: number[];
-  
+
   boeenKn: { von: number; bis: number } | null;
-  
+
   bft: { von: number; bis: number } | null;
-  
+
   gebiete: string[] | null;
-  
+
   kasten: { name: string; s: number; w: number; n: number; o: number } | null;
   teil: Teilgebiet | null;
-  
+
   offeneSee: boolean;
-  
+
   zeit: Warnzeit | null;
-  
+
   zeitText: string | null;
-  
+
   ortText: string;
 }
-
-
-
 
 export const BFT_KN: Record<number, [number, number]> = {
   6: [22, 27], 7: [28, 33], 8: [34, 40], 9: [41, 47], 10: [48, 55], 11: [56, 63], 12: [64, 80],
 };
-
-
 
 const KOMPASS: Record<string, number> = {
   N: 0, NNE: 22.5, NE: 45, ENE: 67.5, E: 90, ESE: 112.5, SE: 135, SSE: 157.5,
@@ -68,16 +59,14 @@ const WORTE_DE: [RegExp, number][] = [
   [/westwind/i, 270], [/ostwind/i, 90],
 ];
 
-
 const REGIONALWINDE: [RegExp, number][] = [
   [/\bbora\b|\bbura\b/i, 45], [/\bjugo\b|\bsirocco\b|\bscirocco\b/i, 135], [/\bmaestral/i, 315],
   [/\btramontana\b/i, 0], [/\blebić|\blebic|\blibeccio/i, 225],
 ];
 
-
 export function richtungenAus(text: string): number[] {
   const aus = new Set<number>();
-  
+
   const kuerzel = text.match(/\b(?:[NSEW]{1,3})(?:\s+and\s+[NSEW]{1,3})*\s+winds?\b/g);
   if (kuerzel) {
     for (const k of kuerzel.join(' ').match(/\b[NSEW]{1,3}\b/g) ?? []) {
@@ -85,8 +74,7 @@ export function richtungenAus(text: string): number[] {
     }
   }
   for (const [re, grad] of REGIONALWINDE) if (re.test(text)) aus.add(grad);
-  
-  
+
   if (!kuerzel) {
     const worte = /[äöüß]|wind|böe/i.test(text) && !/\bwinds?\b/.test(text) ? WORTE_DE : WORTE_EN;
     for (const [re, grad] of worte) {
@@ -96,14 +84,11 @@ export function richtungenAus(text: string): number[] {
   return [...aus];
 }
 
-
-
 const DHMZ_GEBIET: [RegExp, string][] = [
   [/nördlich|noerdlich|\bnorth(ern)?\b/i, 'NORTH ADRIATIC'],
   [/mittler|\bcentral\b|\bmiddle\b/i, 'CENTRAL ADRIATIC'],
   [/südlich|suedlich|\bsouth(ern)?\b/i, 'SOUTH ADRIATIC'],
 ];
-
 
 const DHMZ_KASTEN: [RegExp, { name: string; s: number; w: number; n: number; o: number }][] = [
   [/velebit/i, { name: 'Velebit', s: 44.2, w: 14.8, n: 45.25, o: 15.7 }],
@@ -111,22 +96,18 @@ const DHMZ_KASTEN: [RegExp, { name: string; s: number; w: number; n: number; o: 
   [/istri/i, { name: 'Istrien', s: 44.75, w: 13.4, n: 45.6, o: 14.3 }],
 ];
 
-
 export const DHMZ_BAND: Record<string, { s: number; n: number }> = {
   'NORTH ADRIATIC': { s: 43.75, n: 90 },
   'CENTRAL ADRIATIC': { s: 41.75, n: 44.25 },
   'SOUTH ADRIATIC': { s: -90, n: 42.25 },
 };
 
-
 export function imDhmzGebiet(gebiete: readonly string[], lat: number): boolean {
   return gebiete.some((g) => { const b = DHMZ_BAND[g]; return !b || (lat >= b.s && lat <= b.n); });
 }
 
 function dhmzZeit(teil: string, ausgabe: { datum: string | null; stunde: number | null }): { zeit: Warnzeit; text: string } | null {
-  
-  
-  
+
   if (/ab dem morgen|ab morgens|from the morning|from morning/i.test(teil)) return { zeit: { art: 'stunden', von: 6, bis: 24 }, text: 'ab dem Morgen' };
   if (/ab der tagesmitte|ab mittag|ab dem mittag|from midday|from noon/i.test(teil)) return { zeit: { art: 'stunden', von: 12, bis: 24 }, text: 'ab Mittag' };
   if (/ab dem nachmittag|from the afternoon/i.test(teil)) return { zeit: { art: 'stunden', von: 12, bis: 24 }, text: 'ab dem Nachmittag' };
@@ -134,9 +115,7 @@ function dhmzZeit(teil: string, ausgabe: { datum: string | null; stunde: number 
   if (/vormittag|morgens|am morgen|\bmorning\b/i.test(teil)) return { zeit: { art: 'stunden', von: 6, bis: 12 }, text: 'am Vormittag' };
   if (/abends|am abend|\bevening\b/i.test(teil)) return { zeit: { art: 'stunden', von: 18, bis: 24 }, text: 'am Abend' };
   if (/nachts|in der nacht|at night|during the night|overnight/i.test(teil)) return { zeit: { art: 'nacht' }, text: 'nachts' };
-  
-  
-  
+
   const ab = ausgabe.datum ? Date.UTC(+ausgabe.datum.slice(0, 4), +ausgabe.datum.slice(5, 7) - 1, +ausgabe.datum.slice(8, 10), ausgabe.stunde ?? 0) : null;
   if (/anfangs|zu beginn|zunächst|initially|at first/i.test(teil) && ab !== null) {
     return { zeit: { art: 'revier', vonMs: ab, bisMs: ab + 6 * 3600_000 }, text: 'anfangs' };
@@ -146,7 +125,6 @@ function dhmzZeit(teil: string, ausgabe: { datum: string | null; stunde: number 
   }
   return null;
 }
-
 
 export function dhmzWarnungen(
   text: string | null | undefined, ausgabe: { datum: string | null; stunde: number | null },
@@ -158,8 +136,7 @@ export function dhmzWarnungen(
     let richtungen: number[] = [];
     let gebiete: string[] | null = null;
     let kasten: Warnangabe['kasten'] = null;
-    
-    
+
     const adriaSatz = /adri/i.test(satz);
     type Vorgemerkt = { teil: string; richtungen: number[]; gebiete: string[] | null; kasten: Warnangabe['kasten'] };
     let vorgemerkt: Vorgemerkt[] = [];
@@ -167,7 +144,7 @@ export function dhmzWarnungen(
       const z = dhmzZeit(teil, ausgabe);
       const offen = /offene[nrs]? see|seewärts|in the open|open sea|offshore|seaward/i.test(teil);
       const adriaText = g ? `der ${g.map(gebietDeutsch).join(' und ')} Adria` : 'der Adria';
-      
+
       const stellenweise = !g && !k && !offen && /stellenweise|örtlich|in places|\blocally\b|occasional|mjestimi/i.test(teil);
       const ortTeile = [k ? `um ${k.name}` : offen ? `auf offener See ${adriaText}` : `${stellenweise ? 'stellenweise ' : ''}in ${adriaText}`];
       return {
@@ -197,7 +174,6 @@ export function dhmzWarnungen(
   return aus;
 }
 
-
 export function ohneOrtsangabe(w: Warnangabe): boolean {
   return !w.gebiete && !w.kasten && !w.teil && !w.offeneSee
     && /stellenweise|örtlich|lokal|\blocally\b|in places|\boccasional\b|mjestimice|mjestimično|lokalno/i.test(w.wortlaut);
@@ -206,8 +182,6 @@ export function ohneOrtsangabe(w: Warnangabe): boolean {
 function gebietDeutsch(n: string): string {
   return ({ 'NORTH ADRIATIC': 'nördlichen', 'CENTRAL ADRIATIC': 'mittleren', 'SOUTH ADRIATIC': 'südlichen' } as Record<string, string>)[n] ?? n;
 }
-
-
 
 function teilgebietAus(zeile: string): Teilgebiet | null {
   const l = zeile.match(/\b(WEST|EAST) OF (\d{1,3}(?:\.\d+)?)/i);
@@ -219,13 +193,11 @@ function teilgebietAus(zeile: string): Teilgebiet | null {
   return null;
 }
 
-
 function tagStundeUtc(tag: number, stunde: number, datum: string): number {
   const j = +datum.slice(0, 4), m = +datum.slice(5, 7) - 1, d = +datum.slice(8, 10);
   const monat = tag < d - 15 ? m + 1 : m;
   return Date.UTC(j, monat, tag, stunde);
 }
-
 
 export function hnmsWarnungen(
   gebiete: { name: string; zeilen: string[] }[] | null | undefined, ausgabe: { datum: string; stundeUtc: number | null },
@@ -250,7 +222,7 @@ export function hnmsWarnungen(
     }
     const grade = [...alle.matchAll(/\b(\d{1,2})\b(?!\.\d)(?!\/)/g)].map((m) => Number(m[1])).filter((n) => n >= 6 && n <= 12);
     if (!grade.length) continue;
-    
+
     const staerke = g.zeilen[g.zeilen.length - 1]!;
     aus.push({
       quelle: 'hnms', wortlaut: `${g.name}: ${alle}`, richtungen: richtungenAus(staerke.split(/\b\d/)[0] ?? ''),
@@ -267,15 +239,11 @@ function teilText(t: Teilgebiet): string {
   return `${({ nord: 'nördlicher', sued: 'südlicher', west: 'westlicher', ost: 'östlicher' } as const)[t.seite]} Teil`;
 }
 
-
-
-
 function meteomarGebiete(text: string, bekannte: readonly string[]): string[] {
   const roh = text.toUpperCase().replace(/^.*?\bIN THE\b/, '').replace(/\.$/, '');
   const teile = roh.split(/,|\bAND\b/).map((s) => s.replace(/^\s*THE\s+/, '').trim()).filter(Boolean);
   return teile.flatMap((t) => bekannte.filter((b) => b === t || b.startsWith(`${t} `) || t.startsWith(b)));
 }
-
 
 export function meteomarWarnungen(
   gruppen: { name: string; zeilen: string[] }[] | null | undefined,
@@ -289,7 +257,7 @@ export function meteomarWarnungen(
       const m = zeile.match(/([A-Z ]+?)\s+(\d{1,2})(?:\s+OR\s+(\d{1,2}))?\s+IN THE\b/i);
       if (!m) continue;
       const gebiete = meteomarGebiete(zeile, bekannteGebiete);
-      if (!gebiete.length) continue; 
+      if (!gebiete.length) continue;
       const b1 = Number(m[2]), b2 = m[3] ? Number(m[3]) : b1;
       aus.push({
         quelle: 'meteomar', wortlaut: `${gr.name}: ${zeile.replace(/^-\s*/, '')}`, richtungen: richtungenAus(m[1]!),
@@ -303,28 +271,25 @@ export function meteomarWarnungen(
   return aus;
 }
 
-
-
 export interface SpurPunkt {
   lat: number; lon: number; nm: number;
-  
+
   time: Date;
   speed: number; gust: number;
 }
 
 export interface WarnKontext {
-  
+
   gebieteAn: (lat: number, lon: number) => string[];
-  
+
   gebietsBox: (name: string) => [number, number, number, number] | null;
-  
+
   anlaufSm: (lat: number, lon: number, vonDeg: number) => number | null;
-  
+
   utcVersatzMs: number;
-  
+
   istDunkel: (p: SpurPunkt) => boolean;
 }
-
 
 export const OFFENE_SEE_SM = 20;
 
@@ -336,12 +301,12 @@ export interface KritischerAbschnitt {
   bisIdx: number;
   von: Date;
   bis: Date;
-  
+
   punkt: SpurPunkt;
-  
+
   anlaufSm: number | null;
   richtung: number | null;
-  
+
   offenAnteil: number | null;
   modellBoeKn: number;
   modellWindKn: number;
@@ -349,9 +314,9 @@ export interface KritischerAbschnitt {
 
 export interface Warnlage {
   abschnitte: KritischerAbschnitt[];
-  
+
   ausserhalbDerZeit: { warnung: Warnangabe; punkt: SpurPunkt; vorher: boolean } | null;
-  
+
   nichtGetroffen: Warnangabe[];
 }
 
@@ -364,7 +329,7 @@ function imTeil(p: SpurPunkt, t: Teilgebiet | null, gebiete: string[] | null, ct
   if (t.art === 'laenge') return t.seite === 'west' ? p.lon <= t.grad : p.lon >= t.grad;
   if (t.art === 'breite') return t.seite === 'nord' ? p.lat >= t.grad : p.lat <= t.grad;
   const box = gebiete?.map((g) => ctx.gebietsBox(g)).find(Boolean);
-  if (!box) return true; 
+  if (!box) return true;
   const [w, s, o, n] = box;
   const mLat = (s + n) / 2, mLon = (w + o) / 2;
   return t.seite === 'nord' ? p.lat >= mLat : t.seite === 'sued' ? p.lat <= mLat : t.seite === 'west' ? p.lon <= mLon : p.lon >= mLon;
@@ -375,13 +340,12 @@ function zurZeit(p: SpurPunkt, z: Warnzeit | null, ctx: WarnKontext): boolean {
   if (z.art === 'nacht') return ctx.istDunkel(p);
   if (z.art === 'revier') return p.time.getTime() >= z.vonMs && p.time.getTime() < z.bisMs;
   if (z.art === 'stunden') {
-    const h = p.time.getUTCHours() + p.time.getUTCMinutes() / 60; 
+    const h = p.time.getUTCHours() + p.time.getUTCMinutes() / 60;
     return h >= z.von && h < z.bis;
   }
   const utc = p.time.getTime() - ctx.utcVersatzMs;
   return utc >= z.vonMs && utc <= z.bisMs;
 }
-
 
 export function warnlageEntlang(spur: readonly SpurPunkt[], warnungen: readonly Warnangabe[], ctx: WarnKontext): Warnlage {
   const abschnitte: KritischerAbschnitt[] = [];
@@ -408,7 +372,7 @@ export function warnlageEntlang(spur: readonly SpurPunkt[], warnungen: readonly 
     const lage = (p: SpurPunkt): boolean => {
       if (!w.offeneSee) return true;
       const a = anlauf(p);
-      
+
       return a.sm !== null && a.sm >= OFFENE_SEE_SM;
     };
     const getroffen = spur.map((p) => ort(p) && lage(p));
@@ -421,7 +385,7 @@ export function warnlageEntlang(spur: readonly SpurPunkt[], warnungen: readonly 
       let j = i;
       while (j + 1 < spur.length && treffer[j + 1]) j++;
       const teil = spur.slice(i, j + 1);
-      
+
       let punkt = teil[0]!, a = anlauf(punkt);
       let offen = 0, bekannt = true;
       for (const p of teil) {
@@ -440,7 +404,7 @@ export function warnlageEntlang(spur: readonly SpurPunkt[], warnungen: readonly 
     if (!gefunden && !ausserhalb && w.zeit) {
       const k = getroffen.indexOf(true);
       const p = spur[k]!;
-      
+
       const vorher = w.zeit.art === 'stunden'
         ? p.time.getUTCHours() < w.zeit.von
         : w.zeit.art === 'utc' ? p.time.getTime() - ctx.utcVersatzMs < w.zeit.vonMs
@@ -448,23 +412,18 @@ export function warnlageEntlang(spur: readonly SpurPunkt[], warnungen: readonly 
       ausserhalb = { warnung: w, punkt: p, vorher };
     }
   }
-  
+
   const schwere = (w: Warnangabe) => w.boeenKn?.bis ?? (w.bft ? BFT_KN[w.bft.bis]?.[1] ?? 0 : 0);
   abschnitte.sort((a, b) => schwere(b.warnung) - schwere(a.warnung) || a.von.getTime() - b.von.getTime());
-  
-  
+
   const eindeutig = abschnitte.filter((a, i) => abschnitte.findIndex((b) => b.vonIdx <= a.vonIdx && b.bisIdx >= a.bisIdx) === i);
   return { abschnitte: eindeutig, ausserhalbDerZeit: ausserhalb, nichtGetroffen };
 }
-
-
-
 
 export function hnmsAusgabeStunde(kopf: string): number | null {
   const m = kopf.match(/\b(\d{2})(\d{2})\s*UTC\b/i);
   return m ? Number(m[1]) : null;
 }
-
 
 export function meteomarGueltigkeit(kopf: string, datum: string): { vonMs: number; bisMs: number } | null {
   const ab = kopf.match(/ISSUED AT (\d{1,2}):(\d{2})/i);

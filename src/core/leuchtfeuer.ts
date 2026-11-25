@@ -1,24 +1,22 @@
 import { bearingDeg } from './geo';
 import type { Punkt } from './types';
 
-
-
 export interface Takt {
-  
+
   h: number;
-  
+
   s: number;
-  
+
   farbe: FeuerFarbe;
 }
 export type FeuerFarbe = 'red' | 'green' | 'white' | 'yellow' | 'blue' | 'orange' | 'violet';
 export interface Sektor {
   farben: FeuerFarbe[];
-  
+
   kennung: string;
   takte: Takt[];
   periode: number;
-  
+
   von: number | null;
   bis: number | null;
 }
@@ -29,7 +27,6 @@ const FARBEN: Record<string, FeuerFarbe> = {
 };
 const MARKE: Record<string, FeuerFarbe> = { W: 'white', R: 'red', G: 'green', Y: 'yellow', BU: 'blue', OR: 'orange', VI: 'violet' };
 const KURZ: Record<FeuerFarbe, string> = { red: 'R', green: 'G', white: 'W', yellow: 'Y', blue: 'Bu', orange: 'Or', violet: 'Vi' };
-
 
 const MORSE: Record<string, string> = {
   A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.', F: '..-.', G: '--.', H: '....', I: '..', J: '.---', K: '-.-', L: '.-..',
@@ -49,7 +46,6 @@ const grad = (x: string | undefined): number | null => {
   return Number.isFinite(v) ? v : null;
 };
 
-
 export function folgeAusSequenz(seq: string, ersterHell = true): { h: number; s: number }[] | null {
   const teile = seq.match(/\(?\s*\d+(?:[.,]\d+)?\s*\)?/g);
   if (!teile?.length) return null;
@@ -61,15 +57,13 @@ export function folgeAusSequenz(seq: string, ersterHell = true): { h: number; s:
   return aus.every((t) => t.s > 0) ? aus : null;
 }
 
-
 const ARTEN = ['Q+LFl', 'VQ+LFl', 'UQ+LFl', 'FLFl', 'FlLFl', 'OcFl', 'LFl', 'IVQ', 'IUQ', 'IQ', 'VQ', 'UQ', 'Q', 'Iso', 'Oc', 'Mo', 'FFl', 'Fl', 'F'];
-
 
 export function zerlegeKennung(character: string, group?: string): { art: string; wechsel: boolean; gruppe: string | null } {
   const c = character.trim();
   const wechsel = /^Al\.?/i.test(c);
   const rest = c.replace(/^Al\.?/i, '');
-  
+
   const art = ARTEN.find((x) => rest.toLowerCase().startsWith(x.toLowerCase())) ?? rest.replace(/[^A-Za-z+].*$/, '');
   const klammer = /\(([^)]*)\)/.exec(rest.slice(art.length));
   const gruppe = (group && group.trim()) || klammer?.[1]?.trim() || null;
@@ -83,7 +77,6 @@ function blitze(anzahl: number, an: number, zwischen: number): { h: number; s: n
   for (let i = 0; i < anzahl; i++) { t.push({ h: 1, s: an }); if (i < anzahl - 1) t.push({ h: 0, s: zwischen }); }
   return t;
 }
-
 
 export function sequenzAbgleichen(t: { h: number; s: number }[], art: string, n: number, periode: number | null): { h: number; s: number }[] | null {
   let aus = t.map((x) => ({ ...x }));
@@ -102,7 +95,6 @@ export function sequenzAbgleichen(t: { h: number; s: number }[], art: string, n:
   return aus;
 }
 
-
 export function folgeAusKennung(art: string, gruppe: string | null, periode: number | null): { h: number; s: number }[] {
   const n = gruppe && /^\d+$/.test(gruppe) ? Number(gruppe) : 1;
   const auffuellen = (t: { h: number; s: number }[], p: number | null) => {
@@ -115,7 +107,7 @@ export function folgeAusKennung(art: string, gruppe: string | null, periode: num
     case 'F': return [{ h: 1, s: 1 }];
     case 'Iso': { const p = periode ?? 4; return [{ h: 1, s: p / 2 }, { h: 0, s: p / 2 }]; }
     case 'Oc': {
-      
+
       const p = periode ?? 4;
       const t = blitze(n, 1, 1).map((x) => ({ h: 1 - x.h, s: x.s }));
       const summe = t.reduce((a, x) => a + x.s, 0);
@@ -158,7 +150,6 @@ export function folgeAusKennung(art: string, gruppe: string | null, periode: num
   }
 }
 
-
 function sektorAus(tags: Readonly<Record<string, string>>, nr: number | null): Sektor | null {
   const f = (k: string) => (nr === null ? undefined : tags[`seamark:light:${nr}:${k}`]) ?? tags[`seamark:light:${k}`];
   const character = f('character');
@@ -171,8 +162,7 @@ function sektorAus(tags: Readonly<Record<string, string>>, nr: number | null): S
   const n = gruppe && /^\d+$/.test(gruppe) ? Number(gruppe) : 1;
   const ausSeq = seq ? folgeAusSequenz(seq, art !== 'Oc') : null;
   const roh = (ausSeq && sequenzAbgleichen(ausSeq, art, n, periode)) || folgeAusKennung(art, gruppe, periode);
-  
-  
+
   const marken = ausSeq && seq ? [...seq.matchAll(/\[([A-Za-z]+)\.?\]/g)].map((m) => MARKE[m[1]!.toUpperCase()]).filter((x): x is FeuerFarbe => !!x) : [];
   let k = 0;
   const takte: Takt[] = roh.map((t) => {
@@ -184,18 +174,15 @@ function sektorAus(tags: Readonly<Record<string, string>>, nr: number | null): S
   const p = takte.reduce((a, t) => a + t.s, 0);
   const von = grad(f('sector_start')), bis = grad(f('sector_end'));
   const g = gruppe && gruppe !== '1' ? `(${gruppe})` : '';
-  
+
   const artMitGruppe = g && art.includes('+') ? art.replace('+', `${g}+`) : `${art}${g}`;
-  
-  
+
   const wiederkehr = art === 'F' || periode == null ? '' : ` ${Math.round(periode * 10) / 10}s`;
   const kennung = `${wechsel ? 'Al.' : ''}${artMitGruppe} ${farben.map((x) => KURZ[x]).join('')}${wiederkehr}`;
   return { farben, kennung, takte, periode: p, von: von !== null && bis !== null ? von : null, bis: von !== null && bis !== null ? bis : null };
 }
 
-
 export const FEUER_TYPEN: readonly string[] = ['light_major', 'light_minor', 'light_float', 'light_vessel'];
-
 
 export function istFeuer(t: Readonly<Record<string, string>>): boolean {
   if (t['seamark:light:character'] || t['seamark:light:1:character']) return true;
@@ -204,7 +191,6 @@ export function istFeuer(t: Readonly<Record<string, string>>): boolean {
   if (schluessel.some((k) => /^seamark:light:(\d+:)?colour$/.test(k))) return true;
   return t['man_made'] === 'lighthouse' && schluessel.some((k) => k.startsWith('seamark:'));
 }
-
 
 export function feuerAusTags(lat: number, lon: number, tags: Readonly<Record<string, string>>): Feuer | null {
   const nummern = new Set<number>();
@@ -215,14 +201,12 @@ export function feuerAusTags(lat: number, lon: number, tags: Readonly<Record<str
   return { lat, lon, sektoren, gross: tags['seamark:type'] === 'light_major' };
 }
 
-
 export function imSektor(s: Pick<Sektor, 'von' | 'bis'>, peilung: number): boolean {
   if (s.von === null || s.bis === null) return true;
   const a = ((s.von % 360) + 360) % 360, b = ((s.bis % 360) + 360) % 360, p = ((peilung % 360) + 360) % 360;
   if (Math.abs(s.bis - s.von) >= 360) return true;
   return a <= b ? p >= a && p <= b : p >= a || p <= b;
 }
-
 
 export function sichtbarerSektor(f: Feuer, boot: Punkt | null): Sektor {
   if (boot && f.sektoren.length > 1) {
@@ -233,13 +217,11 @@ export function sichtbarerSektor(f: Feuer, boot: Punkt | null): Sektor {
   return f.sektoren[0]!;
 }
 
-
 export function verdunkelt(f: Feuer, boot: Punkt | null): boolean {
   if (!boot || f.sektoren.length === 0 || f.sektoren.every((x) => x.von === null || x.bis === null)) return false;
   const peilung = bearingDeg(boot.lat, boot.lon, f.lat, f.lon);
   return !f.sektoren.some((x) => imSektor(x, peilung));
 }
-
 
 export function taktSchluessel(s: Pick<Sektor, 'takte'>): string {
   return s.takte.map((t) => `${t.h}:${Math.round(t.s * 100)}:${t.farbe}`).join('|');

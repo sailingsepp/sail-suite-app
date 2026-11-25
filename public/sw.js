@@ -1,5 +1,3 @@
-
-
 const CACHE = 'suite-start-v1';
 const ZEITLIMIT_MS = 2500;
 
@@ -35,8 +33,7 @@ self.addEventListener('fetch', (e) => {
     const cache = await caches.open(CACHE);
     const alt = await cache.match('/');
     const netz = fetch(req);
-    
-    
+
     const ablegen = (antwort) => {
       if (antwort.ok && antwort.type === 'basic') e.waitUntil(cache.put('/', antwort.clone()).catch(() => {}));
       return antwort;
@@ -44,8 +41,7 @@ self.addEventListener('fetch', (e) => {
     if (!alt) {
       return ablegen(await Promise.race([netz, new Promise((_, nein) => setTimeout(() => nein(new Error('Zeitlimit')), ZEITLIMIT_MS))]));
     }
-    
-    
+
     const antwort = await Promise.race([
       netz.catch(() => null),
       new Promise((ok) => setTimeout(() => ok(null), ZEITLIMIT_GESPEICHERT_MS)),

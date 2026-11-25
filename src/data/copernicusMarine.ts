@@ -1,8 +1,6 @@
 import { revierDeckt, kachelnFuer, fuegeKachelnZusammen, zuschneidenUm, type CopernicusGitter, type KachelRaster } from '@/core/copernicusMarine';
 import { API_BASIS } from '@/shell/api';
 
-
-
 const DB_NAME = 'leinen-los-copernicus';
 const DB_VERSION = 1;
 const STORE = 'gitter';
@@ -13,7 +11,7 @@ export interface CopernicusManifestEintrag {
   bbox: [number, number, number, number];
   generatedAt: string;
   horizonH: number;
-  
+
   kacheln?: KachelRaster;
 }
 
@@ -81,10 +79,9 @@ async function inCache(revierId: string, eintrag: CacheEintrag): Promise<void> {
       tx.onerror = () => rej(tx.error);
     });
   } catch {
-    
+
   }
 }
-
 
 export async function holeManifest(basisUrl: string): Promise<CopernicusManifest | null> {
   try {
@@ -96,16 +93,12 @@ export async function holeManifest(basisUrl: string): Promise<CopernicusManifest
   }
 }
 
-
 export async function holeGitter(basisUrl: string, revierId: string): Promise<CopernicusGitter | null> {
   const manifest = await holeManifest(basisUrl);
   const eintrag = manifest?.reviere.find((r) => r.id === revierId);
 
   if (!eintrag) {
-    
-    
-    
-    
+
     const cache = await ausCache(revierId);
     return cache?.gitter ?? null;
   }
@@ -124,9 +117,7 @@ export async function holeGitter(basisUrl: string, revierId: string): Promise<Co
   }
 }
 
-
 export const COPERNICUS_API_BASIS = API_BASIS;
-
 
 export async function holeGitterAmPunkt(
   lat: number, lon: number, basisUrl: string = COPERNICUS_API_BASIS,
@@ -138,13 +129,10 @@ export async function holeGitterAmPunkt(
   return holeGitter(basisUrl, eintrag.id);
 }
 
-
 export function _verbindungVergessen(): void {
   db = null;
   offen = null;
 }
-
-
 
 async function liesWert<T>(k: string): Promise<T | null> {
   const d = await oeffne();
@@ -171,7 +159,6 @@ async function schreibeWert(k: string, v: unknown): Promise<void> {
   } catch {  }
 }
 
-
 async function raeumeAuf(revierId: string, generatedAt: string): Promise<void> {
   const d = await oeffne();
   if (!d) return;
@@ -194,7 +181,6 @@ async function raeumeAuf(revierId: string, generatedAt: string): Promise<void> {
   } catch {  }
 }
 
-
 export async function holeGitterUm(
   punkte: readonly { lat: number; lon: number }[], randGrad: number, basisUrl: string = COPERNICUS_API_BASIS,
 ): Promise<CopernicusGitter | null> {
@@ -206,7 +192,7 @@ export async function holeGitterUm(
   const online = !!manifest;
   if (eintrag) void schreibeWert(`${eintrag.id}|manifest`, eintrag);
   else if (!online) {
-    
+
     const d = await oeffne();
     if (d) {
       const alle = await new Promise<CopernicusManifestEintrag[]>((res) => {
@@ -223,8 +209,7 @@ export async function holeGitterUm(
   const zugeschnitten = (g: CopernicusGitter | null) => (g ? zuschneidenUm(g, punkte, randGrad) : null);
   if (!eintrag) return online ? null : zugeschnitten(await holeGitterAmPunkt(mitte.lat, mitte.lon, basisUrl));
   if (!eintrag.kacheln) return zugeschnitten(await holeGitter(basisUrl, eintrag.id));
-  
-  
+
   const schritt = 0.1;
   const b = kachelnFuer(eintrag.kacheln, Math.min(...lats) - randGrad - schritt, Math.min(...lons) - randGrad - schritt,
     Math.max(...lats) + randGrad + schritt, Math.max(...lons) + randGrad + schritt);

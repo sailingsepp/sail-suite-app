@@ -5,7 +5,6 @@ import {
 import type { Box } from '@/core/landumfahrung';
 import { API_BASIS } from '@/shell/api';
 
-
 const DB_NAME = 'sail-suite-karte';
 const STORE = 'kacheln';
 const INDEX_SCHLUESSEL = '_index';
@@ -66,7 +65,6 @@ function gueltig(x: unknown): x is KartenIndex {
   return !!i && typeof i.erstellt === 'string' && Array.isArray(i.gebiete) && Array.isArray(i.kacheln) && typeof i.faktor === 'number';
 }
 
-
 export async function kartenIndex(netz: boolean, basis = API_BASIS): Promise<KartenIndex | null> {
   if (index && (!netz || Date.now() - index.geholt < INDEX_NEU_MS)) return index.wert;
   const abgelegt = index?.wert ?? await lies<KartenIndex>(INDEX_SCHLUESSEL);
@@ -87,7 +85,6 @@ export async function kartenIndex(netz: boolean, basis = API_BASIS): Promise<Kar
   return abgelegt;
 }
 
-
 export function kartenIndexJetzt(): KartenIndex | null {
   return index?.wert ?? null;
 }
@@ -95,7 +92,6 @@ export function kartenIndexJetzt(): KartenIndex | null {
 function zuRingen(k: LandKachel): LandRinge {
   return { fein: k.fein.map((r) => dekodiereRing(r, k.faktor)), grob: k.grob.map((r) => dekodiereRing(r, k.faktor)) };
 }
-
 
 export function istLandJetzt(lat: number, lon: number): boolean | null {
   const idx = index?.wert;
@@ -106,11 +102,9 @@ export function istLandJetzt(lat: number, lon: number): boolean | null {
   return r ? anLand(r.fein, lat, lon) : null;
 }
 
-
 export function landRingeJetzt(name: string): LandRinge | null {
   return imSpeicher.get(name)?.ringe ?? null;
 }
-
 
 export function holeLandRinge(name: string, idx: KartenIndex, netz: boolean, basis = API_BASIS): Promise<LandRinge | null> {
   const m = imSpeicher.get(name);
@@ -137,7 +131,6 @@ export function holeLandRinge(name: string, idx: KartenIndex, netz: boolean, bas
   return lauf;
 }
 
-
 export function ausschnittStand(b: Box): 'bereit' | 'fehlt' | 'aussen' {
   const zellen = gedeckteZellen(b);
   if (!zellen.length) return 'aussen';
@@ -145,14 +138,12 @@ export function ausschnittStand(b: Box): 'bereit' | 'fehlt' | 'aussen' {
   return zellen.every((k) => !mitLand.has(k.name) || imSpeicher.has(k.name)) ? 'bereit' : 'fehlt';
 }
 
-
 export function bereiteZellen(b: Box): ReturnType<typeof gedeckteZellen> {
   const idx = index?.wert;
   if (!idx) return [];
   const mitLand = new Set(idx.kacheln);
   return gedeckteZellen(b).filter((k) => !mitLand.has(k.name) || imSpeicher.has(k.name));
 }
-
 
 export function gedeckteZellen(b: Box): { i: number; j: number; name: string; s: number; w: number; n: number; o: number }[] {
   const idx = index?.wert;
@@ -163,7 +154,6 @@ export function gedeckteZellen(b: Box): { i: number; j: number; name: string; s:
     .map((k) => ({ ...k, s: k.i * g, w: k.j * g, n: (k.i + 1) * g, o: (k.j + 1) * g }));
 }
 
-
 export async function ladeLandImGebiet(b: Box, netz: boolean, basis = API_BASIS): Promise<boolean> {
   const idx = await kartenIndex(netz, basis);
   if (!idx) return false;
@@ -173,11 +163,9 @@ export async function ladeLandImGebiet(b: Box, netz: boolean, basis = API_BASIS)
   return geholt.every(Boolean);
 }
 
-
 export function stufeFuerZoom(z: number): 'fein' | 'grob' {
   return z >= FEIN_AB_ZOOM ? 'fein' : 'grob';
 }
-
 
 export function _vergessen(): void {
   db = null; offen = null; index = null; imSpeicher.clear(); unterwegs.clear();

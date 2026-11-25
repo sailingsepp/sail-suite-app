@@ -11,8 +11,6 @@ export function distNM(lat1: number, lon1: number, lat2: number, lon2: number): 
   return R_NM * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-
-
 const mercatorBreite = (φ: number): number => Math.log(Math.tan(Math.PI / 4 + φ / 2));
 
 function lonDifferenz(lon1: number, lon2: number): number {
@@ -21,12 +19,10 @@ function lonDifferenz(lon1: number, lon2: number): number {
   return Δλ;
 }
 
-
 export function bearingDeg(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const Δψ = mercatorBreite(toRad(lat2)) - mercatorBreite(toRad(lat1));
   return (toDeg(Math.atan2(lonDifferenz(lon1, lon2), Δψ)) + 360) % 360;
 }
-
 
 export function distLoxNM(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const φ1 = toRad(lat1), φ2 = toRad(lat2), Δφ = φ2 - φ1;
@@ -36,12 +32,11 @@ export function distLoxNM(lat1: number, lon1: number, lat2: number, lon2: number
   return Math.sqrt(Δφ * Δφ + q * q * Δλ * Δλ) * R_NM;
 }
 
-
 export function destPoint(lat: number, lon: number, bearing: number, dNM: number): [number, number] {
   const δ = dNM / R_NM, θ = toRad(bearing);
   const φ1 = toRad(lat), λ1 = toRad(lon);
   let φ2 = φ1 + δ * Math.cos(θ);
-  
+
   if (Math.abs(φ2) > Math.PI / 2) φ2 = φ2 > 0 ? Math.PI - φ2 : -Math.PI - φ2;
   const Δψ = mercatorBreite(φ2) - mercatorBreite(φ1);
   const q = Math.abs(Δψ) > 1e-12 ? (φ2 - φ1) / Δψ : Math.cos(φ1);
@@ -55,8 +50,7 @@ export function sampleRoute(waypoints: Punkt[], stepNM: number): StreckenPunkt[]
   let cum = 0;
   for (let i = 0; i < waypoints.length - 1; i++) {
     const a = waypoints[i]!, b = waypoints[i + 1]!;
-    
-    
+
     const segDist = distLoxNM(a.lat, a.lon, b.lat, b.lon);
     const brg = bearingDeg(a.lat, a.lon, b.lat, b.lon);
     if (points.length === 1 && points[0]!.course === null) points[0]!.course = brg;
@@ -69,15 +63,12 @@ export function sampleRoute(waypoints: Punkt[], stepNM: number): StreckenPunkt[]
     cum += segDist;
     points.push({ lat: b.lat, lon: b.lon, cum, course: brg });
   }
-  
-  
-  
+
   for (let i = 0; i < points.length - 1; i++) {
     points[i]!.course = bearingDeg(points[i]!.lat, points[i]!.lon, points[i + 1]!.lat, points[i + 1]!.lon);
   }
   return points;
 }
-
 
 export function uv(bearing: number): [number, number] {
   const r = toRad(bearing);
@@ -94,11 +85,6 @@ export function relAngle(windDir: number, course: number): number {
   return diff;
 }
 
-
-
-
-
-
 function orientierung(p: Punkt, q: Punkt, r: Punkt): number {
   const wert = (q.lon - p.lon) * (r.lat - p.lat) - (q.lat - p.lat) * (r.lon - p.lon);
   if (Math.abs(wert) < 1e-12) return 0;
@@ -110,7 +96,6 @@ function aufSegment(p: Punkt, q: Punkt, r: Punkt): boolean {
     && Math.min(p.lat, q.lat) <= r.lat && r.lat <= Math.max(p.lat, q.lat);
 }
 
-
 export function segmenteSchneidenSich(a1: Punkt, a2: Punkt, b1: Punkt, b2: Punkt): boolean {
   const o1 = orientierung(a1, a2, b1), o2 = orientierung(a1, a2, b2);
   const o3 = orientierung(b1, b2, a1), o4 = orientierung(b1, b2, a2);
@@ -121,7 +106,6 @@ export function segmenteSchneidenSich(a1: Punkt, a2: Punkt, b1: Punkt, b2: Punkt
   if (o4 === 0 && aufSegment(b1, b2, a2)) return true;
   return false;
 }
-
 
 export function kreuzungsZahl(von: Punkt, nach: Punkt, kuestenlinien: [Punkt, Punkt][]): number {
   return kuestenlinien.reduce((n, [c1, c2]) => n + (segmenteSchneidenSich(von, nach, c1, c2) ? 1 : 0), 0);
@@ -135,7 +119,6 @@ function punktZuSegmentAbstand(p: Punkt, a: Punkt, b: Punkt): number {
   return Math.hypot(p.lon - (a.lon + t * dx), p.lat - (a.lat + t * dy));
 }
 
-
 export function istLandSeite(p: Punkt, kuestenlinien: [Punkt, Punkt][], k = 5): boolean | null {
   if (kuestenlinien.length === 0) return null;
   const naechste = kuestenlinien
@@ -145,7 +128,6 @@ export function istLandSeite(p: Punkt, kuestenlinien: [Punkt, Punkt][], k = 5): 
   const landStimmen = naechste.filter(({ seg }) => orientierung(seg[0], seg[1], p) > 0).length;
   return landStimmen > naechste.length / 2;
 }
-
 
 export function naechsterWasserpunkt(
   landPunkt: Punkt, kuestenlinien: [Punkt, Punkt][], maxRadiusNM = 1.5,

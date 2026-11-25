@@ -2,56 +2,48 @@ import type { OsmRoh } from './umgebung';
 import type { Punkt } from './types';
 import { istFeuer } from './leuchtfeuer';
 
-
-
-
 export const SEEZEICHEN_TYPEN: readonly string[] = [
   'buoy_lateral', 'buoy_cardinal', 'buoy_isolated_danger', 'buoy_safe_water', 'buoy_special_purpose',
   'beacon_lateral', 'beacon_cardinal', 'beacon_isolated_danger', 'beacon_safe_water', 'beacon_special_purpose',
 ];
 
-
 export const OSMIUM_FILTER: readonly string[] = [
   'nwr/leisure=marina',
   'nwr/seamark:type=harbour,anchorage,small_craft_facility,mooring',
-  
+
   'nw/waterway=fuel',
   'nwr/natural=bay',
-  
-  
+
   'nw/seamark:light:character',
   'nw/seamark:light:1:character',
-  
+
   'nw/seamark:type=light_major,light_minor,light_float,light_vessel',
   'nw/man_made=lighthouse',
   'nw/seamark:light:colour',
   'nw/seamark:light:1:colour',
-  
+
   `nw/seamark:type=${SEEZEICHEN_TYPEN.join(',')}`,
   'n/place=city,town,village,hamlet',
   'wr/place=island,islet',
-  
+
   'nw/man_made=pier,breakwater,groyne,quay',
   'n/natural=peak',
-  
+
   'wr/landuse=residential,commercial,retail,industrial',
   'w/highway=motorway,trunk,primary,secondary,tertiary',
-  
+
   'nw/natural=cape',
   'nwr/aeroway=aerodrome',
   'wr/aeroway=runway',
-  
-  
+
   'n/generator:source=wind',
   'n/seamark:landmark:category',
-  
-  
+
   'w/route=ferry',
   'nwr/seamark:type=separation_zone,separation_line,separation_boundary,separation_lane,separation_roundabout,separation_crossing,precautionary_area',
 ];
 
 type Tags = Readonly<Record<string, string>>;
-
 
 export function istSeeobjekt(t: Tags): boolean {
   const s = t['seamark:type'];
@@ -63,7 +55,6 @@ export function istSeeobjekt(t: Tags): boolean {
 
 const SIEDLUNG = new Set(['city', 'town', 'village', 'hamlet']);
 const INSEL = new Set(['island', 'islet']);
-
 
 type Pos = [number, number];
 export interface Geometrie {
@@ -81,13 +72,12 @@ function allePunkte(g: Geometrie): Pos[] {
   return out;
 }
 
-
 export interface Inselflaeche { name: string; place: 'island' | 'islet'; polygone: Pos[][][] }
 
 function polygoneAus(g: Geometrie): Pos[][][] {
   if (g.type === 'Polygon') return [g.coordinates as Pos[][]];
   if (g.type === 'MultiPolygon') return g.coordinates as Pos[][][];
-  
+
   if (g.type === 'LineString') {
     const r = g.coordinates as Pos[];
     const a = r[0], b = r[r.length - 1];
@@ -102,7 +92,6 @@ export interface GeoFeature {
   properties: Record<string, unknown> | null;
 }
 
-
 export function ausFeature(f: GeoFeature): { element: OsmRoh | null; insel: Inselflaeche | null } {
   const tags: Record<string, string> = {};
   for (const [k, v] of Object.entries(f.properties ?? {})) {
@@ -110,9 +99,7 @@ export function ausFeature(f: GeoFeature): { element: OsmRoh | null; insel: Inse
   }
   if (!f.geometry) return { element: null, insel: null };
   const id = String(f.id ?? '');
-  
-  
-  
+
   const roh = Number(id.slice(1));
   const flaeche = id[0] === 'a' && Number.isFinite(roh);
   const art = id[0] === 'w' || (flaeche && roh % 2 === 0) ? 'way' : id[0] === 'r' || flaeche ? 'relation' : 'node';
@@ -137,14 +124,12 @@ export function ausFeature(f: GeoFeature): { element: OsmRoh | null; insel: Inse
     if (lat < s) s = lat;
     if (lat > n) n = lat;
   }
-  
-  
+
   return {
     element: { type: art, ...idTeil, center: { lat: (s + n) / 2, lon: (w + o) / 2 }, bounds: { minlat: s, minlon: w, maxlat: n, maxlon: o }, tags },
     insel: null,
   };
 }
-
 
 export function istOrtschaft(el: OsmRoh): boolean {
   return el.type === 'node' && el.tags?.['place'] != null && SIEDLUNG.has(el.tags['place']);
@@ -159,12 +144,10 @@ function imRing(lon: number, lat: number, ring: readonly Pos[]): boolean {
   return drin;
 }
 
-
 export function punktInFlaeche(p: Punkt, polygone: readonly Pos[][][]): boolean {
   return polygone.some(([aussen, ...loecher]) =>
     !!aussen && imRing(p.lon, p.lat, aussen) && !loecher.some((l) => imRing(p.lon, p.lat, l)));
 }
-
 
 function abstandZurStreckeM(p: Punkt, a: Pos, b: Pos): number {
   const kx = 111_320 * Math.cos(p.lat * Math.PI / 180), ky = 110_540;
@@ -175,7 +158,6 @@ function abstandZurStreckeM(p: Punkt, a: Pos, b: Pos): number {
   const t = l2 === 0 ? 0 : Math.max(0, Math.min(1, -(ax * dx + ay * dy) / l2));
   return Math.hypot(ax + t * dx, ay + t * dy);
 }
-
 
 export function inselAmUfer(punkte: readonly Punkt[], flaechen: readonly Inselflaeche[], maxM = 3704): (string | null)[] {
   const gradLat = maxM / 110_540;
@@ -210,9 +192,8 @@ export function inselAmUfer(punkte: readonly Punkt[], flaechen: readonly Inselfl
   });
 }
 
-
 export function inselnFuer(punkte: readonly Punkt[], flaechen: readonly Inselflaeche[]): string[][] {
-  
+
   const mitBox = flaechen.map((f) => {
     let w = Infinity, s = Infinity, o = -Infinity, n = -Infinity;
     for (const poly of f.polygone) for (const [lon, lat] of poly[0] ?? []) {

@@ -1,7 +1,6 @@
 import { vereinfache } from './kuestenKacheln';
 import type { Box } from './landumfahrung';
 
-
 export const HOHEIT_KACHEL_GRAD = 0.5;
 export const HOHEIT_FAKTOR = 100_000;
 
@@ -14,9 +13,9 @@ export interface HoheitIndex {
   erstellt: string;
   kachelGrad: number;
   faktor: number;
-  
+
   gebiete: [number, number, number, number][];
-  
+
   kacheln: string[];
 }
 
@@ -38,7 +37,6 @@ export function hoheitKachelnFuerBox(b: Box): { i: number; j: number; name: stri
 export function hoheitGedeckt(index: Pick<HoheitIndex, 'gebiete'>, lat: number, lon: number): boolean {
   return index.gebiete.some(([w, s, o, n]) => lon >= w && lon < o && lat >= s && lat < n);
 }
-
 
 export function schneideRing(ring: readonly number[], b: Box): number[] {
   let pkt: [number, number][] = [];
@@ -74,7 +72,6 @@ function schnitt(a: [number, number], c: [number, number], achse: 0 | 1, wert: n
   return p;
 }
 
-
 export function ablegbarerRing(ring: readonly number[]): number[] {
   const v = vereinfache(Float64Array.from(ring), HOHEIT_TOLERANZ_M);
   if (v.length < 8) return [];
@@ -90,7 +87,6 @@ function imRing(lat: number, lon: number, r: readonly number[], f: number): bool
   return innen;
 }
 
-
 export function zoneAmPunkt(k: HoheitKachel, lat: number, lon: number, faktor = HOHEIT_FAKTOR): HoheitZone | null {
   for (const z of k.zonen) {
     let innen = false;
@@ -99,7 +95,6 @@ export function zoneAmPunkt(k: HoheitKachel, lat: number, lon: number, faktor = 
   }
   return null;
 }
-
 
 export function abstandZumRandSm(k: HoheitKachel, lat: number, lon: number, faktor = HOHEIT_FAKTOR): number {
   const c = Math.cos((lat * Math.PI) / 180);

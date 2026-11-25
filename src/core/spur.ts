@@ -1,134 +1,124 @@
 import { distNM, bearingDeg } from './geo';
 
-
-
-
 export interface Fix {
-  
+
   t: number;
   lat: number;
   lon: number;
-  
+
   acc: number;
-  
+
   speed?: number | null;
-  
+
   heading?: number | null;
-  
+
   quelle?: 'geraet' | 'import' | 'wachwechsel';
 }
 
-
 export interface SpurPunkt {
-  
+
   t: number;
   lat: number;
   lon: number;
-  
+
   acc: number;
-  
+
   fixe: number;
-  
+
   sog: number;
-  
+
   cog: number | null;
-  
+
   nm: number;
 }
-
 
 export interface Luecke {
   von: number;
   bis: number;
-  
+
   dauer: number;
-  
+
   sehneNM: number;
 }
-
 
 export interface Pause {
   von: number;
   bis: number;
-  
+
   dauer: number;
-  
+
   lat: number;
   lon: number;
 }
-
 
 export interface ManuellePause {
   von: number;
   bis: number;
 }
 
-
 export type EreignisArt = 'kurswechsel' | 'fahrtwechsel' | 'standort' | 'aufschiesser';
-
 
 export interface Ereignis {
   art: EreignisArt;
   t: number;
   lat: number;
   lon: number;
-  
+
   von: number;
-  
+
   nach: number;
-  
+
   windAus?: number;
 }
 
 export interface SpurAuswertung {
-  
+
   punkte: SpurPunkt[];
   luecken: Luecke[];
-  
+
   pausen: Pause[];
-  
+
   laufAnfaenge: number[];
   ereignisse: Ereignis[];
-  
+
   streckeNM: number;
-  
+
   dauerS: number;
-  
+
   fahrzeitS: number;
-  
+
   beginnMs: number | null;
   endeMs: number | null;
-  
+
   maxSog: number;
-  
+
   verworfen: number;
 }
 
 export interface SpurOptionen {
-  
+
   genauigkeitMaxM?: number;
-  
+
   lueckeAbS?: number;
-  
+
   fensterS?: number;
-  
+
   schrittMinM?: number;
-  
+
   kursAbKn?: number;
-  
+
   kurswechselAbGrad?: number;
-  
+
   fahrtwechselAbKn?: number;
-  
+
   wechselHaltS?: number;
-  
+
   pauseUnterKn?: number;
-  
+
   pauseAbS?: number;
-  
+
   standortAlleS?: number;
 }
-
 
 export const SPUR_VORGABEN: Required<SpurOptionen> = {
   genauigkeitMaxM: 50,
@@ -144,9 +134,7 @@ export const SPUR_VORGABEN: Required<SpurOptionen> = {
   standortAlleS: 600,
 };
 
-
 const UNPLAUSIBEL_KN = 40;
-
 
 function rauschSchwelle(a: Fenster, b: Fenster, untergrenzeM: number): number {
   const restA = (Number.isFinite(a.acc) ? a.acc : 0) / Math.sqrt(Math.max(1, a.fixe));
@@ -156,12 +144,10 @@ function rauschSchwelle(a: Fenster, b: Fenster, untergrenzeM: number): number {
 
 const M_PRO_NM = 1852;
 
-
 export function kursDifferenz(a: number, b: number): number {
   const d = Math.abs(((a - b) % 360) + 360) % 360;
   return d > 180 ? 360 - d : d;
 }
-
 
 export function filtereFixes(fixes: Fix[], opt: SpurOptionen = {}): { behalten: Fix[]; verworfen: number } {
   const o = { ...SPUR_VORGABEN, ...opt };
@@ -181,14 +167,13 @@ export function filtereFixes(fixes: Fix[], opt: SpurOptionen = {}): { behalten: 
     const vor = behalten[behalten.length - 1];
     if (vor) {
       const dtS = (f.t - vor.t) / 1000;
-      
+
       if (dtS <= 0) {
         verworfen++;
         continue;
       }
       const kn = distNM(vor.lat, vor.lon, f.lat, f.lon) / (dtS / 3600);
-      
-      
+
       if (dtS < o.lueckeAbS && kn > UNPLAUSIBEL_KN) {
         verworfen++;
         continue;
@@ -200,18 +185,17 @@ export function filtereFixes(fixes: Fix[], opt: SpurOptionen = {}): { behalten: 
 }
 
 interface Fenster {
-  
+
   t: number;
-  
+
   von: number;
-  
+
   bis: number;
   lat: number;
   lon: number;
   acc: number;
   fixe: number;
 }
-
 
 function verdichte(fixes: Fix[], o: Required<SpurOptionen>): Fenster[] {
   const raus: Fenster[] = [];
@@ -244,7 +228,6 @@ function verdichte(fixes: Fix[], o: Required<SpurOptionen>): Fenster[] {
   return raus;
 }
 
-
 function findeEreignisse(
   punkte: SpurPunkt[], o: Required<SpurOptionen>, windAus?: (t: number) => number | null,
 ): Ereignis[] {
@@ -253,20 +236,13 @@ function findeEreignisse(
   let fahrtBezug: number | null = null;
   let kursSeit: { t: number; wert: number } | null = null;
   let fahrtSeit: { t: number; wert: number } | null = null;
-  
-  
-  
+
   let letzterEintragT = punkte[0]?.t ?? 0;
 
-  
-  
-  
-  
-  
   const fertig = punkte.slice(1, Math.max(1, punkte.length - 1));
   for (let i = 0; i < fertig.length; i++) {
     const p = fertig[i]!;
-    
+
     if (p.cog === null) {
       kursSeit = null;
     } else if (kursBezug === null) {
@@ -284,7 +260,6 @@ function findeEreignisse(
       kursSeit = null;
     }
 
-    
     if (fahrtBezug === null) {
       fahrtBezug = p.sog;
     } else if (Math.abs(p.sog - fahrtBezug) >= o.fahrtwechselAbKn) {
@@ -300,13 +275,8 @@ function findeEreignisse(
       fahrtSeit = null;
     }
 
-    
-    
-    
-    
     if ((p.t - letzterEintragT) / 1000 >= o.standortAlleS && p.cog !== null && p.sog >= o.kursAbKn) {
-      
-      
+
       const mittel = mittelUeber(fertig, p.t - 120_000, i + 1);
       if (mittel) {
         raus.push({ art: 'standort', t: p.t, lat: p.lat, lon: p.lon, von: mittel.kurs, nach: mittel.fahrt });
@@ -317,7 +287,6 @@ function findeEreignisse(
   raus.push(...findeAufschiesser(punkte.slice(0, Math.max(0, punkte.length - 1)), windAus));
   return raus.sort((a, b) => a.t - b.t);
 }
-
 
 function mittelUeber(punkte: readonly SpurPunkt[], ab: number, bis = punkte.length, von = 0): { kurs: number; fahrt: number } | null {
   let x = 0, y = 0, summe = 0, n = 0;
@@ -333,7 +302,6 @@ function mittelUeber(punkte: readonly SpurPunkt[], ab: number, bis = punkte.leng
   return { kurs: (Math.atan2(x, y) * 180 / Math.PI + 360) % 360, fahrt: summe / n };
 }
 
-
 export const AUFSCHIESSER = {
   vorlaufS: 120, vorlaufMinKn: 2.5, langsamKn: 2, langsamAnteil: 0.5,
   wiederKn: 2, hoechstensS: 600, windToleranzGrad: 50, ohneWindMinGrad: 60,
@@ -343,10 +311,7 @@ export const AUFSCHIESSER = {
 function findeAufschiesser(punkte: SpurPunkt[], windAus?: (t: number) => number | null): Ereignis[] {
   const A = AUFSCHIESSER;
   const raus: Ereignis[] = [];
-  
-  
-  
-  
+
   let lo = 0;
   for (let i = 1; i < punkte.length; i++) {
     const p = punkte[i]!;
@@ -364,15 +329,11 @@ function findeAufschiesser(punkte: SpurPunkt[], windAus?: (t: number) => number 
     if (!vorher) continue;
     if (!(p.sog < A.langsamKn && p.sog < vorher.fahrt * A.langsamAnteil)) continue;
 
-    
     let j = i + 1;
     while (j < punkte.length && punkte[j]!.sog < A.wiederKn) j++;
-    if (j >= punkte.length) break;                     
+    if (j >= punkte.length) break;
     if ((punkte[j]!.t - p.t) / 1000 > A.hoechstensS) { i = j; continue; }
 
-    
-    
-    
     let dreh: SpurPunkt | null = null;
     for (let k = Math.max(0, i - 2); k < j; k++) {
       const q = punkte[k]!;
@@ -382,8 +343,7 @@ function findeAufschiesser(punkte: SpurPunkt[], windAus?: (t: number) => number 
     if (!dreh) { i = j; continue; }
     const drehung = kursDifferenz(dreh.cog!, vorher.kurs);
     if (drehung < A.minDrehGrad) { i = j; continue; }
-    
-    
+
     const a0 = punkte[i - 1]!, a1 = punkte[j]!;
     const dtS = (a1.t - a0.t) / 1000;
     const mittelKn = dtS > 0 ? distNM(a0.lat, a0.lon, a1.lat, a1.lon) / (dtS / 3600) : Infinity;
@@ -401,7 +361,6 @@ function findeAufschiesser(punkte: SpurPunkt[], windAus?: (t: number) => number 
   }
   return raus;
 }
-
 
 function findePausen(punkte: SpurPunkt[], luecken: Luecke[], o: Required<SpurOptionen>): Pause[] {
   const raus: Pause[] = [];
@@ -434,10 +393,7 @@ function findePausen(punkte: SpurPunkt[], luecken: Luecke[], o: Required<SpurOpt
   return raus;
 }
 
-
-
 const LUECKE_FAKTOR = 3;
-
 
 function oertlicherTakt(abstaendeS: number[]): number[] {
   const UMKREIS = 5;
@@ -451,11 +407,9 @@ function oertlicherTakt(abstaendeS: number[]): number[] {
   });
 }
 
-
 function ueberschneidenSich(vonA: number, bisA: number, vonB: number, bisB: number): boolean {
   return vonA < bisB && vonB < bisA;
 }
-
 
 export function vereinigePausen(pausen: Pause[]): Pause[] {
   const sortiert = [...pausen].sort((a, b) => a.von - b.von);
@@ -473,12 +427,9 @@ export function vereinigePausen(pausen: Pause[]): Pause[] {
   return raus;
 }
 
-
 export const SPITZE_AB_KN = 12;
 
-
 export const MAX_SOG_FENSTER = 5;
-
 
 export function entferneSpitzen<T extends { t: number; lat: number; lon: number }>(
   punkte: T[], lueckeAbS = SPUR_VORGABEN.lueckeAbS,
@@ -507,7 +458,6 @@ export function entferneSpitzen<T extends { t: number; lat: number; lon: number 
   return { behalten, entfernt };
 }
 
-
 export function gehalteneHoechstfahrt(sog: number[], fenster = MAX_SOG_FENSTER): number {
   if (!sog.length) return 0;
   const median = (werte: number[]): number => {
@@ -523,26 +473,24 @@ export function gehalteneHoechstfahrt(sog: number[], fenster = MAX_SOG_FENSTER):
 
 export function werteSpurAus(
   fixes: Fix[], opt: SpurOptionen = {}, manuellePausen: ManuellePause[] = [],
-  
+
   windAus?: (t: number) => number | null,
 ): SpurAuswertung {
   const o = { ...SPUR_VORGABEN, ...opt };
   const { behalten, verworfen } = filtereFixes(fixes, o);
-  
-  
+
   const { behalten: fenster, entfernt: spitzen } = entferneSpitzen(verdichte(behalten, o), o.lueckeAbS);
 
   const punkte: SpurPunkt[] = [];
   const luecken: Luecke[] = [];
-  
+
   const gesetztePausen: Pause[] = [];
   const laufAnfaenge: number[] = [];
   let streckeNM = 0;
   let dauerS = 0;
-  
+
   let laufAnfang = fenster[0]?.von ?? 0;
 
-  
   const abstaendeS = fenster.map((f, i) =>
     i === 0 ? 0 : (f.von - fenster[i - 1]!.bis) / 1000);
   const takte = oertlicherTakt(abstaendeS.slice(1));
@@ -554,21 +502,14 @@ export function werteSpurAus(
     let cog: number | null = null;
 
     if (vor) {
-      
-      
-      
-      
+
       const pauseS = (f.von - vor.bis) / 1000;
       const dtS = (f.t - vor.t) / 1000;
       const nm = distNM(vor.lat, vor.lon, f.lat, f.lon);
       const lueckeSchwelleS = Math.max(o.lueckeAbS, LUECKE_FAKTOR * (takte[i - 1] ?? 0));
       if (pauseS >= lueckeSchwelleS) {
         laufAnfaenge.push(f.t);
-        
-        
-        
-        
-        
+
         if (manuellePausen.some((m) => ueberschneidenSich(vor.bis, f.von, m.von, m.bis))) {
           gesetztePausen.push({
             von: vor.bis, bis: f.von, dauer: pauseS,
@@ -580,9 +521,7 @@ export function werteSpurAus(
           laufAnfang = f.von;
         }
       } else if (dtS > 0) {
-        
-        
-        
+
         if (nm * M_PRO_NM >= rauschSchwelle(vor, f, o.schrittMinM)) {
           streckeNM += nm;
           sog = nm / (dtS / 3600);
@@ -606,24 +545,18 @@ export function werteSpurAus(
     ereignisse: findeEreignisse(punkte, o, windAus),
     streckeNM, dauerS,
     beginnMs: fenster[0]?.von ?? null, endeMs: letztes?.bis ?? null,
-    
-    
+
     fahrzeitS: Math.max(0, dauerS - pausenS),
     maxSog: gehalteneHoechstfahrt(punkte.map((p) => p.sog)),
     verworfen: verworfen + spitzen,
   };
 }
 
-
-
-
 export const ABLEGEN_ABSTAND_M = 50;
 
 export const ABLEGEN_FAHRT_MS = 1;
 const ABLEGEN_FAHRT_MIN_ABSTAND_M = 20;
 const ABLEGEN_FAHRT_MAX_ACC_M = 30;
-
-
 
 export function dauerAb(a: SpurAuswertung, abMs: number): number {
   if (a.beginnMs === null || a.endeMs === null || abMs <= a.beginnMs) return a.dauerS;
@@ -641,7 +574,6 @@ export function hatAbgelegt(bezug: { lat: number; lon: number } | null, fix: Fix
     && acc <= ABLEGEN_FAHRT_MAX_ACC_M && m >= ABLEGEN_FAHRT_MIN_ABSTAND_M;
 }
 
-
 export function ankunftsPause(pausen: Pause[], endeT: number, stoppT: number | null): Pause | null {
   const TOLERANZ_MS = 120_000;
   if (stoppT != null) {
@@ -651,7 +583,6 @@ export function ankunftsPause(pausen: Pause[], endeT: number, stoppT: number | n
   const letzte = pausen[pausen.length - 1];
   return letzte && letzte.bis >= endeT - TOLERANZ_MS ? letzte : null;
 }
-
 
 export function stillstandAmEndeS(punkte: readonly SpurPunkt[], unterKn = SPUR_VORGABEN.pauseUnterKn): number {
   const letzter = punkte[punkte.length - 1];
@@ -664,14 +595,10 @@ export function stillstandAmEndeS(punkte: readonly SpurPunkt[], unterKn = SPUR_V
   return (letzter.t - beginn) / 1000;
 }
 
-
 export const GLEICHER_ORT_NM = 0.1;
 export function lueckenAmSelbenOrt(luecken: readonly Luecke[], maxNM = GLEICHER_ORT_NM): number {
   return luecken.filter((l) => l.sehneNM < maxNM).reduce((s, l) => s + l.dauer, 0);
 }
-
-
-
 
 export const LIVE_FENSTER_S = 30;
 
@@ -689,10 +616,9 @@ export const LIVE_SD_MAX_KN = 1;
 
 const LIVE_GERAET_SPIELRAUM_MS = 1;
 
-
 export function aktuelleFahrt(
   fixes: readonly Fix[],
-  
+
   jetzt?: number,
   opt: SpurOptionen = {},
 ): { sog: number; cog: number | null } {
@@ -702,14 +628,7 @@ export function aktuelleFahrt(
   for (const f of fixes) if (Number.isFinite(f.t) && f.t > ende) ende = f.t;
   if (!Number.isFinite(ende)) return keine;
   if (jetzt !== undefined && (jetzt - ende) / 1000 >= o.lueckeAbS) return keine;
-  
-  
-  
-  
-  
-  
-  
-  
+
   const sortiert = fixes
     .filter((f) => Number.isFinite(f.lat) && Number.isFinite(f.lon) && Number.isFinite(f.t)
       && f.t >= ende - LIVE_FENSTER_S * 1000 && !(Number.isFinite(f.acc) && f.acc > o.genauigkeitMaxM))
@@ -724,8 +643,7 @@ export function aktuelleFahrt(
         const dtS = (nach.t - f.t) / 1000;
         if (dtS <= 0) continue;
         if (dtS >= o.lueckeAbS) break;
-        
-        
+
         const toleranzM = 4 * SIGMA_JE_ACHSE * Math.hypot(accOder(f), accOder(nach));
         if (distNM(f.lat, f.lon, nach.lat, nach.lon) * M_PRO_NM - toleranzM > UNPLAUSIBEL_KN * M_PRO_NM / 3600 * dtS) break;
       }
@@ -734,9 +652,7 @@ export function aktuelleFahrt(
     return k.reverse();
   };
   let teilKette = kette(0);
-  
-  
-  
+
   if (teilKette.length <= 2) {
     let n = 0;
     while (n < sortiert.length && sortiert[n]!.t >= teilKette[0]!.t) n++;
@@ -744,8 +660,6 @@ export function aktuelleFahrt(
     if (davor.length >= LIVE_MIN_FIXE) teilKette = davor;
   }
 
-  
-  
   for (const fensterS of LIVE_FENSTER_STUFEN_S) {
     const teil = teilKette.filter((f) => f.t >= ende - fensterS * 1000);
     if (teil.length < LIVE_MIN_FIXE || (ende - teil[0]!.t) / 1000 < LIVE_MIN_S) return keine;
@@ -761,7 +675,6 @@ export function aktuelleFahrt(
   }
   return keine;
 }
-
 
 function ausgleichsgerade(
   teil: readonly Fix[],
@@ -799,7 +712,6 @@ function ausgleichsgerade(
   return { vx, vy, sd: Math.sqrt(1 / stt), streuung: freiheit > 0 ? chi / freiheit : 0 };
 }
 
-
 function geraetPasst(teil: readonly Fix[], vMs: number): boolean {
   const gemeldet = teil.map((f) => f.speed).filter((v): v is number => v != null && Number.isFinite(v) && v >= 0)
     .sort((a, b) => a - b);
@@ -808,9 +720,7 @@ function geraetPasst(teil: readonly Fix[], vMs: number): boolean {
   return vMs <= 2 * median + LIVE_GERAET_SPIELRAUM_MS;
 }
 
-
 export const SCHNITT_MIN_S = 300;
-
 
 export function schnittSeit(
   fixe: readonly Fix[], seitMs: number, manuellePausen: ManuellePause[] = [],

@@ -1,4 +1,3 @@
-
 import type { ToernFunktion } from '@/data/toernApi';
 import { istUeberstellung } from '@/core/ueberstellung';
 
@@ -12,7 +11,7 @@ export interface ToernFormularStand {
   bis: string;
   start: unknown;
   ende: unknown;
-  
+
   meineFunktion?: ToernFunktion;
   skipperVorname?: string;
 }
@@ -22,12 +21,11 @@ export function fehlendeAngaben(f: ToernFormularStand): FehlendeAngabe[] {
   if (!f.name.trim()) fehlt.push('name');
   if (f.start == null) fehlt.push('start');
   if (!f.von) fehlt.push('von');
-  
+
   if (f.von && f.bis && f.bis <= f.von) fehlt.push('zeitraum');
   if (f.meineFunktion && f.meineFunktion !== 'skipper' && !f.skipperVorname?.trim()) fehlt.push('skipper');
   return fehlt;
 }
-
 
 export function nimmtLetztenSkipper(
   crew: readonly { id: string; funktion: ToernFunktion }[], mitgliedId: string, neueFunktion: ToernFunktion,

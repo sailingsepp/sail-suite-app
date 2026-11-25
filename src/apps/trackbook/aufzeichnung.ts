@@ -21,10 +21,7 @@ import {
 import { FEHLSTART_TROPEA, bezugVor, fernImFenster, imFenster, istFern, pausenZusammen, type Fenster } from '@/core/fehlstart';
 import { SCHLUESSEL } from '@/shell/speicherschluessel';
 
-
-
 export type WakeZustand = 'aktiv' | 'fehlt' | 'nicht-unterstuetzt';
-
 
 export type Betriebsart = 'gestoppt' | 'laeuft' | 'pausiert' | 'pausiert-anker';
 
@@ -32,36 +29,36 @@ export interface Zustand {
   laeuft: boolean;
   betriebsart: Betriebsart;
   fahrt: Fahrt | null;
-  
+
   wartetAufFix: boolean;
-  
+
   fortgesetzt: boolean;
   sog: number;
   cog: number | null;
   streckeNM: number;
-  
+
   dauerS: number;
-  
+
   fahrzeitS: number;
-  
+
   abgelegt: boolean;
   fixe: number;
   verworfen: number;
   luecken: Luecke[];
-  
+
   pausen: Pause[];
   position: { lat: number; lon: number } | null;
-  
+
   genauigkeitM: number | null;
   wake: WakeZustand;
   antrieb: 'segel' | 'motor' | null;
   eintraege: LogEintrag[];
   speicher: SpeicherZustand | null;
-  
+
   fehler: string | null;
-  
+
   ankerwache: { lat: number; lon: number; radiusM: number } | null;
-  
+
   stillstandS: number;
 }
 
@@ -108,14 +105,11 @@ export function setzeToern(id: string | null): void {
   toernId = id;
 }
 
-
 export function aktuellerToernId(): string | null {
   return toernId ?? z.fahrt?.toern ?? null;
 }
 
-
 const AUSWERT_TAKT_MS = 2000;
-
 
 const nachSpeicherRaeumen = (s: SpeicherZustand): void => {
   z.speicher = s;
@@ -125,8 +119,6 @@ const nachSpeicherRaeumen = (s: SpeicherZustand): void => {
 function meldeZustand(): void {
   melde({ ...z, luecken: [...z.luecken], pausen: [...z.pausen], eintraege: [...z.eintraege] });
 }
-
-
 
 export async function wachHolen(): Promise<void> {
   if (nurLesenGesperrt()) return;
@@ -144,8 +136,7 @@ export async function wachHolen(): Promise<void> {
       meldeZustand();
     });
   } catch {
-    
-    
+
     z.wake = 'fehlt';
   }
   meldeZustand();
@@ -156,13 +147,10 @@ async function wachFreigeben(): Promise<void> {
   try {
     await wakeLock.release();
   } catch {
-    
+
   }
   wakeLock = null;
 }
-
-
-
 
 async function sichereEintrag(eintrag: LogEintrag): Promise<void> {
   try { await schreibeEintrag(eintrag); return; } catch {  }
@@ -172,15 +160,13 @@ async function sichereEintrag(eintrag: LogEintrag): Promise<void> {
   }
 }
 
-
 async function protokolliereAblegen(t: number, lat: number, lon: number): Promise<void> {
   if (!z.fahrt) return;
   const eintrag: LogEintrag = { fahrt: z.fahrt.id, t, art: 'start', lat, lon, text: '' };
   await sichereEintrag(eintrag);
   z.eintraege.push(eintrag);
   if (antriebNachAblegen && z.antrieb === antriebNachAblegen) {
-    
-    
+
     const a: LogEintrag = { fahrt: z.fahrt.id, t: t + 1000, art: 'antrieb', lat, lon, text: antriebNachAblegen };
     await sichereEintrag(a);
     z.eintraege.push(a);
@@ -190,23 +176,19 @@ async function protokolliereAblegen(t: number, lat: number, lon: number): Promis
   meldeZustand();
 }
 
-
 async function findePauseName(fahrtId: string, von: number, lat?: number | null, lon?: number | null): Promise<string | null> {
   const marken = await ortsmarken(fahrtId).catch(() => []);
   const treffer = marken.find((m) => m.art === 'pause' && Math.abs(m.t - von) < 120_000);
   if (treffer?.name) return treffer.name;
-  
-  
+
   if (lat == null || lon == null) return null;
   const alle = await alleOrte().catch(() => []);
   return nameAusNaehe({ lat, lon }, alle);
 }
 
-
 async function oeffneUebernachtung(ankerwache: boolean, liegeart?: Liegeart): Promise<void> {
   if (!z.fahrt) return;
-  
-  
+
   if (offeneUebernachtung?.liegeart === 'treiben' && ankerwache) {
     const nichtVor = (offeneUebernachtung.eintragT ?? 0) + 1000;
     offeneUebernachtung = { von: Date.now(), lat: z.position?.lat ?? null, lon: z.position?.lon ?? null, ankerwache, liegeart: 'anker' };
@@ -215,14 +197,12 @@ async function oeffneUebernachtung(ankerwache: boolean, liegeart?: Liegeart): Pr
     return;
   }
   if (offeneUebernachtung) {
-    
-    
-    
+
     const gewaehlt = offeneUebernachtung.liegeart;
     if (ankerwache && !offeneUebernachtung.ankerwache && (!gewaehlt || gewaehlt === 'anker')) {
       offeneUebernachtung = { ...offeneUebernachtung, ankerwache: true };
       await setzeOffeneUebernachtung(z.fahrt.id, offeneUebernachtung).catch(() => {});
-      
+
       const t = offeneUebernachtung.eintragT;
       const e = t != null
         ? z.eintraege.find((x) => (x.art === 'anlegen' || x.art === 'liegeplatz') && x.t === t) : undefined;
@@ -242,18 +222,15 @@ async function oeffneUebernachtung(ankerwache: boolean, liegeart?: Liegeart): Pr
   await schreibeLiegeEintrag();
 }
 
-
 function liegeArtDesStopps(episode: { ankerwache: boolean; liegeart?: Liegeart | undefined }): 'ankern' | 'anlegen' | 'treiben' {
   return episode.liegeart ? liegeEintragArt(episode.liegeart) : (episode.ankerwache ? 'ankern' : 'anlegen');
 }
-
 
 async function schreibeLiegeEintrag(nichtVor = 0): Promise<void> {
   const episode = offeneUebernachtung;
   if (!z.fahrt || !episode || episode.eintragT != null) return;
   const art = liegeArtDesStopps(episode);
-  
-  
+
   const letzte = fixe[fixe.length - 1];
   const p = letzte ? ankunftsPause(z.pausen, letzte.t, episode.von) : null;
   const t = Math.max(nichtVor, liegeZeitNachBewegung(z.eintraege, p?.von ?? episode.von));
@@ -269,24 +246,20 @@ async function schreibeLiegeEintrag(nichtVor = 0): Promise<void> {
   meldeZustand();
 }
 
-
 async function verwerfeUebernachtung(): Promise<void> {
   if (!offeneUebernachtung || !z.fahrt) { offeneUebernachtung = null; return; }
   offeneUebernachtung = null;
   await setzeOffeneUebernachtung(z.fahrt.id, null).catch(() => {});
 }
 
-
 async function loeseUebernachtungEin(fuerFahrtId: string): Promise<void> {
   const episode = offeneUebernachtung;
   if (!episode) return;
   offeneUebernachtung = null;
-  
+
   if (episode.eintragT != null) return;
   const art = liegeArtDesStopps(episode);
-  
-  
-  
+
   const letzte = fixe[fixe.length - 1];
   const p = letzte ? ankunftsPause(z.pausen, letzte.t, episode.von) : null;
   const t = liegeZeitNachBewegung(z.eintraege, p?.von ?? episode.von);
@@ -298,9 +271,6 @@ async function loeseUebernachtungEin(fuerFahrtId: string): Promise<void> {
   await sichereEintrag(eintrag);
   if (z.fahrt?.id === fuerFahrtId) z.eintraege.push(eintrag);
 }
-
-
-
 
 function positionenStarten(): void {
   if (watchId !== null) return;
@@ -318,8 +288,7 @@ function positionenStarten(): void {
         const bezug = schweigenBezug;
         schweigenBezug = null;
         if (lagWaehrendSchweigen(bezug, fix)) {
-          
-          
+
           schweigenAbschluss = true;
           z.position = { lat: fix.lat, lon: fix.lon };
           void schliesseNachSchweigen(bezug.t).finally(() => { schweigenAbschluss = false; });
@@ -334,30 +303,23 @@ function positionenStarten(): void {
       z.position = { lat: c.latitude, lon: c.longitude };
       z.genauigkeitM = Number.isFinite(c.accuracy) ? c.accuracy : null;
       z.wartetAufFix = false;
-      
-      
+
       if (ersterFix && z.fahrt) {
         void merkeOrtsmarke(z.fahrt.id, 'start', fix.t, fix.lat, fix.lon);
       }
-      
-      
-      
-      
-      
-      
+
       if (wartetAufAblegenFix && z.fahrt && hatAbgelegt(ablegenBezug, fix)) {
         wartetAufAblegenFix = false;
         ablegenBezug = null;
         void verwerfeUebernachtung();
         void protokolliereAblegen(fix.t, fix.lat, fix.lon);
       }
-      
+
       if (z.fehler !== 'fehler.eintragSpeichern') z.fehler = null;
       if (z.fahrt) void schreibeFix(z.fahrt.id, fix).catch(() => { z.fehler = 'fehler.speicher'; });
     },
     (err) => {
-      
-      
+
       z.fehler = err.code === err.PERMISSION_DENIED ? 'fehler.gpsVerweigert' : 'fehler.gps';
       meldeZustand();
     },
@@ -369,9 +331,6 @@ function positionenStoppen(): void {
   if (watchId !== null) navigator.geolocation.clearWatch(watchId);
   watchId = null;
 }
-
-
-
 
 let tageswechsel = false;
 let auswertungsKette: Promise<void> = Promise.resolve();
@@ -388,12 +347,9 @@ function werteAus(): Promise<void> {
 }
 
 async function werteAusIntern(): Promise<void> {
-  
-  
+
   const a = werteSpurAus(fixe, {}, manuellePausen, (t) => windJetzt(new Date(t))?.dir ?? null);
-  
-  
-  
+
   const jetzt = aktuelleFahrt(fixe, Date.now());
   z.sog = jetzt.sog;
   z.cog = jetzt.cog;
@@ -401,14 +357,11 @@ async function werteAusIntern(): Promise<void> {
   z.stillstandS = stillstandAmEndeS(a.punkte);
   z.dauerS = a.dauerS;
   z.fahrzeitS = a.fahrzeitS;
-  
-  
-  
+
   const fahrt = z.fahrt;
   z.abgelegt = !!fahrt && (z.eintraege.some((e) => e.art === 'start')
     || !z.eintraege.some((e) => (e.art === 'liegeplatz' || e.art === 'ankerplatz') && e.t === fahrt.begonnen));
-  
-  
+
   const ablegen = fahrt ? z.eintraege.filter((e) => e.art === 'start' && e.fahrt === fahrt.id && e.t >= fahrt.begonnen)
     .reduce<number | null>((min, e) => (min === null || e.t < min ? e.t : min), null) : null;
   if (z.abgelegt && ablegen !== null) z.dauerS = dauerAb(a, ablegen);
@@ -416,15 +369,11 @@ async function werteAusIntern(): Promise<void> {
     z.dauerS = 0;
     z.fahrzeitS = 0;
   } else if (manuellePauseSeit !== null && fixe.length > 0) {
-    
-    
-    
+
     z.dauerS += Math.max(0, Date.now() - fixe[fixe.length - 1]!.t) / 1000;
   }
   z.pausen = a.pausen;
-  
-  
-  
+
   if (z.fahrt) {
     for (const p of a.pausen) {
       void merkeOrtsmarke(z.fahrt.id, 'pause', p.von, p.lat, p.lon);
@@ -434,16 +383,8 @@ async function werteAusIntern(): Promise<void> {
   z.verworfen = a.verworfen;
   z.luecken = a.luecken;
 
-  
-  
-  
-  
-  
-  
-  
   if (z.fahrt) {
-    
-    
+
     const schon = new Set([...z.eintraege.map((x) => eintragSchluessel(x)), ...(z.fahrt.geloeschteEintraege ?? [])]);
     for (const e of a.ereignisse) {
       if (schon.has(`${e.art}@${e.t}`)) continue;
@@ -454,11 +395,10 @@ async function werteAusIntern(): Promise<void> {
       await sichereEintrag(eintrag);
       z.eintraege.push(eintrag);
     }
-    
-    
+
     for (const e of z.eintraege) {
       if (e.art !== 'anlegen' && e.art !== 'ankern') continue;
-      
+
       if (e.bearbeitet) continue;
       const neuT = liegeZeitNachBewegung(z.eintraege, e.t);
       if (neuT === e.t) continue;
@@ -473,9 +413,6 @@ async function werteAusIntern(): Promise<void> {
   meldeZustand();
 }
 
-
-
-
 const TAGESENDE_TAKT_MS = 60_000;
 let tagesendeTakt: ReturnType<typeof setInterval> | null = null;
 
@@ -486,11 +423,9 @@ let schweigenAbschluss = false;
 let vorSitzungLagSeit: number | null = null;
 let letzterUnterFahrtVermerk: number | null = null;
 
-
 function tagesbilanzText(): string {
   return tagesbilanzAus(fixe, manuellePausen, z.eintraege);
 }
-
 
 function tagesbilanzAus(fx: Fix[], pausen: ManuellePause[], eintraege: LogEintrag[]): string {
   const sprache = aktuelleSprache();
@@ -518,8 +453,6 @@ async function schreibeAutomatikEintrag(text: string, t: number): Promise<void> 
   z.eintraege.push(eintrag);
 }
 
-
-
 async function schliesseTagAb(jetzt: number, neuBeginn = jetzt, lagSicher = false): Promise<void> {
   if (!z.fahrt || tageswechsel) return;
   tageswechsel = true;
@@ -536,29 +469,19 @@ async function schliesseTagAbIntern(jetzt: number, neuBeginn: number, lagSicher:
   const alterAntrieb = z.antrieb;
   await schreibeAutomatikEintrag(tagesabschlussText(tagesbilanzText(), aktuelleSprache()), jetzt);
   const letzte = fixe[fixe.length - 1];
-  
-  
+
   if (letzte) {
     await merkeOrtsmarke(z.fahrt.id, 'ziel', letzte.t, letzte.lat, letzte.lon).catch(() => {});
   }
-  
-  
-  
-  
-  
-  
+
   const offenesFensterSeit = manuellePauseSeit;
   if (offenesFensterSeit !== null) {
     await schliesseManuellePause(z.fahrt.id, offenesFensterSeit, jetzt).catch(() => {});
   }
-  
-  
-  
+
   const episodeVorher = offeneUebernachtung;
   await loeseUebernachtungEin(z.fahrt.id);
-  
-  
-  
+
   const treibt = episodeVorher?.liegeart === 'treiben';
   const lag = !treibt && (lagSicher || z.betriebsart === 'pausiert' || z.betriebsart === 'pausiert-anker');
   const liegen = lag ? liegenAmTagesbeginn(z.eintraege, z.betriebsart === 'pausiert-anker') : null;
@@ -566,14 +489,9 @@ async function schliesseTagAbIntern(jetzt: number, neuBeginn: number, lagSicher:
   const liegeLon = episodeVorher?.lon ?? letzte?.lon ?? z.position?.lon ?? null;
   await beendeFahrt(z.fahrt.id, jetzt, z.streckeNM);
 
-  
-  
-  
   const neue = await starteFahrt(neuBeginn, undefined, z.fahrt.toern ?? toernId ?? undefined);
   z.fahrt = neue;
-  
-  
-  
+
   if (z.ankerwache) await setzeAnkerwache(neue.id, z.ankerwache).catch(() => {});
   fixe = [];
   manuellePausen = [];
@@ -589,9 +507,7 @@ async function schliesseTagAbIntern(jetzt: number, neuBeginn: number, lagSicher:
   z.fahrzeitS = 0;
   z.fixe = 0;
   z.verworfen = 0;
-  
-  
-  
+
   antriebNachAblegen = null;
   if (liegen) {
     const eintrag: LogEintrag = {
@@ -610,8 +526,7 @@ async function schliesseTagAbIntern(jetzt: number, neuBeginn: number, lagSicher:
       antriebNachAblegen = alterAntrieb;
       await setzeAntriebNachAblegen(neue.id, alterAntrieb).catch(() => {});
     }
-    
-    
+
     if (z.betriebsart === 'laeuft' && liegeLat != null && liegeLon != null) {
       wartetAufAblegenFix = true;
       ablegenBezug = { lat: liegeLat, lon: liegeLon };
@@ -625,9 +540,7 @@ async function schliesseTagAbIntern(jetzt: number, neuBeginn: number, lagSicher:
     await sichereEintrag(eintrag);
     z.eintraege.push(eintrag);
   }
-  
-  
-  
+
   const startLat = liegeLat ?? letzte?.lat ?? null;
   const startLon = liegeLon ?? letzte?.lon ?? null;
   if (startLat != null && startLon != null) {
@@ -635,7 +548,6 @@ async function schliesseTagAbIntern(jetzt: number, neuBeginn: number, lagSicher:
   }
   meldeZustand();
 }
-
 
 async function holeTagesabschlussNach(): Promise<void> {
   if (!z.fahrt) return;
@@ -646,12 +558,11 @@ async function holeTagesabschlussNach(): Promise<void> {
   else if (vorSitzungLagSeit !== null) lagSeit = vorSitzungLagSeit;
   else if (letzte) lagSeit = ankunftsPause(z.pausen, letzte.t, null)?.von ?? null;
   const position = z.position ?? (letzte ? { lat: letzte.lat, lon: letzte.lon } : null);
-  
-  
+
   if (lagSeit === null && schweigenBezug) return;
   const faellig = nachzuholenderTagesabschluss({
     jetzt: Date.now(), position, fahrtBegonnen: z.fahrt.begonnen, lagSeit,
-    
+
     letzterFix: letzte?.t ?? null,
   });
   if (!faellig) return;
@@ -659,7 +570,6 @@ async function holeTagesabschlussNach(): Promise<void> {
   await schliesseTagAb(faellig.ende, faellig.neuBeginn, true);
   await werteAus();
 }
-
 
 async function schliesseNachSchweigen(letzterFixT: number): Promise<void> {
   if (!z.fahrt) return;
@@ -674,14 +584,11 @@ async function schliesseNachSchweigen(letzterFixT: number): Promise<void> {
 async function pruefeTagesende(): Promise<void> {
   if (!z.fahrt || z.betriebsart === 'gestoppt') return;
   const jetzt = Date.now();
-  
-  
-  
+
   if (z.betriebsart !== 'laeuft') schweigenBezug = null;
   const schweigt = z.betriebsart === 'laeuft'
     && spurSchweigtSeitDaemmerung(fixe[fixe.length - 1]?.t ?? null, z.position, jetzt, SPUR_STILL_NACH_DAEMMERUNG_MS) !== null;
-  
-  
+
   const letzterFix = fixe[fixe.length - 1];
   if (schweigt && letzterFix) {
     schweigenBezug ??= { lat: letzterFix.lat, lon: letzterFix.lon, t: letzterFix.t };
@@ -692,10 +599,9 @@ async function pruefeTagesende(): Promise<void> {
     jetzt,
     position: z.position,
     fahrtBegonnen: z.fahrt.begonnen,
-    
-    
+
     unterwegs: z.betriebsart === 'laeuft' && !schweigt,
-    
+
     letzterVermerk: letzterVermerkAusLog(z.eintraege, z.fahrt.id, letzterUnterFahrtVermerk),
   });
   if (was === 'nichts') return;
@@ -708,22 +614,16 @@ async function pruefeTagesende(): Promise<void> {
   await schliesseTagAb(jetzt, jetzt, schweigt);
 }
 
-
-
 async function laufeLos(fahrt: Fahrt, fortgesetzt: boolean, betriebsart: Betriebsart = 'laeuft'): Promise<void> {
   z.fahrt = fahrt;
   z.betriebsart = betriebsart;
   z.laeuft = betriebsart === 'laeuft' || betriebsart === 'pausiert-anker';
   z.fortgesetzt = fortgesetzt;
-  
-  
-  
-  
+
   z.wartetAufFix = true;
   z.antrieb = fahrt.antrieb ?? null;
   z.ankerwache = fahrt.ankerwache ?? null;
-  
-  
+
   if (betriebsart !== 'pausiert') {
     positionenStarten();
     await wachHolen();
@@ -746,10 +646,7 @@ export async function starte(): Promise<void> {
     meldeZustand();
     return;
   }
-  
-  
-  
-  
+
   const toern = toernId ? await holeToern(toernId) : null;
   if (!toern || toern.beendet) toernId = null;
   fixe = [];
@@ -763,7 +660,6 @@ export async function starte(): Promise<void> {
   const fahrt = await starteFahrt(Date.now(), undefined, toernId ?? undefined);
   await laufeLos(fahrt, false);
 }
-
 
 async function ankerwacheLoeschen(): Promise<void> {
   if (!z.fahrt || !z.ankerwache) return;
@@ -783,45 +679,23 @@ export async function stoppe(): Promise<void> {
   await wachFreigeben();
   const letzte = fixe[fixe.length - 1];
   if (!letzte) {
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     await loescheFahrt(z.fahrt.id).catch(() => { z.fehler = 'fehler.speicher'; });
     z.fahrt = null;
     offeneUebernachtung = null;
   } else {
-    
-    
-    
-    
-    
-    
-    
+
     await merkeOrtsmarke(z.fahrt.id, 'ziel', letzte.t, letzte.lat, letzte.lon).catch(() => {});
-    
-    
+
     await werteAus();
-    
-    
-    
-    
-    
-    
-    
+
     if (!offeneUebernachtung && ankunftsPause(z.pausen, letzte.t, null)) {
       offeneUebernachtung = { von: letzte.t, lat: letzte.lat, lon: letzte.lon, ankerwache: false };
     }
     await loeseUebernachtungEin(z.fahrt.id);
     await beendeFahrt(z.fahrt.id, Date.now(), z.streckeNM).catch(() => { z.fehler = 'fehler.speicher'; });
   }
-  
+
   void loeseOrteAuf();
   await werteAus();
   z.betriebsart = 'gestoppt';
@@ -830,22 +704,17 @@ export async function stoppe(): Promise<void> {
   meldeZustand();
 }
 
-
 export async function beendeToernJetzt(): Promise<void> {
   if (nurLesenGesperrt()) return;
   await stoppe();
   if (toernId) await beendeToern(toernId).catch(() => {});
 }
 
-
-
-
 async function oeffneManuellePauseFenster(): Promise<void> {
   if (!z.fahrt || manuellePauseSeit !== null) return;
   manuellePauseSeit = Date.now();
   await setzeManuellePauseSeit(z.fahrt.id, manuellePauseSeit).catch(() => {});
 }
-
 
 async function schliesseManuellePauseFenster(): Promise<void> {
   if (!z.fahrt || manuellePauseSeit === null) return;
@@ -856,16 +725,13 @@ async function schliesseManuellePauseFenster(): Promise<void> {
   await schliesseManuellePause(z.fahrt.id, von, bis).catch(() => {});
 }
 
-
 export async function pausiere(liegeart?: Liegeart): Promise<void> {
   if (nurLesenGesperrt()) return;
   if (z.betriebsart !== 'laeuft') return;
   positionenStoppen();
   await wachFreigeben();
   await oeffneManuellePauseFenster();
-  
-  
-  
+
   await oeffneUebernachtung(liegeart === 'anker', liegeart);
   ablegenBezug = z.position ? { ...z.position } : null;
   z.betriebsart = 'pausiert';
@@ -873,24 +739,19 @@ export async function pausiere(liegeart?: Liegeart): Promise<void> {
   meldeZustand();
 }
 
-
 export async function fortsetzen(): Promise<void> {
   if (nurLesenGesperrt()) return;
   if (z.betriebsart !== 'pausiert' && z.betriebsart !== 'pausiert-anker') return;
   await ankerwacheLoeschen();
-  
-  
+
   await schliesseManuellePauseFenster();
   if (offeneUebernachtung?.liegeart === 'treiben') {
-    
-    
+
     await verwerfeUebernachtung();
     wartetAufAblegenFix = false;
     ablegenBezug = null;
   } else {
-    
-    
-    
+
     ablegenBezug = offeneUebernachtung?.lat != null && offeneUebernachtung.lon != null
       ? { lat: offeneUebernachtung.lat, lon: offeneUebernachtung.lon }
       : (z.position ? { ...z.position } : null);
@@ -903,18 +764,14 @@ export async function fortsetzen(): Promise<void> {
   meldeZustand();
 }
 
-
 export async function aktiviereAnkerwache(
   ziel: { lat: number; lon: number; radiusM: number },
 ): Promise<void> {
   if (nurLesenGesperrt()) return;
   if (!z.fahrt) return;
-  
-  
+
   await schliesseManuellePauseFenster();
-  
-  
-  
+
   await oeffneUebernachtung(true);
   positionenStarten();
   await wachHolen();
@@ -925,27 +782,23 @@ export async function aktiviereAnkerwache(
   meldeZustand();
 }
 
-
 export async function hebeAnkerwacheAuf(): Promise<void> {
   if (nurLesenGesperrt()) return;
   if (z.betriebsart !== 'pausiert-anker') return;
   await ankerwacheLoeschen();
   positionenStoppen();
   await wachFreigeben();
-  
-  
+
   await oeffneManuellePauseFenster();
   z.betriebsart = 'pausiert';
   z.laeuft = false;
   meldeZustand();
 }
 
-
-
 async function bereinigeFehlstart(f: Fenster = FEHLSTART_TROPEA): Promise<void> {
   try { if (localStorage.getItem(SCHLUESSEL.fehlstartBereinigt)) return; } catch { return; }
   const merken = () => { try { localStorage.setItem(SCHLUESSEL.fehlstartBereinigt, String(Date.now())); } catch {  } };
-  
+
   if (Date.now() > f.bis + 30 * 86_400_000) { merken(); return; }
   const alle = await alleFahrten();
   const lauf = alle.find((x) => x.beendet === null);
@@ -957,7 +810,7 @@ async function bereinigeFehlstart(f: Fenster = FEHLSTART_TROPEA): Promise<void> 
   const bezug = bezugVor([...fixeJe.values()].flat(), f);
   if (!bezug) { merken(); return; }
   const betroffen = fahrten.filter((x) => x.begonnen < f.bis && (x.beendet ?? Infinity) >= f.von);
-  
+
   const vorher = (await Promise.all(fahrten.filter((x) => x.begonnen < f.von).map((x) => ladeEintraege(x.id)))).flat()
     .filter((e) => LIEGE_ARTEN_FS.has(e.art) && e.t < f.von).sort((a, b) => a.t - b.t).pop() ?? null;
   const liste: string[] = [];
@@ -970,7 +823,7 @@ async function bereinigeFehlstart(f: Fenster = FEHLSTART_TROPEA): Promise<void> 
     const offenFern = offen !== null && imFenster(offen.von, f) && istFern(offen, bezug, f.radiusNm);
     if (!fixWeg.length && !ferne.length && !offenFern) continue;
     const fixeNeu = fixe0.filter((x) => !fixWeg.includes(x));
-    
+
     const zurueck = ferne.filter((e) => e.art === 'tagesende' || ((e.art === 'liegeplatz' || e.art === 'ankerplatz') && e.t === fahrt.begonnen));
     const weg = ferne.filter((e) => !zurueck.includes(e));
     const pausen = pausenZusammen(fahrt.manuellePausen ?? [], fahrt.manuellePauseSeit ?? null, fixeNeu.map((x) => x.t), f);
@@ -998,12 +851,12 @@ async function bereinigeFehlstart(f: Fenster = FEHLSTART_TROPEA): Promise<void> 
     if (fahrt.beendet !== null && typeof fahrt.streckeNM === 'number') neu.streckeNM = werteSpurAus(fixeNeu, {}, pausen.pausen).streckeNM;
     const kopf = fahrt.wetterkopf;
     if (kopf && imFenster(kopf.ab ?? kopf.t, f) && weg.some((e) => e.art === 'start')) delete neu.wetterkopf;
-    
+
     const antriebWeg = weg.find((e) => e.art === 'antrieb' && (e.text === 'segel' || e.text === 'motor')
       && weg.some((s) => s.art === 'start' && e.t === s.t + 1000));
     if (antriebWeg && !fahrt.antriebNachAblegen) neu.antriebNachAblegen = antriebWeg.text as 'segel' | 'motor';
     if (offen && (offenFern || (offen.eintragT != null && weg.some((e) => e.t === offen.eintragT)))) {
-      
+
       const liegen = bleiben.filter((e) => LIEGE_ARTEN_FS.has(e.art)).sort((a, b) => a.t - b.t).pop() ?? vorher;
       neu.offeneUebernachtung = {
         von: liegen && liegen.fahrt === fahrt.id ? liegen.t : (pausen.offenSeit ?? offen.von),
@@ -1030,10 +883,9 @@ export async function initAufzeichnung(rueckmeldung: (z: Zustand) => void): Prom
     meldeZustand();
     return;
   }
-  
-  
+
   await ordneEtappenToernZu().catch(() => 0);
-  
+
   await bereinigeFehlstart().catch(() => {});
   const fahrt = await laufendeFahrt();
   if (fahrt?.toern && !toernId) toernId = fahrt.toern;
@@ -1042,22 +894,13 @@ export async function initAufzeichnung(rueckmeldung: (z: Zustand) => void): Prom
     meldeZustand();
     return;
   }
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
   if (fahrt.toern) {
     const toern = await holeToern(fahrt.toern);
     if (!toern || toern.beendet) {
       const fixeAlt = await ladeFixe(fahrt.id);
       const letzterFix = fixeAlt[fixeAlt.length - 1];
-      
-      
+
       if (letzterFix) {
         await beendeFahrt(fahrt.id, letzterFix.t).catch(() => {});
       } else {
@@ -1071,15 +914,10 @@ export async function initAufzeichnung(rueckmeldung: (z: Zustand) => void): Prom
   fixe = await ladeFixe(fahrt.id);
   manuellePausen = [...(fahrt.manuellePausen ?? [])];
   manuellePauseSeit = fahrt.manuellePauseSeit ?? null;
-  
-  
-  
+
   offeneUebernachtung = fahrt.offeneUebernachtung ?? null;
   antriebNachAblegen = fahrt.antriebNachAblegen ?? null;
-  
-  
-  
-  
+
   schweigenBezug = null;
   vorSitzungLagSeit = null;
   const vorSitzung = fixe[fixe.length - 1];
@@ -1089,9 +927,7 @@ export async function initAufzeichnung(rueckmeldung: (z: Zustand) => void): Prom
     if (vorSitzungLagSeit === null) schweigenBezug = { lat: vorSitzung.lat, lon: vorSitzung.lon, t: vorSitzung.t };
   }
   z.eintraege = await ladeEintraege(fahrt.id);
-  
-  
-  
+
   const lagBeimLaden = fahrt.manuellePauseSeit != null || !!fahrt.ankerwache;
   const uebernommen = z.eintraege.find((e) => e.art === 'antrieb' && e.t === fahrt.begonnen);
   if (lagBeimLaden && uebernommen && !antriebNachAblegen
@@ -1116,22 +952,13 @@ export async function initAufzeichnung(rueckmeldung: (z: Zustand) => void): Prom
       await setzeOffeneUebernachtung(fahrt.id, offeneUebernachtung).catch(() => {});
     }
   }
-  
-  
-  
-  
-  
+
   for (const e of z.eintraege) {
     if (e.t !== fahrt.begonnen || (e.art !== 'anlegen' && e.art !== 'ankern')) continue;
     e.art = e.art === 'ankern' ? 'ankerplatz' : 'liegeplatz';
     await aktualisiereEintrag(e).catch(() => {});
   }
-  
-  
-  
-  
-  
-  
+
   const letzterAntrieb = [...z.eintraege]
     .filter((e) => e.art === 'antrieb' && (e.text === 'segel' || e.text === 'motor'))
     .sort((a, b) => a.t - b.t)
@@ -1139,28 +966,11 @@ export async function initAufzeichnung(rueckmeldung: (z: Zustand) => void): Prom
   const wiederAufgenommen: Fahrt = letzterAntrieb
     ? { ...fahrt, antrieb: letzterAntrieb.text as 'segel' | 'motor' }
     : (antriebNachAblegen ? { ...fahrt, antrieb: antriebNachAblegen } : fahrt);
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
   const anfangsBetriebsart: Betriebsart = wiederAufgenommen.ankerwache
     ? 'pausiert-anker'
     : (manuellePauseSeit !== null ? 'pausiert' : 'laeuft');
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
   const warWirklichPausiert = manuellePauseSeit !== null || offeneUebernachtung !== null;
   if (anfangsBetriebsart === 'laeuft' && manuellePauseSeit !== null) {
     const von = manuellePauseSeit;
@@ -1169,13 +979,9 @@ export async function initAufzeichnung(rueckmeldung: (z: Zustand) => void): Prom
     manuellePausen = [...manuellePausen, { von, bis }];
     await schliesseManuellePause(wiederAufgenommen.id, von, bis).catch(() => {});
   }
-  
-  
-  
-  
-  
+
   if (anfangsBetriebsart === 'laeuft' && warWirklichPausiert && offeneUebernachtung?.liegeart === 'treiben') {
-    
+
     await verwerfeUebernachtung();
   } else if (anfangsBetriebsart === 'laeuft' && warWirklichPausiert) {
     wartetAufAblegenFix = true;
@@ -1185,8 +991,7 @@ export async function initAufzeichnung(rueckmeldung: (z: Zustand) => void): Prom
       : (letzterFix ? { lat: letzterFix.lat, lon: letzterFix.lon } : null);
   }
   if (anfangsBetriebsart === 'pausiert') {
-    
-    
+
     const letzterFix = fixe[fixe.length - 1];
     const lat = offeneUebernachtung?.lat ?? letzterFix?.lat;
     const lon = offeneUebernachtung?.lon ?? letzterFix?.lon;
@@ -1196,21 +1001,15 @@ export async function initAufzeichnung(rueckmeldung: (z: Zustand) => void): Prom
     }
   }
   await laufeLos(wiederAufgenommen, true, anfangsBetriebsart);
-  
-  
-  
-  
+
   await schreibeLiegeEintrag().catch(() => {});
   await holeTagesabschlussNach().catch(() => {});
 }
 
-
-
-
 export async function neuerEintrag(text = '', t = Date.now()): Promise<LogEintrag | null> {
   if (nurLesenGesperrt()) return null;
   if (!z.fahrt) return null;
-  
+
   const zurueck = Math.abs(Date.now() - t) > 120_000;
   const pos = zurueck ? positionZurZeit(fixe, t) : z.position;
   const eintrag: LogEintrag = {
@@ -1219,14 +1018,13 @@ export async function neuerEintrag(text = '', t = Date.now()): Promise<LogEintra
     ...(text ? { text } : {}),
   };
   await schreibeEintrag(eintrag);
-  
+
   let i = z.eintraege.length;
   while (i > 0 && z.eintraege[i - 1]!.t > t) i--;
   z.eintraege.splice(i, 0, eintrag);
   meldeZustand();
   return eintrag;
 }
-
 
 export async function setzeAntrieb(
   antrieb: 'segel' | 'motor',
@@ -1249,7 +1047,6 @@ export async function setzeAntrieb(
   meldeZustand();
 }
 
-
 export async function setzeWacheFuerFahrt(wache: string): Promise<void> {
   if (nurLesenGesperrt()) return;
   if (!z.fahrt) return;
@@ -1258,25 +1055,16 @@ export async function setzeWacheFuerFahrt(wache: string): Promise<void> {
   meldeZustand();
 }
 
-
 export async function ergaenzeEintrag(eintrag: LogEintrag): Promise<void> {
   if (nurLesenGesperrt()) return;
-  
-  
-  
-  
-  
+
   await schreibeEintrag(eintrag);
-  
-  
+
   if (z.fahrt && eintrag.fahrt === z.fahrt.id) {
     z.eintraege.push(eintrag);
     meldeZustand();
   }
 }
-
-
-
 
 beiNamenNachtrag((e) => {
   if (!z.fahrt || e.fahrt !== z.fahrt.id) return;
@@ -1287,7 +1075,6 @@ beiNamenNachtrag((e) => {
   }
 });
 
-
 export async function ergaenzeEintragText(eintrag: LogEintrag, text: string): Promise<void> {
   if (nurLesenGesperrt()) return;
   eintrag.text = text;
@@ -1295,10 +1082,9 @@ export async function ergaenzeEintragText(eintrag: LogEintrag, text: string): Pr
   meldeZustand();
 }
 
-
 export async function bearbeiteEintrag(
   eintrag: LogEintrag, text: string, t: number,
-  
+
   artWahl?: ArtWahl,
 ): Promise<void> {
   if (nurLesenGesperrt()) return;
@@ -1324,7 +1110,6 @@ export async function bearbeiteEintrag(
   meldeZustand();
 }
 
-
 export async function loescheEintragVonHand(eintrag: LogEintrag): Promise<() => Promise<void>> {
   if (nurLesenGesperrt()) return async () => {};
   const schluessel = eintragSchluessel(eintrag);
@@ -1345,14 +1130,12 @@ export async function loescheEintragVonHand(eintrag: LogEintrag): Promise<() => 
   };
 }
 
-
 export function aktualisiereFahrt(teil: Partial<Fahrt>): void {
   if (nurLesenGesperrt()) return;
   if (!z.fahrt) return;
   z.fahrt = { ...z.fahrt, ...teil };
   meldeZustand();
 }
-
 
 export function uebernehmeFixe(neue: Fix[]): void {
   if (nurLesenGesperrt()) return;
@@ -1362,11 +1145,9 @@ export function uebernehmeFixe(neue: Fix[]): void {
   meldeZustand();
 }
 
-
 export function aktuelleFixe(): Fix[] {
   return fixe;
 }
-
 
 export function aktuelleManuellePausen(): ManuellePause[] {
   return manuellePausen;
@@ -1375,7 +1156,6 @@ export function aktuelleManuellePausen(): ManuellePause[] {
 export function aktuellerZustand(): Zustand {
   return z;
 }
-
 
 if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', () => {

@@ -1,7 +1,6 @@
 import { API_BASIS } from './api';
 import { loescheLesestand } from './lesestand';
 
-
 const SESSION_COOKIE = 'session';
 
 const ANGEMELDET_COOKIE = 'angemeldet';
@@ -10,7 +9,6 @@ export const ANMELDUNG_PER_COOKIE = 'cookie';
 
 const COOKIE_DOMAIN = 'sail-suite.app';
 
-
 function loescheCookie(): void {
   try {
     for (const name of [SESSION_COOKIE, ANGEMELDET_COOKIE]) {
@@ -18,29 +16,25 @@ function loescheCookie(): void {
       document.cookie = `${name}=; Domain=${COOKIE_DOMAIN}; Path=/; Max-Age=0; SameSite=Lax; Secure`;
     }
   } catch {
-    
+
   }
 }
 
-
 export function meldeAb(): void {
-  
+
   const fertig = (): void => { loescheCookie(); void loescheLesestand().finally(() => { window.location.href = '/'; }); };
   fetch(`${API_BASIS}/api/auth/abmelden`, {
     method: 'POST', credentials: 'include', signal: AbortSignal.timeout(3000),
   }).then(fertig, fertig);
 }
 
-
 export function initLogout(buttonId = 'btn-logout'): void {
   const btn = document.getElementById(buttonId);
   if (btn) btn.addEventListener('click', meldeAb);
 }
 
-
 interface ProfilAntwort { profil: { vorname?: string; nachname?: string } | null }
 interface MeAntwort { username: string | null; hatPasswort?: boolean; istAdmin?: boolean }
-
 
 async function holeAnzeigename(token: string): Promise<string | null> {
   try {
@@ -64,7 +58,6 @@ async function holeAnzeigename(token: string): Promise<string | null> {
   }
 }
 
-
 async function kontoInfo(token: string): Promise<MeAntwort | null> {
   try {
     const res = await fetch(`${API_BASIS}/api/me`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
@@ -74,13 +67,11 @@ async function kontoInfo(token: string): Promise<MeAntwort | null> {
   }
 }
 
-
 function schuetzeVorBfcache(): void {
   window.addEventListener('pageshow', (ev) => {
     if (ev.persisted) window.location.reload();
   });
 }
-
 
 export function initUserMenu(): void {
   schuetzeVorBfcache();
@@ -92,10 +83,6 @@ export function initUserMenu(): void {
   const logoutBtn = document.getElementById('btn-logout');
   const token = liesSitzungsToken();
 
-  
-  
-  
-  
   toggle?.addEventListener('touchstart', () => {}, { passive: true });
 
   if (profilBtn) {
@@ -103,15 +90,14 @@ export function initUserMenu(): void {
       window.location.href = '/?profil=1';
     });
   }
-  
-  
+
   if (passwortBtn) {
     passwortBtn.addEventListener('click', () => {
       window.location.href = '/?konto=passwort';
     });
   }
   if (logoutBtn) logoutBtn.addEventListener('click', meldeAb);
-  
+
   document.getElementById('btn-logout-alle')?.addEventListener('click', () => {
     window.location.href = '/?konto=abmelden-alle';
   });
@@ -140,22 +126,18 @@ export function initUserMenu(): void {
   toggle.addEventListener('click', () => { if (panel.hidden) oeffnen(); else schliessen(); });
   document.addEventListener('click', (e) => {
     const ziel = e.target as Node;
-    
-    
-    
+
     if (!panel.hidden && !panel.contains(ziel) && !toggle.contains(ziel)) schliessen();
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !panel.hidden) { schliessen(); toggle.focus(); }
   });
 
-  
-  
   void kontoInfo(token).then((me) => {
     if (passwortBtn) passwortBtn.hidden = me?.hatPasswort !== true;
     const betrieb = document.getElementById('btn-betrieb');
     if (betrieb) betrieb.hidden = me?.istAdmin !== true;
-    
+
     document.querySelectorAll<HTMLElement>('[data-nur-betreiber]').forEach((el) => { el.hidden = me?.istAdmin !== true; });
   });
 
@@ -166,12 +148,8 @@ export function initUserMenu(): void {
   });
 }
 
-
 export function liesSitzungsToken(): string | null {
-  
-  
-  
-  
+
   if (liesCookie(SESSION_COOKIE)) return liesCookie(SESSION_COOKIE);
   return liesCookie(ANGEMELDET_COOKIE) ? ANMELDUNG_PER_COOKIE : null;
 }
@@ -183,11 +161,10 @@ function liesCookie(name: string): string | null {
       if (t.startsWith(`${name}=`)) return t.slice(name.length + 1) || null;
     }
   } catch {
-    
+
   }
   return null;
 }
-
 
 export function liesEigeneNutzerId(): string | null {
   const token = liesSitzungsToken();

@@ -1,25 +1,24 @@
 import { API_BASIS } from '@/shell/api';
 
-
 export interface Wetterstation {
   quelle: 'dhmz' | 'metar' | 'meteofrance' | 'esoh' | 'ispra' | 'insitu' | 'aemet';
   id: string;
   name: string;
   lat: number;
   lon: number;
-  
+
   zeit: string;
   windKn: number | null;
-  
+
   windDeg: number | null;
   boeKn: number | null;
   druckHpa: number | null;
-  
+
   druckTendenzHpa: number | null;
   tempC: number | null;
-  
+
   boje?: boolean;
-  
+
   welleM?: number | null;
   wellePerS?: number | null;
   wasserC?: number | null;

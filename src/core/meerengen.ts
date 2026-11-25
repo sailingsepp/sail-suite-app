@@ -1,6 +1,5 @@
 import { MEERENGEN_ROH, type MeerengeRoh } from './meerengenDaten';
 
-
 export const PUFFER_KM = 0.15;
 export const LAENGLICH_AB = 1.4;
 export const ENDE_ANTEIL = 0.2;
@@ -19,7 +18,7 @@ interface Flaeche { roh: MeerengeRoh; box: { s: number; n: number; w: number; o:
 const FLAECHEN: Flaeche[] = MEERENGEN_ROH.map((roh) => {
   let s = 90, n = -90, w = 180, o = -180;
   for (const r of roh.ringe) for (const [la, lo] of r) { s = Math.min(s, la); n = Math.max(n, la); w = Math.min(w, lo); o = Math.max(o, lo); }
-  const rand = 0.01; 
+  const rand = 0.01;
   const laenge = roh.achse.uMax - roh.achse.uMin, breite = roh.achse.vMax - roh.achse.vMin;
   return { roh, box: { s: s - rand, n: n + rand, w: w - rand, o: o + rand }, laenge, breite, laenglich: laenge >= LAENGLICH_AB * breite };
 });
@@ -60,7 +59,6 @@ function istDrin(f: Flaeche, lat: number, lon: number): boolean {
   return randAbstandKm(f, lat, lon) <= PUFFER_KM;
 }
 
-
 export function meerengeAm(lat: number, lon: number): Meerenge | null {
   const f = FLAECHEN.find((x) => istDrin(x, lat, lon));
   return f ? { id: f.roh.id, de: f.roh.de, en: f.roh.en } : null;
@@ -70,14 +68,12 @@ export function meerengeNachId(id: string): Meerenge | null {
   return f ? { id: f.roh.id, de: f.roh.de, en: f.roh.en } : null;
 }
 
-
-
 export interface EngeAktiv {
   id: string;
-  
+
   ein: Ort | null;
   erster: Ort;
-  
+
   uMin: number; uMax: number;
   einfahrtGeloggt: boolean;
   raus: Ort | null; rausPunkte: number;
@@ -115,7 +111,6 @@ function abschluss(f: Flaeche, a: EngeAktiv, aus: Ort): EngenEreignis[] {
   const zwischen = winkel > 180 ? 360 - winkel : winkel;
   return zwischen >= DURCH_WINKEL_GRAD ? [{ art: 'einfahrt', id, ort: a.ein }, { art: 'ausfahrt', id, ort: aus }] : [];
 }
-
 
 export function engenSchritt(stand: EngenStand, ort: Ort): { stand: EngenStand; ereignisse: EngenEreignis[] } {
   const neubeginn = !stand.zuletzt || ort.t - stand.zuletzt.t > NEUBEGINN_PAUSE_MS || km(stand.zuletzt, ort) > NEUBEGINN_SPRUNG_KM;

@@ -1,4 +1,3 @@
-
 import { distNM, bearingDeg, destPoint, kreuzungsZahl } from './geo';
 import type { Punkt } from './types';
 import { hafenausfahrt, liegtAnLand } from './landumfahrung';
@@ -6,22 +5,20 @@ import { startVorHafen } from './hafenstart';
 
 export interface NavWegpunkt extends Punkt {
   name: string;
-  
+
   radiusSm?: number;
 }
-
 
 export type RoutenQuelle = 'route' | 'gehezu' | 'plan' | 'rueckweg';
 
 export interface NavRoute {
-  
+
   wegpunkte: NavWegpunkt[];
-  
+
   naechster: number;
   quelle: RoutenQuelle;
   gestartet: number;
 }
-
 
 export const ANKUNFT_SM = 0.05;
 
@@ -35,22 +32,17 @@ export const SOG_FENSTER_S = 90;
 
 export const STEHT_KN = 0.3;
 
-
-
 interface Xy { x: number; y: number }
-
 
 function mercatorGrad(lat: number): number {
   const phi = (lat * Math.PI) / 180;
   return (Math.log(Math.tan(Math.PI / 4 + phi / 2)) * 180) / Math.PI;
 }
 
-
 function eben(p: Punkt, bezug: Punkt): Xy {
   const k = Math.cos((bezug.lat * Math.PI) / 180);
   return { x: (p.lon - bezug.lon) * 60 * k, y: (mercatorGrad(p.lat) - mercatorGrad(bezug.lat)) * 60 * k };
 }
-
 
 export function lageZurStrecke(p: Punkt, a: Punkt, b: Punkt): { t: number; seitlichSm: number; abstandSm: number } {
   const A = eben(a, p), B = eben(b, p);
@@ -59,37 +51,34 @@ export function lageZurStrecke(p: Punkt, a: Punkt, b: Punkt): { t: number; seitl
     const d = Math.hypot(A.x, A.y);
     return { t: 0, seitlichSm: 0, abstandSm: d };
   }
-  
+
   const t = (-A.x * dx - A.y * dy) / l2;
   const l = Math.sqrt(l2);
-  
-  
+
   const kreuz = (dx * -A.y - dy * -A.x) / l;
   const tk = Math.max(0, Math.min(1, t));
   const nx = A.x + tk * dx, ny = A.y + tk * dy;
   return { t, seitlichSm: -kreuz, abstandSm: Math.hypot(nx, ny) };
 }
 
-
-
 export interface NavWerte {
-  
+
   brg: number | null;
-  
+
   dtw: number | null;
-  
+
   xte: number | null;
-  
+
   vmg: number | null;
-  
+
   dtz: number | null;
-  
+
   ttgS: number | null;
-  
+
   eta: number | null;
-  
+
   etz: number | null;
-  
+
   ttzS: number | null;
 }
 
@@ -103,7 +92,6 @@ export function routenLaengeSm(punkte: readonly Punkt[], ab = 0): number {
   return s;
 }
 
-
 export function navWerte(boot: Punkt | null, sog: number | null, cog: number | null, route: NavRoute | null, jetzt: number): NavWerte {
   if (!boot || !route) return LEER;
   const i = route.naechster;
@@ -116,9 +104,7 @@ export function navWerte(boot: Punkt | null, sog: number | null, cog: number | n
   const dtz = dtw + routenLaengeSm(route.wegpunkte, i);
   const faehrt = sog !== null && sog >= STEHT_KN;
   const vmg = faehrt && cog !== null ? sog * Math.cos(((cog - brg) * Math.PI) / 180) : null;
-  
-  
-  
+
   const ttgS = faehrt ? (dtw / sog) * 3600 : null;
   const ttzS = faehrt ? (dtz / sog) * 3600 : null;
   return {
@@ -128,7 +114,6 @@ export function navWerte(boot: Punkt | null, sog: number | null, cog: number | n
     ttzS,
   };
 }
-
 
 export function geglaetteteSog(
   punkte: readonly { t: number; sog: number }[], jetzt: number, fensterS = SOG_FENSTER_S,
@@ -147,13 +132,10 @@ export function geglaetteteSog(
   return n ? s / n : null;
 }
 
-
-
 export type Fortschritt =
   | { art: 'gleich' }
   | { art: 'weiter'; erreicht: number }
   | { art: 'ziel' };
-
 
 export function pruefeFortschritt(route: NavRoute, boot: Punkt): Fortschritt {
   const i = route.naechster;
@@ -163,22 +145,16 @@ export function pruefeFortschritt(route: NavRoute, boot: Punkt): Fortschritt {
   let erreicht = d <= ankunftSm(wp);
   if (!erreicht) {
     const B = eben(boot, wp), V = eben(vor, wp);
-    const ein = norm({ x: -V.x, y: -V.y }); 
+    const ein = norm({ x: -V.x, y: -V.y });
     let schwelle: Xy = ein;
     if (nach) {
       const N = eben(nach, wp);
       const aus = norm(N);
-      
+
       const summe = norm({ x: ein.x + aus.x, y: ein.y + aus.y });
       if (Number.isFinite(summe.x)) schwelle = summe;
     }
-    
-    
-    
-    
-    
-    
-    
+
     const vorDemWp = -(B.x * ein.x + B.y * ein.y);
     const halbierende = B.x * schwelle.x + B.y * schwelle.y > 0 && vorDemWp <= VORBEI_SM;
     erreicht = halbierende || B.x * ein.x + B.y * ein.y > 0;
@@ -186,11 +162,6 @@ export function pruefeFortschritt(route: NavRoute, boot: Punkt): Fortschritt {
   if (!erreicht) return { art: 'gleich' };
   return i >= route.wegpunkte.length - 1 ? { art: 'ziel' } : { art: 'weiter', erreicht: i };
 }
-
-
-
-
-
 
 export function zeitBisPassage(route: NavRoute | null, boot: Punkt | null, sogKn: number | null, cogGrad: number | null): number | null {
   if (!route || !boot || sogKn === null || cogGrad === null || sogKn < STEHT_KN) return null;
@@ -200,11 +171,11 @@ export function zeitBisPassage(route: NavRoute | null, boot: Punkt | null, sogKn
   if (pruefeFortschritt(route, boot).art !== 'gleich') return 0;
   const B = eben(boot, wp), V = eben(vor, wp);
   const r = (cogGrad * Math.PI) / 180;
-  const v = { x: Math.sin(r) * sogKn / 3600, y: Math.cos(r) * sogKn / 3600 }; 
+  const v = { x: Math.sin(r) * sogKn / 3600, y: Math.cos(r) * sogKn / 3600 };
   const ein = norm({ x: -V.x, y: -V.y });
   let beste: number | null = null;
   const nimm = (t: number) => { if (t >= 0 && (beste === null || t < beste)) beste = t; };
-  
+
   const ueber = (n: Xy): number | null => {
     const annaeherung = v.x * n.x + v.y * n.y;
     return annaeherung > 0 ? -(B.x * n.x + B.y * n.y) / annaeherung : null;
@@ -218,9 +189,7 @@ export function zeitBisPassage(route: NavRoute | null, boot: Punkt | null, sogKn
     const summe = norm({ x: ein.x + aus.x, y: ein.y + aus.y });
     const th = Number.isFinite(summe.x) ? ueber(summe) : null;
     if (th !== null) {
-      
-      
-      
+
       const vorDemWp = (t: number) => -((B.x + v.x * t) * ein.x + (B.y + v.y * t) * ein.y);
       if (vorDemWp(th) <= VORBEI_SM) nimm(th);
       else {
@@ -232,7 +201,7 @@ export function zeitBisPassage(route: NavRoute | null, boot: Punkt | null, sogKn
       }
     }
   }
-  
+
   const d = Math.hypot(B.x, B.y);
   const radius = ankunftSm(wp);
   if (d > radius) {
@@ -245,12 +214,9 @@ export function zeitBisPassage(route: NavRoute | null, boot: Punkt | null, sogKn
   return beste;
 }
 
-
-
 export const NACHHOL_SM = 1;
 
 export const NACHHOL_KURS_GRAD = 60;
-
 
 export function nachholen(route: NavRoute, boot: Punkt, cogGrad: number | null, sogKn: number | null): number | null {
   const i = route.naechster;
@@ -282,10 +248,9 @@ function norm(v: Xy): Xy {
   return l > 0 ? { x: v.x / l, y: v.y / l } : { x: NaN, y: NaN };
 }
 
-
 export function ohneStummel(
   punkte: readonly Punkt[],
-  
+
   sperre: readonly [Punkt, Punkt][] = [],
 ): Punkt[] {
   const aus = [...punkte];
@@ -298,9 +263,6 @@ export function ohneStummel(
   }
   return aus;
 }
-
-
-
 
 export function vereinfacheLinie<T extends Punkt>(punkte: readonly T[], toleranzSm: number): T[] {
   if (punkte.length <= 2) return [...punkte];
@@ -325,7 +287,6 @@ export function vereinfacheLinie<T extends Punkt>(punkte: readonly T[], toleranz
 
 export const RUECKWEG_TOLERANZ_SM = 0.05;
 
-
 export function rueckwegAusSpur(spur: readonly Punkt[], boot: Punkt | null, namen: { wp: (n: number) => string; ziel: string }, toleranzSm = RUECKWEG_TOLERANZ_SM): NavWegpunkt[] {
   const rueck = [...spur].reverse();
   if (boot) rueck.unshift(boot);
@@ -336,16 +297,13 @@ export function rueckwegAusSpur(spur: readonly Punkt[], boot: Punkt | null, name
   }));
 }
 
-
-
 export interface Gefahr extends Punkt {
-  
+
   art: string;
   name: string;
-  
+
   merkmale?: Readonly<Record<string, string>>;
 }
-
 
 export const GEFAHR_DURCH_SM = 0.05;
 export const GEFAHR_NAH_SM = 0.6;
@@ -354,10 +312,9 @@ export interface GefahrenBefund {
   stufe: 'rot' | 'orange' | 'gruen';
   gefahr: Gefahr | null;
   abstandSm: number | null;
-  
+
   schenkel: number | null;
 }
-
 
 export function pruefeGefahren(punkte: readonly Punkt[], gefahren: readonly Gefahr[]): GefahrenBefund {
   let beste: { g: Gefahr; d: number; s: number } | null = null;
@@ -371,7 +328,6 @@ export function pruefeGefahren(punkte: readonly Punkt[], gefahren: readonly Gefa
   return { stufe: beste.d < GEFAHR_DURCH_SM ? 'rot' : 'orange', gefahr: beste.g, abstandSm: beste.d, schenkel: beste.s };
 }
 
-
 export function gefahrAlsKueste(g: Punkt, radiusSm: number, ecken = 12): [Punkt, Punkt][] {
   const r = radiusSm / Math.cos(Math.PI / ecken);
   const ring: Punkt[] = [];
@@ -382,30 +338,23 @@ export function gefahrAlsKueste(g: Punkt, radiusSm: number, ecken = 12): [Punkt,
   return ring.map((p, k) => [p, ring[(k + 1) % ecken]!] as [Punkt, Punkt]);
 }
 
-
-
 export function messe(a: Punkt, b: Punkt): { kurs: number; sm: number } {
   return { kurs: bearingDeg(a.lat, a.lon, b.lat, b.lon), sm: distNM(a.lat, a.lon, b.lat, b.lon) };
 }
-
 
 export function messeKette(punkte: readonly Punkt[]): { schenkel: { kurs: number; sm: number }[]; summeSm: number } {
   const schenkel = punkte.slice(1).map((b, k) => messe(punkte[k]!, b));
   return { schenkel, summeSm: schenkel.reduce((s, x) => s + x.sm, 0) };
 }
 
-
 export const XTE_AUF_KURS_SM = 0.1;
-
 
 export function steuerSeite(xteSm: number | null): 'stb' | 'bb' | null {
   if (xteSm === null || Math.abs(xteSm) < XTE_AUF_KURS_SM) return null;
   return xteSm < 0 ? 'stb' : 'bb';
 }
 
-
 export const XTE_BALKEN_VOLL_SM = 0.3;
-
 
 export function xteBalkenProzent(xteSm: number | null, vollSm = XTE_BALKEN_VOLL_SM): number {
   if (xteSm === null) return 50;
@@ -413,21 +362,18 @@ export function xteBalkenProzent(xteSm: number | null, vollSm = XTE_BALKEN_VOLL_
   return 50 + c * 45;
 }
 
-
 export const PLANFAHRT_KN = 5;
 
 export const PLANFAHRT_MIN_KN = 0.5;
 export const PLANFAHRT_MAX_KN = 30;
 
-
 export function planZeiten(sm: number, fahrtKn: number, abMs: number | null, jetztMs: number): { dauerS: number; abMs: number; ankunftMs: number } | null {
   if (!(sm > 0) || !(fahrtKn >= PLANFAHRT_MIN_KN && fahrtKn <= PLANFAHRT_MAX_KN)) return null;
-  
+
   const ab = Math.floor((abMs ?? jetztMs) / 60_000) * 60_000;
   const dauerS = Math.round((sm / fahrtKn) * 60) * 60;
   return { dauerS, abMs: ab, ankunftMs: ab + dauerS * 1000 };
 }
-
 
 export function planStart(
   p: Punkt,
@@ -441,13 +387,10 @@ export function planStart(
   }
   const anLand = liegtAnLand(p, kueste);
   const aus = hafenausfahrt(p, kueste);
-  
+
   if (aus && !liegtAnLand(aus, kueste)) return { punkt: aus, ausfahrt: true };
   return anLand ? null : { punkt: p, ausfahrt: false };
 }
-
-
-
 
 export const OFFTRACK_STUFEN_SM: readonly (number | null)[] = [null, 0.1, 0.25, 0.5, 1];
 
@@ -457,12 +400,11 @@ export const OFFTRACK_WIEDERHOLUNG_MS = 2 * 60_000;
 
 export interface OffTrackStand { alarm: boolean; letzterTon: number | null }
 export interface OffTrackUrteil extends OffTrackStand {
-  
+
   ton: boolean;
-  
+
   neu: boolean;
 }
-
 
 export function offTrackTakt(xteSm: number | null, grenzeSm: number | null, vorher: OffTrackStand, jetzt: number): OffTrackUrteil {
   if (grenzeSm === null || xteSm === null) return { alarm: false, letzterTon: null, ton: false, neu: false };
@@ -474,11 +416,7 @@ export function offTrackTakt(xteSm: number | null, grenzeSm: number | null, vorh
   return { alarm: true, letzterTon: ton ? jetzt : vorher.letzterTon, ton, neu };
 }
 
-
-
-
 export const ETA_FENSTER_S = [600, 3600] as const;
-
 
 export function etaBand(
   strecke: number | null, punkte: readonly { t: number; sog: number }[], jetzt: number, laufAnfaenge: readonly number[] = [],

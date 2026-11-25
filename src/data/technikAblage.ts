@@ -1,5 +1,3 @@
-
-
 export type Geraet =
   | 'funk' | 'plotter' | 'autopilot' | 'instrumente' | 'motor' | 'elektrik' | 'versorgung' | 'sonstiges';
 export const GERAETE: readonly Geraet[] = ['funk', 'plotter', 'autopilot', 'instrumente', 'motor', 'elektrik', 'versorgung', 'sonstiges'];
@@ -8,14 +6,14 @@ export interface Handbuch {
   id: string;
   titel: string;
   geraet: Geraet;
-  
+
   yacht: string;
   dateiname: string;
   bytes: number;
   seiten: number;
-  
+
   seitenNamen?: string[] | null;
-  
+
   ohneText: number;
   angelegt: number;
 }
@@ -83,7 +81,6 @@ export async function ladeDatei(id: string): Promise<Blob | null> {
   });
 }
 
-
 export async function speichereHandbuch(h: Handbuch, seiten: SeitenEintrag[], blob: Blob): Promise<boolean> {
   const d = await oeffne();
   if (!d) return false;
@@ -129,14 +126,12 @@ export async function loescheHandbuch(id: string): Promise<boolean> {
   });
 }
 
-
 export function handbuchKennung(t = Date.now(), zufall: () => number = Math.random): string {
   const z = 'abcdefghijkmnpqrstuvwxyz23456789';
   let s = '';
   for (let i = 0; i < 6; i++) s += z[Math.floor(zufall() * z.length)];
   return 'h' + t.toString(36) + '-' + s;
 }
-
 
 export function geraetVorschlag(dateiname: string): Geraet {
   const n = dateiname.toLowerCase();

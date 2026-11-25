@@ -1,4 +1,3 @@
-
 import L from 'leaflet';
 import { aktuelleSprache } from '@/shell/sprache';
 import type { WochentabellenZeile } from './plan';
@@ -43,13 +42,12 @@ function zeichneGespeicherteEtappen(): void {
   const schicht = gespeicherteSchicht;
   schicht.clearLayers();
   app.etappen.forEach((e) => {
-    if (e.id === bearbeiteId) return; 
+    if (e.id === bearbeiteId) return;
     const latlngs = e.wegpunkte.map((p) => [p.lat, p.lon] as [number, number]);
     L.polyline(latlngs, { color: 'var(--teal, #2a7f7a)', weight: 3 }).addTo(schicht);
     latlngs.forEach((ll, j) => {
       L.circleMarker(ll, { radius: 5, color: 'var(--teal, #2a7f7a)', fillOpacity: 1 })
-        
-        
+
         .bindTooltip(escapeHtml(j === latlngs.length - 1 ? e.nachName || '·' : j === 0 ? e.vonName || '·' : ''))
         .addTo(schicht);
     });
@@ -140,14 +138,11 @@ function beendeZeichnen(): void {
   setzeZeichenWerkzeuge();
 }
 
-
-
 function kurzDatum(iso: string): string {
   return new Date(`${iso}T00:00:00`).toLocaleDateString(aktuelleSprache() === 'en' ? 'en-GB' : 'de-AT', {
     weekday: 'short', day: '2-digit', month: '2-digit',
   });
 }
-
 
 function etappenDetail(e: EtappeEntwurf): string {
   if (!e.datum) return `${wort('liste.ohneDatum')} · ${wort('liste.wegpunkte', { n: String(e.wegpunkte.length) })}`;
@@ -164,12 +159,10 @@ function etappenDetail(e: EtappeEntwurf): string {
   return teile.join(' · ');
 }
 
-
 export function setzeHandplan(etappen: readonly EtappeEntwurf[]): void {
   app.etappen = sortiereEtappen(etappen);
   renderListe();
 }
-
 
 export async function speichereHandplan(): Promise<boolean> {
   const token = liesSitzungsToken();
@@ -223,8 +216,6 @@ export function renderListe(): void {
   setzeGpxExportKnopf();
 }
 
-
-
 function setzeGpxExportKnopf(): void {
   const knopf = $('btn-plan-gpx-export') as HTMLButtonElement | null;
   if (!knopf) return;
@@ -232,14 +223,13 @@ function setzeGpxExportKnopf(): void {
   knopf.disabled = gesamtPunkte < 2;
 }
 
-
 export function fixierungenFuerRechner(startDatumIso: string): { tag: number; ort: EtappenWegpunkt; name: string }[] {
   const start = new Date(`${startDatumIso}T00:00:00`).getTime();
   return app.etappen.flatMap((e) => {
     const ziel = e.wegpunkte[e.wegpunkte.length - 1];
     const ende = ankunftsTag(e);
     if (!e.fixiert || !ende || !ziel) return [];
-    
+
     const tag = Math.round((new Date(`${ende}T00:00:00`).getTime() - start) / 86_400_000) + 1;
     if (tag < 1) return [];
     return [{ tag, ort: ziel, name: e.nachName || e.vonName || '?' }];
@@ -254,8 +244,6 @@ export function ausServerdaten(e: EtappeDaten): EtappeEntwurf {
     abfahrtZeit: e.abfahrt_zeit ?? null, ankunftDatum: e.ankunft_datum ?? null, ankunftZeit: e.ankunft_zeit ?? null,
   });
 }
-
-
 
 let letzteWochenzeilen: readonly WochentabellenZeile[] | null = null;
 export function wochentabelleNeuZeichnen(): void {
@@ -295,15 +283,12 @@ async function wochentabelleNeuBerechnen(): Promise<void> {
   }
 }
 
-
 export function zeichnetGerade(): boolean { return amZeichnen; }
 
 export function initHandplan(karte: L.Map | null): void {
   gespeicherteSchicht = karte ? L.layerGroup().addTo(karte) : null;
   zeichnenSchicht = karte ? L.layerGroup().addTo(karte) : null;
 
-  
-  
   const vonInput = $('in-etappe-von') as HTMLInputElement | null;
   const nachInput = $('in-etappe-nach') as HTMLInputElement | null;
   if (vonInput) bindeOrtsAutocomplete(vonInput);
@@ -311,7 +296,7 @@ export function initHandplan(karte: L.Map | null): void {
 
   karte?.on('click', (ev: L.LeafletMouseEvent) => {
     if (!amZeichnen || app.nurLesen) return;
-    
+
     if (zeichnenArt === 'hafentag') zeichnenPunkte = [];
     zeichnenPunkte.push({ lat: ev.latlng.lat, lon: ev.latlng.lng });
     zeichneEntwurf();
@@ -319,7 +304,7 @@ export function initHandplan(karte: L.Map | null): void {
   });
 
   $('btn-neue-etappe')?.addEventListener('click', () => beginneZeichnen());
-  
+
   $('btn-neuer-hafentag')?.addEventListener('click', () => {
     const s = app.toern?.start_hafen;
     const v = hafentagVorschlag(app.etappen, s ? { ort: { lat: s.lat, lon: s.lon }, name: s.name } : null, app.toern?.von ?? null);
@@ -358,7 +343,7 @@ export function initHandplan(karte: L.Map | null): void {
       gewaehlt: idx !== null ? app.etappen[idx]!.gewaehlt : false,
       art: zeichnenArt,
       abfahrtZeit: istHafentag ? null : (feld('in-etappe-ablegen')?.value || null),
-      
+
       ankunftDatum: ankunftDatum && ankunftDatum !== datum ? ankunftDatum : null,
       ankunftZeit: istHafentag ? null : (feld('in-etappe-ankunft-zeit')?.value || null),
     };

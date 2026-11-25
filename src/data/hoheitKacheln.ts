@@ -5,7 +5,6 @@ import {
 import type { Box } from '@/core/landumfahrung';
 import { API_BASIS } from '@/shell/api';
 
-
 const DB_NAME = 'sail-suite-hoheit';
 const STORE = 'kacheln';
 const INDEX_SCHLUESSEL = '_index';
@@ -62,7 +61,6 @@ function gueltig(x: unknown): x is HoheitIndex {
   return !!i && typeof i.erstellt === 'string' && Array.isArray(i.gebiete) && Array.isArray(i.kacheln) && typeof i.faktor === 'number';
 }
 
-
 async function holeIndex(netz: boolean, basis = API_BASIS): Promise<HoheitIndex | null> {
   if (index && (!netz || Date.now() - index.geholt < INDEX_NEU_MS)) return index.wert;
   const abgelegt = index?.wert ?? await lies<HoheitIndex>(INDEX_SCHLUESSEL);
@@ -72,7 +70,7 @@ async function holeIndex(netz: boolean, basis = API_BASIS): Promise<HoheitIndex 
       if (r.ok) {
         const neu: unknown = await r.json();
         if (gueltig(neu)) {
-          
+
           if (abgelegt && abgelegt.erstellt !== neu.erstellt) imSpeicher.clear();
           index = { wert: neu, geholt: Date.now() };
           void schreibe(INDEX_SCHLUESSEL, neu);
@@ -101,7 +99,6 @@ async function holeKachel(name: string, idx: HoheitIndex, netz: boolean, basis =
   } catch { return null; }
 }
 
-
 export async function ladeHoheitImGebiet(b: Box, basis = API_BASIS): Promise<boolean> {
   const idx = await holeIndex(true, basis);
   if (!idx) return false;
@@ -111,9 +108,7 @@ export async function ladeHoheitImGebiet(b: Box, basis = API_BASIS): Promise<boo
   return geholt.every(Boolean);
 }
 
-
 export const RAND_UNKLAR_SM = 0.5;
-
 
 export async function hoheitAusKacheln(
   lat: number, lon: number, netz = false, basis = API_BASIS,
@@ -128,7 +123,6 @@ export async function hoheitAusKacheln(
   if (zone) return { zone };
   return abstandZumRandSm(k, lat, lon, idx.faktor) < RAND_UNKLAR_SM ? undefined : { zone: null };
 }
-
 
 export function _vergessen(): void {
   db = null; offen = null; index = null; imSpeicher.clear();

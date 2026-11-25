@@ -2,41 +2,38 @@ import { werteSpurAus, type Fix, type ManuellePause } from './spur';
 import { antriebsbilanz, type AntriebWechsel } from './antriebsbilanz';
 import { letzteMorgendaemmerung } from './tagesende';
 
-
-
-
 export interface BerichtFahrt {
   fixe: Fix[];
-  
+
   wechsel: AntriebWechsel[];
-  
+
   manuellePausen?: ManuellePause[];
 }
 
 export interface Anteil {
   nm: number;
-  
+
   prozent: number;
   stunden: number;
-  
+
   knoten: number;
 }
 
 export interface Berichtsblock {
   nm: number;
   fahrzeitS: number;
-  
+
   knoten: number;
   segel: Anteil;
   motor: Anteil;
-  
+
   offen: Anteil;
 }
 
 export interface Navigatorbericht {
   gesamt: Berichtsblock;
   heute: Berichtsblock;
-  
+
   heuteSeit: number | null;
 }
 
@@ -45,7 +42,6 @@ const LEER: Berichtsblock = {
   nm: 0, fahrzeitS: 0, knoten: 0,
   segel: { ...LEER_ANTEIL }, motor: { ...LEER_ANTEIL }, offen: { ...LEER_ANTEIL },
 };
-
 
 export function anteil(nm: number, sekunden: number, gesamtNM: number): Anteil {
   const stunden = sekunden / 3600;
@@ -56,7 +52,6 @@ export function anteil(nm: number, sekunden: number, gesamtNM: number): Anteil {
     knoten: stunden > 0 ? nm / stunden : 0,
   };
 }
-
 
 export function berichtsblock(fahrten: BerichtFahrt[], vonT?: number): Berichtsblock {
   const b: Berichtsblock = {
@@ -69,9 +64,7 @@ export function berichtsblock(fahrten: BerichtFahrt[], vonT?: number): Berichtsb
   for (const f of fahrten) {
     const fixe = vonT === undefined ? f.fixe : f.fixe.filter((x) => x.t >= vonT);
     if (fixe.length < 2) continue;
-    
-    
-    
+
     const a = werteSpurAus(fixe, {}, f.manuellePausen ?? []);
     b.nm += a.streckeNM;
     b.fahrzeitS += a.fahrzeitS;
@@ -87,7 +80,6 @@ export function berichtsblock(fahrten: BerichtFahrt[], vonT?: number): Berichtsb
   return b;
 }
 
-
 export function navigatorbericht(
   fahrten: BerichtFahrt[],
   jetzt: number,
@@ -95,8 +87,7 @@ export function navigatorbericht(
 ): Navigatorbericht {
   const gesamt = fahrten.length ? berichtsblock(fahrten) : { ...LEER };
   const heuteSeit = position ? letzteMorgendaemmerung(position.lat, position.lon, jetzt) : null;
-  
-  
+
   const heute = heuteSeit === null ? { ...LEER } : berichtsblock(fahrten, heuteSeit);
   return { gesamt, heute, heuteSeit };
 }

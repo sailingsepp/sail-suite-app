@@ -7,7 +7,6 @@ import { umgebungLokal, ladeUmgebungFuer } from '@/data/umgebung';
 import type { UmgebungPaket } from '@/core/umgebung';
 import { escapeHtml } from '@/core/html';
 
-
 const PANE = 'tbFeuer';
 
 const ZOOM_AB = 10;
@@ -50,7 +49,6 @@ const aktiv = () => {
 };
 const ruhig = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-
 function animation(s: Sektor): string {
   const k = taktSchluessel(s);
   const da = animationen.get(k);
@@ -75,8 +73,7 @@ function feuerAus(p: UmgebungPaket): Feuer[] {
   const da = feuerJeRevier.get(`${p.revier}|${p.erstellt}`);
   if (da) return da;
   const f: Feuer[] = [];
-  
-  
+
   const gesehen = new Set<string>();
   for (const [lat, lon, tags] of p.elemente) {
     if (!tags['seamark:light:character'] && !tags['seamark:light:1:character']) continue;
@@ -90,7 +87,6 @@ function feuerAus(p: UmgebungPaket): Feuer[] {
   feuerJeRevier.set(`${p.revier}|${p.erstellt}`, f);
   return f;
 }
-
 
 interface FeuerOhne { lat: number; lon: number; farbe: FeuerFarbe | null; gross: boolean }
 const ohneJeRevier = new Map<string, FeuerOhne[]>();
@@ -111,7 +107,6 @@ function feuerOhneKennung(p: UmgebungPaket): FeuerOhne[] {
   ohneJeRevier.set(`${p.revier}|${p.erstellt}`, f);
   return f;
 }
-
 
 const phase = (f: Feuer, periode: number) => (((Math.abs(Math.sin(f.lat * 12.9898 + f.lon * 78.233)) * 43758.5453) % 1) * periode);
 
@@ -136,8 +131,7 @@ async function zeichne(): Promise<void> {
     .sort((a, c) => Number(c.gross) - Number(a.gross)).slice(0, HOECHSTENS);
   const still = ruhig();
   const zoom = k.getZoom();
-  
-  
+
   const kaesten: { x0: number; y0: number; x1: number; y1: number }[] = [];
   const frei = (b: { x0: number; y0: number; x1: number; y1: number }) =>
     kaesten.every((a) => b.x1 < a.x0 || b.x0 > a.x1 || b.y1 < a.y0 || b.y0 > a.y1);
@@ -154,8 +148,7 @@ async function zeichne(): Promise<void> {
   const neu: FeuerPlatz[] = [];
   for (const f of imBild) {
     const s = sichtbarerSektor(f, b);
-    
-    
+
     if (verdunkelt(f, b)) {
       L.marker([f.lat, f.lon], {
         pane: PANE, interactive: false, keyboard: false,
@@ -163,9 +156,7 @@ async function zeichne(): Promise<void> {
       }).addTo(gruppe);
       continue;
     }
-    
-    
-    
+
     const anim = still ? '' : `animation:${animation(s)} ${s.periode.toFixed(3)}s step-end ${(-phase(f, s.periode)).toFixed(2)}s infinite;`;
     const farbe = FARBE[s.takte.find((t) => t.h > 0)?.farbe ?? s.farben[0]!];
     const seite = textSeite(f, s.kennung);
@@ -179,8 +170,7 @@ async function zeichne(): Promise<void> {
       }),
     }).addTo(gruppe);
   }
-  
-  
+
   for (const f of feuerOhneKennung(paket).filter((x) => sicht.contains([x.lat, x.lon])).slice(0, HOECHSTENS)) {
     const farbe = FARBE[f.farbe ?? 'white'];
     L.marker([f.lat, f.lon], {
@@ -197,7 +187,6 @@ function bald(): void {
   geplant = window.setTimeout(() => { geplant = 0; void zeichne(); }, 150);
 }
 
-
 export function initLeuchtfeuer(position: () => Punkt | null, netz: () => boolean): void {
   boot = position;
   online = netz;
@@ -211,7 +200,6 @@ export function initLeuchtfeuer(position: () => Punkt | null, netz: () => boolea
   bald();
 }
 
-
 let zuletztBoot = 0;
 export function feuerBootGeaendert(): void {
   if (!aktiv() || Date.now() - zuletztBoot < 30_000) return;
@@ -219,19 +207,17 @@ export function feuerBootGeaendert(): void {
   bald();
 }
 
-
-
 export const FEUER_TREFFER_PX = 44;
 
 export async function feuerAm(
   k: L.Map, ll: L.LatLng, radiusPx = FEUER_TREFFER_PX, client: { x: number; y: number } | null = null,
 ): Promise<{ lat: number; lon: number; tags: Readonly<Record<string, string>>; sichtbar: number | null } | null> {
   if (k.getZoom() < ZOOM_AB || !(aktiv() || seezeichenAn())) return null;
-  
+
   const punkt = { lat: ll.lat, lon: ll.lng };
   const paket = await umgebungLokal(punkt, 0).catch(() => null) ?? (online() ? await ladeUmgebungFuer(punkt).catch(() => null) : null);
   if (!paket) return null;
-  
+
   let ziel = ll;
   if (client) {
     for (const el of k.getContainer().querySelectorAll<HTMLElement>('.tb-feuer-text[data-lat]')) {
@@ -246,7 +232,7 @@ export async function feuerAm(
   let bestes: { lat: number; lon: number; tags: Readonly<Record<string, string>> } | null = null;
   let bestD = radiusPx;
   for (const [lat, lon, tags] of paket.elemente) {
-    
+
     if (!istFeuer(tags)) continue;
     const d = k.latLngToContainerPoint([lat, lon]).distanceTo(p0);
     if (d <= bestD) { bestD = d; bestes = { lat, lon, tags }; }

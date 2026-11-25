@@ -1,45 +1,37 @@
 import type { Punkt } from './types';
 
-
-
-
 export type QuellenId = 'osm' | 'openseamap' | 'skipperguide' | 'emodnet' | 'nutzer';
-
 
 export type Feldguete = 'A' | 'B' | 'C' | 'D';
 
 export interface Quellenangabe {
   id: QuellenId;
-  
+
   abgerufen: number;
-  
+
   stand?: string;
   link?: string;
 }
-
 
 export interface Feldwert<T> {
   wert: T;
   quelle: QuellenId;
   guete: Feldguete;
-  
+
   roh?: string;
 }
-
 
 export type Quellenlage = 'geliefert' | 'nichts_gefunden' | 'fehlgeschlagen' | 'nicht_gefragt';
 
 export type OrtArt = 'marina' | 'hafen' | 'bucht' | 'boje' | 'poi';
 
-
 export interface Zugang {
   maxTiefgangM?: Feldwert<number>;
   maxLaengeM?: Feldwert<number>;
   maxBreiteM?: Feldwert<number>;
-  
+
   durchfahrtshoeheM?: Feldwert<number>;
 }
-
 
 export interface Liegen {
   liegeplaetze?: Feldwert<number>;
@@ -71,20 +63,19 @@ export interface Funk {
   website?: Feldwert<string>;
 }
 
-
 export interface Seezeichen {
   position: Punkt;
   name?: string;
-  
+
   art: string;
-  
+
   kennung?: string;
-  
+
   farbe?: string;
   periodeS?: number;
   tragweiteNM?: number;
   hoeheM?: number;
-  
+
   sektorVonDeg?: number;
   sektorBisDeg?: number;
 }
@@ -100,15 +91,13 @@ export interface NautischerOrt {
   funk: Funk;
   seezeichen: Seezeichen[];
   quellen: Quellenangabe[];
-  
+
   lage: Partial<Record<QuellenId, Quellenlage>>;
 }
-
 
 export function darfEntscheiden(feld: Feldwert<unknown> | undefined): boolean {
   return feld !== undefined && (feld.guete === 'A' || feld.guete === 'B');
 }
-
 
 const GUETE_JE_TAG: Record<string, Feldguete> = {
   vhf: 'B',
@@ -125,25 +114,21 @@ function guete(tag: string): Feldguete {
   return GUETE_JE_TAG[tag] ?? 'C';
 }
 
-
 function zahl(roh: string | undefined): number | null {
   if (!roh) return null;
-  
-  
+
   const treffer = /-?\d+(?:[.,]\d+)?/.exec(roh);
   if (!treffer) return null;
   const n = Number(treffer[0].replace(',', '.'));
   return Number.isFinite(n) ? n : null;
 }
 
-
 function jaNein(roh: string | undefined): boolean | undefined {
   if (roh === undefined) return undefined;
   const v = roh.trim().toLowerCase();
   if (v === 'yes' || v === 'true' || v === '1') return true;
   if (v === 'no' || v === 'false' || v === '0') return false;
-  
-  
+
   return v.length > 0 ? true : undefined;
 }
 
@@ -153,7 +138,6 @@ function feld<T>(wert: T | null | undefined, tag: string, roh?: string): Feldwer
   if (roh !== undefined && roh !== String(wert)) f.roh = roh;
   return f;
 }
-
 
 function setze<O, K extends keyof O>(ziel: O, schluessel: K, wert: O[K] | undefined): void {
   if (wert !== undefined) ziel[schluessel] = wert;
@@ -167,15 +151,11 @@ export function ortArtAusTags(tags: Record<string, string>): OrtArt {
   return 'poi';
 }
 
-
 export function ortAusOsm(
   id: string, position: Punkt, tags: Record<string, string>, abgerufen: number,
 ): NautischerOrt {
   const zugang: Zugang = {};
-  
-  
-  
-  
+
   const tiefgang = [tags['maxdraft'], tags['maxdraught'], tags['draft']]
     .map((r) => ({ n: zahl(r), roh: r }))
     .filter((x): x is { n: number; roh: string } => x.n !== null)
@@ -201,7 +181,7 @@ export function ortAusOsm(
   setze(versorgung, 'faekalienannahme', feld(jaNein(tags['sanitary_dump_station']), 'sanitary_dump_station', tags['sanitary_dump_station']));
 
   const funk: Funk = {};
-  
+
   setze(funk, 'vhfKanal', feld(tags['vhf'], 'vhf'));
   setze(funk, 'telefon', feld(tags['phone'], 'phone'));
   setze(funk, 'email', feld(tags['email'], 'email'));
@@ -222,7 +202,6 @@ export function ortAusOsm(
   };
 }
 
-
 const FACILITY_FELD: Record<string, keyof Versorgung> = {
   fuel_station: 'diesel',
   boat_hoist: 'kran',
@@ -235,10 +214,8 @@ const FACILITY_FELD: Record<string, keyof Versorgung> = {
   water: 'wasser',
   electricity: 'strom',
   sewerage_disposal: 'faekalienannahme',
-  
-  
-};
 
+};
 
 export function ergaenzeVersorgung(ort: NautischerOrt, kategorien: string[]): NautischerOrt {
   const versorgung: Versorgung = { ...ort.versorgung };
@@ -246,8 +223,7 @@ export function ergaenzeVersorgung(ort: NautischerOrt, kategorien: string[]): Na
     for (const teil of roh.split(';')) {
       const schluessel = FACILITY_FELD[teil.trim()];
       if (!schluessel) continue;
-      
-      
+
       if (versorgung[schluessel] !== undefined) continue;
       (versorgung as Record<string, Feldwert<boolean>>)[schluessel] =
         { wert: true, quelle: 'osm', guete: 'C', roh: teil.trim() };
@@ -256,12 +232,8 @@ export function ergaenzeVersorgung(ort: NautischerOrt, kategorien: string[]): Na
   return { ...ort, versorgung };
 }
 
-
 export function seezeichenAusOsm(position: Punkt, tags: Record<string, string>): Seezeichen | null {
-  
-  
-  
-  
+
   const p = (name: string): string | undefined =>
     tags[`seamark:light:${name}`] ?? tags[`seamark:light:1:${name}`];
 
@@ -288,13 +260,12 @@ export function seezeichenAusOsm(position: Punkt, tags: Record<string, string>):
   return z;
 }
 
-
 export interface Zusammengefuehrt<T> {
-  
+
   massgeblich: Feldwert<T>;
-  
+
   alle: Feldwert<T>[];
-  
+
   widersprueche: boolean;
 }
 

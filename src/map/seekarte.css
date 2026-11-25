@@ -1,6 +1,3 @@
-
-
-
 .leaflet-container.sk-karte {
   background-color: #E6EBEE;
   background-image: repeating-linear-gradient(45deg, rgba(15, 40, 57, .10) 0 1px, transparent 1px 9px);
@@ -10,11 +7,9 @@
   background-image: repeating-linear-gradient(45deg, rgba(196, 68, 44, .22) 0 1px, transparent 1px 9px);
 }
 
-
-
 .tb-kn-icon { pointer-events: none; overflow: visible; }
 .tb-kn {
-  
+
   --kn-text: #0F2839; --kn-halo: #F7FAFB; --kn-insel: #44606E; --kn-akzent: #D9861C; --kn-glyph: #0F2839; --kn-berg: #B86F12;
   --kn-anker: #1F6FB2;
   position: absolute; left: 0; top: 0; width: 0; height: 0; color: var(--kn-text);

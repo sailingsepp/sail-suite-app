@@ -13,8 +13,6 @@ import { aktuelleSprache } from '@/shell/sprache';
 import { STRINGS } from './strings';
 import type { BordkassenEingabe } from './pdf';
 
-
-
 export interface KasseMitglied { id: string; name: string; ich: boolean }
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
@@ -33,8 +31,6 @@ let sendetGerade = false;
 let formKurs: { waehrung: string; datum: string; kurs: Kurs | null | undefined } | null = null;
 
 const heutigeKurse = new Map<string, Kurs>();
-
-
 
 function liesAusstandAlle(): Record<string, Buchung[]> {
   try {
@@ -55,7 +51,6 @@ function setzeAusstand(id: string, liste: Buchung[]): void {
   schreibeAusstandAlle(a);
 }
 
-
 async function sendeAusstand(id: string): Promise<void> {
   if (!token || sendetGerade) return;
   sendetGerade = true;
@@ -66,8 +61,7 @@ async function sendeAusstand(id: string): Promise<void> {
     for (const b of ausstand(id)) {
       bearbeitet.add(`${b.id}|${b.geaendert}`);
       const r = await schreibeBuchung(token, id, b);
-      
-      
+
       if (r.status === 0 || (r.status >= 500 && r.status !== 507)) { abgebrochen = true; break; }
       setzeAusstand(id, ausstand(id).filter((x) => !(x.id === b.id && x.geaendert === b.geaendert)));
       angenommen ||= r.ok;
@@ -75,20 +69,15 @@ async function sendeAusstand(id: string): Promise<void> {
     }
   } finally {
     sendetGerade = false;
-    
-    
+
     if (angenommen && toernId === id) merkeLesestand(lesePfad(id), buchungen.filter((b) => !ausstand(id).some((x) => x.id === b.id)));
     if (toernId === id) zeichne();
   }
-  
-  
+
   if (!abgebrochen && ausstand(id).some((b) => !bearbeitet.has(`${b.id}|${b.geaendert}`))) await sendeAusstand(id);
 }
 
 const lesePfad = (id: string) => `/api/bordkasse/${encodeURIComponent(id)}`;
-
-
-
 
 export async function ladeBordkasse(sitzung: string, id: string, archiviert: boolean): Promise<void> {
   const anderer = toernId !== id;
@@ -108,14 +97,12 @@ export async function ladeBordkasse(sitzung: string, id: string, archiviert: boo
   void ladeHeutigeKurse();
 }
 
-
 async function nachholeKurse(id: string): Promise<void> {
   if (nurLesen) return;
   const offen = kursNachzuholen(buchungen);
   const fehlt = new Set<string>();
   for (const b of offen) {
-    
-    
+
     const schluessel = `${b.waehrung}|${b.datum}`;
     if (fehlt.has(schluessel)) continue;
     const k = await holeKurs(b.waehrung, b.datum);
@@ -124,7 +111,6 @@ async function nachholeKurse(id: string): Promise<void> {
     bucheEin({ ...b, kurs: k, geaendert: Math.max(Date.now(), b.geaendert + 1) }, false);
   }
 }
-
 
 function kursWaehrungen(): string[] {
   return [...new Set([ortsWaehrung, ...buchungen.filter((b) => !b.geloescht).map((b) => b.waehrung)]
@@ -140,14 +126,11 @@ async function ladeHeutigeKurse(): Promise<void> {
   if (neu) zeichneAusgleich();
 }
 
-
 export function setzeKassenCrew(liste: KasseMitglied[]): void {
   crew = liste.filter((m) => m.name.trim());
   setzeFormular();
   zeichne();
 }
-
-
 
 function heute(): string {
   const d = new Date();
@@ -161,7 +144,6 @@ function gemerkteWaehrung(): string {
   } catch { return 'EUR'; }
 }
 
-
 function fuelleWaehrungen(wahl: string): void {
   const sel = $<HTMLSelectElement>('in-kasse-waehrung');
   if (!sel) return;
@@ -171,7 +153,6 @@ function fuelleWaehrungen(wahl: string): void {
   sel.value = wahl;
   setzePlatzhalter();
 }
-
 
 function setzePlatzhalter(): void {
   const w = $<HTMLSelectElement>('in-kasse-waehrung')?.value ?? 'EUR';
@@ -184,11 +165,10 @@ function formDatum(): string {
   return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : heute();
 }
 
-
 function aktualisiereFormKurs(): void {
   const w = $<HTMLSelectElement>('in-kasse-waehrung')?.value ?? 'EUR';
   const datum = formDatum();
-  
+
   if (w !== 'EUR' && (formKurs?.waehrung !== w || formKurs.datum !== datum || formKurs.kurs === null)) {
     const f = { waehrung: w, datum, kurs: undefined as Kurs | null | undefined };
     formKurs = f;
@@ -201,7 +181,6 @@ function aktualisiereFormKurs(): void {
   }
   zeigeFormKurs();
 }
-
 
 function zeigeFormKurs(): void {
   const ziel = $('vb-kasse-kurs');
@@ -217,13 +196,11 @@ function zeigeFormKurs(): void {
   ziel.textContent = [eur === null ? '' : `≈ ${geld(eur, 'EUR')}`, kursText(w, k)].filter(Boolean).join(' · ');
 }
 
-
 function kursText(w: string, k: Kurs, mitDatum = true): string {
   const zahl = new Intl.NumberFormat(ort(), { maximumFractionDigits: k.eurJe >= 100 ? 0 : 4 }).format(k.eurJe);
   const z = wort('kasse.kursZeile').replace('{kurs}', zahl).replace('{w}', w);
   return mitDatum ? `${z} · ${datumText(k.datum)}` : z;
 }
-
 
 function setzeFormular(): void {
   const datum = $<HTMLInputElement>('in-kasse-datum');
@@ -244,7 +221,6 @@ function setzeFormular(): void {
 
 const katName = (k: Kategorie): string => wort(`kasse.kat.${k}`);
 
-
 function fuelleKategorien(): void {
   const sel = $<HTMLSelectElement>('in-kasse-kategorie');
   if (!sel) return;
@@ -252,7 +228,6 @@ function fuelleKategorien(): void {
   sel.innerHTML = KATEGORIEN.map((k) => `<option value="${k}">${escapeHtml(katName(k))}</option>`).join('');
   sel.value = alt;
 }
-
 
 function zeichneBeteiligte(): void {
   const ziel = $('vb-kasse-fuer');
@@ -271,7 +246,6 @@ function zeichneBeteiligte(): void {
   }).join('');
 }
 
-
 export function sucheOrtswaehrung(): void {
   if (ortGesucht || nurLesen || !('geolocation' in navigator)) return;
   ortGesucht = true;
@@ -281,7 +255,7 @@ export function sucheOrtswaehrung(): void {
         const w = waehrungAusStaaten(staaten);
         if (!w) return;
         ortsWaehrung = w;
-        
+
         const betrag = $<HTMLInputElement>('in-kasse-betrag');
         fuelleWaehrungen(betrag?.value.trim() ? ($<HTMLSelectElement>('in-kasse-waehrung')?.value ?? w) : w);
         aktualisiereFormKurs();
@@ -308,7 +282,6 @@ function zeigeStatus(text: string): void {
   if (s) s.textContent = text;
 }
 
-
 function bucheEin(b: Buchung, mitStatus = true): void {
   if (!toernId) return;
   const id = toernId;
@@ -319,7 +292,6 @@ function bucheEin(b: Buchung, mitStatus = true): void {
     if (mitStatus && toernId === id) zeigeStatus(wort(ausstand(id).some((x) => x.id === b.id) ? 'kasse.gespeichertLokal' : 'kasse.gespeichert'));
   });
 }
-
 
 let buchtGerade = false;
 
@@ -341,7 +313,7 @@ async function eintragenJetzt(): Promise<void> {
   const alle = $<HTMLInputElement>('in-kasse-alle')?.checked ?? true;
   const fuer = alle ? crew.map((m) => m.id)
     : [...document.querySelectorAll<HTMLInputElement>('#vb-kasse-fuer input:checked')].map((x) => x.value);
-  
+
   const gewichte: Record<string, number> = {};
   if (!alle) {
     for (const sel of document.querySelectorAll<HTMLSelectElement>('#vb-kasse-fuer select[data-anteil]')) {
@@ -356,7 +328,7 @@ async function eintragenJetzt(): Promise<void> {
   if (betrag === null) { zeigeStatus(wort('kasse.fehlerBetrag').replace('{n}', String(nachkomma(waehrung)))); return; }
   if (!zahler) { zeigeStatus(wort('kasse.fehlerZahler')); return; }
   if (!fuer.length) { zeigeStatus(wort('kasse.fehlerFuer')); return; }
-  
+
   let kurs: Kurs | null = null;
   if (waehrung !== 'EUR') {
     kurs = formKurs?.waehrung === waehrung && formKurs.datum === datum && formKurs.kurs
@@ -388,9 +360,6 @@ function loesche(b: Buchung): void {
   if (nurLesen || !window.confirm(wort('kasse.loeschenFrage'))) return;
   bucheEin({ ...b, geloescht: true, geaendert: Math.max(Date.now(), b.geaendert + 1) });
 }
-
-
-
 
 function name(id: string): string {
   const m = crew.find((x) => x.id === id);
@@ -430,7 +399,6 @@ function datumText(iso: string): string {
   return new Date(Date.UTC(j!, m! - 1, t!)).toLocaleDateString(ort(), { day: 'numeric', month: 'short', timeZone: 'UTC' });
 }
 
-
 export function pfeilbild(personen: readonly string[], zahlungen: readonly Ausgleich[], waehrung: string,
   saldo: ReadonlyMap<string, number>): string {
   const B = 360, H = personen.length <= 2 ? 150 : 300, cx = B / 2, cy = H / 2;
@@ -439,9 +407,7 @@ export function pfeilbild(personen: readonly string[], zahlungen: readonly Ausgl
     const w = personen.length === 2 ? Math.PI * i : -Math.PI / 2 + (2 * Math.PI * i) / personen.length;
     return [p, { x: cx + R * Math.cos(w), y: cy + R * Math.sin(w), w }];
   }));
-  
-  
-  
+
   type Kasten = { x0: number; y0: number; x1: number; y1: number };
   const belegt: Kasten[] = [];
   const schneidet = (a: Kasten) => belegt.some((b) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0);
@@ -449,8 +415,7 @@ export function pfeilbild(personen: readonly string[], zahlungen: readonly Ausgl
     const { x, y, w } = lage.get(p)!;
     const s = saldo.get(p) ?? 0;
     const art = s > 0 ? 'bekommt' : s < 0 ? 'schuldet' : 'quitt';
-    
-    
+
     const oben = personen.length > 2 && Math.sin(w) < -0.9;
     const unten = !oben && (personen.length <= 2 || Math.sin(w) > 0.3 || Math.sin(w) < -0.3);
     const ly = oben ? y - r - 8 : unten ? y + r + 20 : y + 5;
@@ -475,8 +440,7 @@ export function pfeilbild(personen: readonly string[], zahlungen: readonly Ausgl
       const mx = x1 + (x2 - x1) * f, my = y1 + (y2 - y1) * f;
       return { x0: mx - bt / 2, y0: my - 13, x1: mx + bt / 2, y1: my + 13 };
     };
-    
-    
+
     const stellen = [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8, 0.12, 0.88];
     const flaeche = (a: Kasten) => belegt.reduce((f, b) =>
       f + Math.max(0, Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0)) * Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0)), 0);
@@ -504,7 +468,7 @@ function zeichneAusgleich(): void {
     const titel = waehrung === 'EUR'
       ? (je.size > 1 ? `<h4 class="vb-kasse-waehrung">EUR</h4>` : '')
       : `<h4 class="vb-kasse-waehrung">${escapeHtml(waehrung)} · ${escapeHtml(wort('kasse.ohneKurs'))}</h4>`;
-    
+
     const lokal = waehrung === 'EUR' ? kursWaehrungen().find((w) => heutigeKurse.has(w)) : undefined;
     const inLokal = (z: Ausgleich) => (lokal
       ? `<span class="vb-kasse-lokal">≈ ${escapeHtml(geld(ausEur(z.betrag, lokal, heutigeKurse.get(lokal)!.eurJe), lokal))}</span>` : '');
@@ -535,7 +499,6 @@ function zeichneAusgleich(): void {
   }));
 }
 
-
 function eurZeile(b: Buchung): string {
   if (b.waehrung === 'EUR') return '';
   const eur = inEur(b);
@@ -548,7 +511,7 @@ function zeichneListe(): void {
   if (!ziel) return;
   const offen = new Set(toernId ? ausstand(toernId).map((b) => b.id) : []);
   const sichtbar = buchungen.filter((b) => !b.geloescht);
-  
+
   const summen = new Map<string, number>();
   for (const b of sichtbar) {
     if (b.art !== 'ausgabe') continue;
@@ -561,7 +524,7 @@ function zeichneListe(): void {
     summe.hidden = !summen.size;
     summe.textContent = [...summen].map(([w, s]) => geld(s, w)).join(' · ');
   }
-  
+
   const kat = $('vb-kasse-kategorien');
   if (kat) {
     const zeilen: string[] = [];
@@ -597,7 +560,6 @@ function zeichneListe(): void {
   }));
 }
 
-
 export function kassenEingabe(): Omit<BordkassenEingabe, 'toernName'> {
   const je = salden(buchungen);
   const waehrungen = [...je].sort(([a], [b]) => (a === 'EUR' ? -1 : b === 'EUR' ? 1 : a.localeCompare(b)))
@@ -624,7 +586,6 @@ export function kassenEingabe(): Omit<BordkassenEingabe, 'toernName'> {
   return { sprache: aktuelleSprache(), waehrungen, arten, zeilen, name, geld };
 }
 
-
 export function zeichne(): void {
   setzePlatzhalter();
   fuelleKategorien();
@@ -642,7 +603,7 @@ export function initBordkasse(): void {
   $('in-kasse-datum')?.addEventListener('change', aktualisiereFormKurs);
   $('in-kasse-betrag')?.addEventListener('input', zeigeFormKurs);
   document.querySelectorAll<HTMLButtonElement>('[data-reiter="kasse"]').forEach((k) => k.addEventListener('click', sucheOrtswaehrung));
-  
+
   window.addEventListener('online', () => {
     if (token && toernId) void ladeBordkasse(token, toernId, nurLesen);
     aktualisiereFormKurs();

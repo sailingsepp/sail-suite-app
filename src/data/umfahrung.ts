@@ -5,14 +5,13 @@ import { kuestenlinienUmGebiet } from './overpass';
 import { molenAlsKueste, ohneMolen, HAFEN_STRECKE_SM, HAFEN_KUESTE_SM } from '@/core/molen';
 import { molenUm } from './seekartenObjekte';
 
-
 export interface UmfahreneRoute extends RoutenUmfahrung {
   kuesteFehlt: boolean;
-  
+
   rueckfall: boolean;
-  
+
   vtgBeachtet?: boolean;
-  
+
   durchVtg?: number[];
 }
 
@@ -20,7 +19,7 @@ export async function umfahreWegpunkte(wegpunkte: readonly Punkt[]): Promise<Umf
   if (wegpunkte.length < 2) {
     return { punkte: [...wegpunkte], umfahreneAbschnitte: [], ohneWeg: [], kuesteFehlt: false, rueckfall: false };
   }
-  
+
   let rand = 4;
   for (let i = 1; i < wegpunkte.length; i++) rand = Math.max(rand, randFuer(wegpunkte[i - 1]!, wegpunkte[i]!));
   const box = boxUm(wegpunkte, rand);
@@ -34,7 +33,6 @@ export async function umfahreWegpunkte(wegpunkte: readonly Punkt[]): Promise<Umf
   const r2 = r.ohneWeg.length ? await zweiterVersuch(r, wegpunkte) : r;
   return durchHaefen(r2, wegpunkte);
 }
-
 
 export async function hafenDaten(punkte: readonly Punkt[]): Promise<{ kueste: [Punkt, Punkt][]; molen: [Punkt, Punkt][] }> {
   const [molenRoh, ...kuesten] = await Promise.all([
@@ -58,7 +56,6 @@ export async function hafenDaten(punkte: readonly Punkt[]): Promise<{ kueste: [P
   return { kueste, molen: molenAlsKueste(molenRoh) };
 }
 
-
 async function durchHaefen(r: UmfahreneRoute, wegpunkte: readonly Punkt[]): Promise<UmfahreneRoute> {
   if (!r.abschnitte?.length) return r;
   const { kueste, molen } = await hafenDaten(wegpunkte);
@@ -81,7 +78,6 @@ async function durchHaefen(r: UmfahreneRoute, wegpunkte: readonly Punkt[]): Prom
     umfahreneAbschnitte: [...umfahrene].sort((x, y) => x - y),
   };
 }
-
 
 async function zweiterVersuch(r: UmfahreneRoute, wegpunkte: readonly Punkt[]): Promise<UmfahreneRoute> {
   if (!r.abschnitte) return r;
@@ -114,7 +110,6 @@ async function zweiterVersuch(r: UmfahreneRoute, wegpunkte: readonly Punkt[]): P
     ...(vtgBeachtet ? { vtgBeachtet: true, durchVtg: [...durchVtg].sort((x, y) => x - y) } : {}),
   };
 }
-
 
 export function umfahreMitVtg(wegpunkte: readonly Punkt[], kueste: readonly [Punkt, Punkt][]): RoutenUmfahrung & { vtgBeachtet: true; durchVtg: number[] } {
   const sperre = [...kueste, ...vtgAlsKueste()];

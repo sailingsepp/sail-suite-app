@@ -1,8 +1,6 @@
 import type { Sprache } from '@/core/types';
 import type { TourSchritt } from '@/shell/strings';
 
-
-
 export const TITLE: Record<Sprache, string> = {
   de: 'Törnplanung: die Etappenkette des Törns',
   en: 'VoyagePlan: the voyage’s chain of legs',
@@ -50,7 +48,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'automatik.vorschlagen': 'Plan vorschlagen',
     'automatik.rechnet': 'Rechnet: Häfen, Küstenlinien und Wind werden geladen …',
     'automatik.ladezeit': 'Die Dauer hängt von der Größe des Reviers ab. Der Stand steht darunter. Bildschirm anlassen: Die Rechnung läuft nur, solange diese Seite offen ist.',
-    
+
     'automatik.schrittKandidaten': 'Liegeplätze im Revier werden gesucht …',
     'automatik.schrittKueste': 'Küstenlinien werden geladen …',
     'automatik.schrittInseln': 'Inseln werden zugeordnet …',
@@ -66,16 +64,11 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'automatik.nachrechnungUebersprungen': 'Die Nachrechnung aller übrigen Strecken entfiel (Netz zu groß oder Zeitbudget erreicht).',
     'automatik.unterbrochen': 'Die letzte Berechnung wurde unterbrochen. Die Seite wurde neu geladen oder geschlossen. Bitte „Plan vorschlagen" erneut drücken und den Bildschirm anlassen.',
     'automatik.speichertGerade': 'Speichert …',
-    
-    
-    
-    
+
     'automatik.gespeichert': 'Gespeichert: beim nächsten Öffnen wieder da, auch für die Crew.',
     'automatik.speicherFehler': 'Berechnet, aber nicht gespeichert. Bitte erneut versuchen.',
     'automatik.nurAngezeigt': 'Nur angezeigt: speichern kann nur, wem der Törn gehört.',
-    
-    
-    
+
     'automatik.crewNichtWachfaehig': 'Hinweis: Der Plan enthält eine Nachtfahrt, laut Crewliste ist aber nur {n} Person wachfähig (Pax und Smutje zählen nicht). Ohne Wachablösung bleibt eine Person die ganze Nacht am Ruder.',
     'automatik.optionEins': 'Option 1',
     'automatik.optionZwei': 'Zweite Option',
@@ -206,8 +199,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'woche.tabAuto': 'Vorgeschlagen',
     'woche.tabHand': 'Von Hand',
     'woche.tabOptionen': 'Vergleichen',
-    
-    
+
     'planung.fein': 'Feineinstellungen',
     'planung.nachtfahrtBudget': 'Nachtfahrten im Törn',
     'planung.ablegenDunkel': 'Ablegen bei Dunkelheit',
@@ -237,8 +229,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'wunschliste.artUebernachtung': 'Übernachtung',
     'wunschliste.artRuhetag': 'Ruhetag',
     'wunschliste.artUmschalten': '{name}: Art wechseln (jetzt {art})',
-    
-    
+
     'schritt.regeln': 'Regeln',
     'raender.titel': 'Start und Rückgabe',
     'raender.vonLabel': 'Übernahme am',
@@ -377,8 +368,6 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
   Die <b>Fenster der Seekarte</b> (Feuer, Tonnen, Gefahrenstellen, Häfen und Tankstellen antippen) geben die Einträge in OpenSeaMap und OpenStreetMap wieder; was dort fehlt, fehlt auch im Fenster, ein Feuer ohne eingetragene Kennung steht als solches da. Maßgeblich sind Seekarte, Leuchtfeuerverzeichnis und Hafenhandbuch. Das <b>Luftbild</b> einer Marina zeigt Aufnahmen unbekannten Datums, oft mehrere Jahre alt.
 `,
 
-
-    
     'menu.seiteLinks': 'Seitenleiste links',
     'menu.seezeichen': 'Seezeichen auf der Karte',
     'raender.uebernahme': 'Übernahme',
@@ -805,8 +794,6 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
   The <b>chart windows</b> (tap a light, buoy, hazard, harbour or fuel station) show the entries in OpenSeaMap and OpenStreetMap; what is missing there is missing in the window, and a light without a recorded characteristic is marked as such. The chart, the list of lights and the pilot book prevail. The <b>aerial view</b> of a marina shows images of unknown date, often several years old.
 `,
 
-
-    
     'menu.seiteLinks': 'Sidebar on the left',
     'menu.seezeichen': 'Sea marks on the map',
     'raender.uebernahme': 'Check-in',

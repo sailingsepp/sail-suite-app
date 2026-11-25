@@ -1,8 +1,6 @@
-
 import type { Punkt } from './types';
 import { distNM, bearingDeg, destPoint } from './geo';
 import { anzeigeKn, beaufort } from '@/briefing/wind';
-
 
 export const MIN_GEWINN_MIN = 15;
 
@@ -15,13 +13,13 @@ export const MIN_VERSATZ_SM = 1.5;
 export const MAX_VERSATZ_SM = 15;
 
 export interface RoutenKandidat {
-  
+
   punkte: Punkt[];
-  
+
   versatzSm: number;
-  
+
   richtungDeg: number;
-  
+
   bogen: Punkt[];
 }
 
@@ -32,7 +30,6 @@ function laengen(punkte: readonly Punkt[]): number[] {
   }
   return cum;
 }
-
 
 function punktBei(punkte: readonly Punkt[], cum: readonly number[], s: number): { p: Punkt; kurs: number } {
   let i = 1;
@@ -46,7 +43,6 @@ function punktBei(punkte: readonly Punkt[], cum: readonly number[], s: number): 
   };
 }
 
-
 export function alternativKandidaten(strecke: readonly Punkt[]): RoutenKandidat[] {
   if (strecke.length < 2) return [];
   const cum = laengen(strecke);
@@ -54,7 +50,7 @@ export function alternativKandidaten(strecke: readonly Punkt[]): RoutenKandidat[
   if (l < MIN_STRECKE_SM) return [];
   const versaetze = [...new Set(VERSATZ_ANTEILE.map((a) => Math.round(Math.min(MAX_VERSATZ_SM, Math.max(MIN_VERSATZ_SM, a * l)) * 10) / 10))];
   const anfang = RAND_ANTEIL * l, ende = (1 - RAND_ANTEIL) * l;
-  
+
   const anteile = [0, 0.25, 0.5, 0.75, 1];
   const out: RoutenKandidat[] = [];
   for (const seite of [-1, 1] as const) {
@@ -80,12 +76,10 @@ export function alternativKandidaten(strecke: readonly Punkt[]): RoutenKandidat[
   return out;
 }
 
-
 export function streckenlaengeSm(punkte: readonly Punkt[]): number {
   const cum = laengen(punkte);
   return cum[cum.length - 1]!;
 }
-
 
 export function seitenRichtung(richtungDeg: number): 'n' | 'o' | 's' | 'w' {
   const r = ((richtungDeg % 360) + 360) % 360;
@@ -95,7 +89,6 @@ export function seitenRichtung(richtungDeg: number): 'n' | 'o' | 's' | 'w' {
   return 'w';
 }
 
-
 export interface Fahrtvergleich {
   totalHrs: number;
   safetyFail: boolean;
@@ -104,12 +97,11 @@ export interface Fahrtvergleich {
   motorShare: number;
   beatShare: number;
   avgSpeed: number;
-  
+
   maxGust?: number;
   maxHs?: number;
   dunkelHrs?: number;
 }
-
 
 const SEEGANG_GRENZEN = [0, 0.1, 0.5, 1.25, 2.5, 4, 6, 9, 14];
 
@@ -125,16 +117,12 @@ export const MAESSIGE_SEE_STUFE = 4;
 
 const DUNKEL_TOLERANZ_HRS = 5 / 60;
 
-
 export function lohntSich(eigene: Fahrtvergleich, alternative: Fahrtvergleich): boolean {
   if ((eigene.totalHrs - alternative.totalHrs) * 60 < MIN_GEWINN_MIN) return false;
   if (alternative.safetyFail && !eigene.safetyFail) return false;
   if (alternative.hasStorm && !eigene.hasStorm) return false;
   if (eigene.isDaylight === true && alternative.isDaylight !== true) return false;
-  
-  
-  
-  
+
   if (eigene.maxGust != null && alternative.maxGust != null) {
     const bftAlt = beaufort(anzeigeKn(alternative.maxGust));
     if (bftAlt >= STARKWIND_BFT && bftAlt > beaufort(anzeigeKn(eigene.maxGust))) return false;
@@ -147,7 +135,6 @@ export function lohntSich(eigene: Fahrtvergleich, alternative: Fahrtvergleich): 
     && alternative.dunkelHrs > eigene.dunkelHrs + DUNKEL_TOLERANZ_HRS) return false;
   return true;
 }
-
 
 export function grundDerAlternative(eigene: Fahrtvergleich, alternative: Fahrtvergleich): 'motor' | 'kreuzen' | 'fahrt' {
   if (eigene.motorShare - alternative.motorShare >= 0.1) return 'motor';

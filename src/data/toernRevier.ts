@@ -1,7 +1,6 @@
 import { toernRevierText, toernRevierStrecke, seegebietSchluessel, REVIER_PFEIL } from '@/core/revierzonen';
 import { landAmPunkt } from './geocode';
 
-
 export async function revierFuerToern(o: {
   start: { lat: number; lon: number } | null;
   ziel: { lat: number; lon: number } | null;
@@ -18,7 +17,6 @@ export async function revierFuerToern(o: {
   const landZiel = o.landZiel ?? await landAmPunkt(o.ziel, sprache);
   return toernRevierStrecke(startText, o.start, { ...o.ziel, land: landZiel }, sprache);
 }
-
 
 export function zielrevierFehlt(t: {
   revier: string | null; start_hafen?: { lat: number; lon: number } | null; rueckgabe_hafen?: { lat: number; lon: number } | null;

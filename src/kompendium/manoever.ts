@@ -6,8 +6,6 @@ import { ankern } from './abschnitteC';
 import { ankernUnterSegel } from './segelmanoever';
 import type { Sprache } from '@/core/types';
 
-
-
 const L = 10;
 const B = 3.4;
 const FB = 1.0;
@@ -17,7 +15,6 @@ const KANTE_Y = H + 0.4;
 const PIER_Z = 0.9;
 
 type P2 = readonly [number, number];
-
 
 interface Lage { dreh: P2; winkel: number }
 
@@ -45,7 +42,6 @@ function pier(iso: Iso, poller: readonly number[]): string {
 
 const poller = (x: number): readonly [number, number, number] => [x, KANTE_Y + 0.5, PIER_Z + 0.4];
 
-
 function geist(iso: Iso): string {
   const pts = rumpfGrundriss(L, B).map(([x, y]) => iso.p(x, y, FB));
   return `<polygon points="${pts.map(([a, b]) => `${k(a)},${k(b)}`).join(' ')}" fill="none" stroke="var(--muted)" `
@@ -58,10 +54,9 @@ function schiff(iso: Iso, lage: Lage, ruder: number): string {
   const aufbau = iso.prisma(([[3.2, 1.0], [3.2, -1.0], [6.4, -1.0], [6.4, 1.0]] as P2[]).map(w), FB, FB + 0.9, AUFBAU, AUFBAU_DECK);
   const [rx, ry] = w([-0.9, ruder]);
   const [hx, hy] = w([0, 0]);
-  
+
   return iso.linie([hx, hy, 0.35], [rx, ry, 0.35], 'var(--text)', 3) + rumpf + aufbau;
 }
-
 
 function leine(iso: Iso, pts: readonly (readonly [number, number, number])[]): string {
   const p = pts.map(([x, y, z]) => iso.p(x, y, z));
@@ -79,9 +74,7 @@ function beschriftung(iso: Iso, x: number, y: number, z: number, text: string, a
   return `<text x="${k(px)}" y="${k(py + dy)}" text-anchor="${anker}" class="kp-l kp-l-h">${esc(text)}</text>`;
 }
 
-
 const SCHUB_Y = -(H + 1.1);
-
 
 function schub(iso: Iso, lage: Lage, voraus: boolean, marke: string, text: string): string {
   const a = welt(lage, [voraus ? 1.2 : 5.2, SCHUB_Y]);
@@ -90,7 +83,6 @@ function schub(iso: Iso, lage: Lage, voraus: boolean, marke: string, text: strin
   return iso.linie([a[0], a[1], 0.3], [b[0], b[1], 0.3], 'var(--text)', 2.2, ` marker-end="url(#${marke})"`)
     + beschriftung(iso, t[0], t[1], 0.3, text, 'middle', 5);
 }
-
 
 function schwenk(iso: Iso, lage: Lage, ende: P2, marke: string): string {
   const pts: string[] = [];
@@ -125,7 +117,6 @@ function wortlaut(sprache: Sprache): Wortlaut {
     : { pier: 'Pier', wind: 'Wind auflandig', fender: 'Fender', voraus: 'Voraus', zurueck: 'Zurück' };
 }
 
-
 export function zeichnungVorspring(sprache: Sprache): string {
   const t = tFuer(sprache);
   const w = wortlaut(sprache);
@@ -143,7 +134,6 @@ export function zeichnungVorspring(sprache: Sprache): string {
   });
 }
 
-
 export function zeichnungAchterspring(sprache: Sprache): string {
   const t = tFuer(sprache);
   const w = wortlaut(sprache);
@@ -160,7 +150,6 @@ export function zeichnungAchterspring(sprache: Sprache): string {
       + beschriftung(iso, 0.3, 1.95, 0.5, w.fender, 'end', -10);
   });
 }
-
 
 export function zeichnungAchterleine(sprache: Sprache): string {
   const t = tFuer(sprache);

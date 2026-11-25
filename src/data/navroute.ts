@@ -10,8 +10,6 @@ import { liegtImWasser } from './landcheck';
 import { ladeHoheitImGebiet } from './hoheitKacheln';
 import { vtgInBox, vtgAlsKueste, quertVtg } from '@/core/messinaVtg';
 
-
-
 const KACHEL_GRAD = 0.25;
 const DB = 'sail-suite-nav';
 const STORE = 'gefahren';
@@ -65,9 +63,7 @@ function kachelnFuer(b: Box): { i: number; j: number }[] {
   return aus;
 }
 
-
 export const GEFAHREN_KORRIDOR_SM = 2;
-
 
 export function kachelnEntlang(punkte: readonly Punkt[], pufferSm = GEFAHREN_KORRIDOR_SM): { i: number; j: number }[] {
   const gesehen = new Set<string>();
@@ -86,13 +82,12 @@ function alsGefahr(e: OverpassElement): Gefahr | null {
   const lat = e.lat ?? e.center?.lat, lon = e.lon ?? e.center?.lon;
   const art = e.tags?.['seamark:type'];
   if (lat == null || lon == null || !art) return null;
-  
+
   if (art === 'rock' && e.tags?.['seamark:rock:water_level'] === 'always_dry') return null;
   const merkmale: Record<string, string> = {};
   for (const [k, v] of Object.entries(e.tags ?? {})) if (k.startsWith('seamark:') || k === 'depth' || k === 'description') merkmale[k] = v;
   return { lat, lon, art, name: e.tags?.['seamark:name'] ?? e.tags?.name ?? '', merkmale };
 }
-
 
 async function gefahrenKachel(i: number, j: number, nurAblage: boolean): Promise<Gefahr[] | null> {
   const k = `v${GEFAHREN_VERSION}:${i}:${j}`;
@@ -116,7 +111,7 @@ async function gefahrenKachel(i: number, j: number, nurAblage: boolean): Promise
 
 export interface GefahrenAbfrage {
   gefahren: Gefahr[];
-  
+
   unvollstaendig: boolean;
 }
 
@@ -124,7 +119,6 @@ export async function gefahrenImGebiet(b: Box, nurAblage = !navigator.onLine): P
   const g = await gefahrenInKacheln(kachelnFuer(b), nurAblage);
   return { gefahren: g.gefahren.filter((x) => x.lat >= b.swLat && x.lat <= b.neLat && x.lon >= b.swLon && x.lon <= b.neLon), unvollstaendig: g.unvollstaendig };
 }
-
 
 export function gefahrenEntlang(
   punkte: readonly Punkt[], fortschritt?: (n: number, von: number) => void, nurAblage = !navigator.onLine,
@@ -137,8 +131,7 @@ async function gefahrenInKacheln(
 ): Promise<GefahrenAbfrage> {
   const gefahren: Gefahr[] = [];
   let unvollstaendig = false;
-  
-  
+
   const ergebnisse: (Gefahr[] | null)[] = [];
   fortschritt?.(0, kacheln.length);
   for (let k = 0; k < kacheln.length; k += 4) {
@@ -152,24 +145,20 @@ async function gefahrenInKacheln(
   return { gefahren, unvollstaendig };
 }
 
-
-
 export interface RoutenDaten {
   kueste: [Punkt, Punkt][] | null;
-  
+
   kuesteVereinfacht: boolean;
   gefahren: Gefahr[];
   gefahrenUnvollstaendig: boolean;
   box: Box;
 }
 
-
 function routenBox(punkte: readonly Punkt[]): Box {
   let rand = 2;
   for (let i = 1; i < punkte.length; i++) rand = Math.max(rand, randFuer(punkte[i - 1]!, punkte[i]!));
   return boxUm(punkte, rand);
 }
-
 
 export async function ladeRoutenDaten(punkte: readonly Punkt[]): Promise<RoutenDaten> {
   const box = routenBox(punkte);
@@ -183,7 +172,6 @@ export async function ladeRoutenDaten(punkte: readonly Punkt[]): Promise<RoutenD
   };
 }
 
-
 export async function startAusPosition(p: Punkt): Promise<{ punkt: Punkt; ausfahrt: boolean } | null> {
   const box = boxUm([p], 3.5);
   const [k, osm] = await Promise.all([
@@ -191,18 +179,15 @@ export async function startAusPosition(p: Punkt): Promise<{ punkt: Punkt; ausfah
     queryOverpass(hafenAbfrage(p), 15_000).catch(() => [] as OverpassElement[]),
   ]);
   if (k?.linien.length) return planStart(p, k.linien, hafenAusOsm(osm));
-  
-  
+
   return (await liegtImWasser(p).catch(() => false)) ? { punkt: p, ausfahrt: false } : null;
 }
-
 
 export function hafenAbfrage(p: Punkt): string {
   const um = `around:1000,${p.lat.toFixed(5)},${p.lon.toFixed(5)}`;
   return `[out:json][timeout:20];(way(${um})[leisure=marina];way(${um})["seamark:type"="harbour"];`
     + `way(${um})[man_made~"^(pier|breakwater|groyne|quay)$"];);out tags geom;`;
 }
-
 
 export function hafenAusOsm(els: readonly OverpassElement[]): { flaechen: Punkt[][]; molen: [Punkt, Punkt][] } {
   const flaechen: Punkt[][] = [], molen: [Punkt, Punkt][] = [];
@@ -219,28 +204,25 @@ export function hafenAusOsm(els: readonly OverpassElement[]): { flaechen: Punkt[
 
 export interface RoutenPlan {
   punkte: Punkt[];
-  
+
   gerade: boolean;
-  
+
   ohneWeg: boolean;
   daten: RoutenDaten;
 }
 
-
 export const ABSTAENDE_SM = [0.1, 0.2, 0.3, 0.5] as const;
-
 
 export type PlanSchritt = { phase: 'kueste' } | { phase: 'gefahren'; n: number; von: number } | { phase: 'weg' };
 
-
 export async function planeRoute(
   a: Punkt, b: Punkt, abstandSm: number, melde?: (s: PlanSchritt) => void,
-  
+
   vorlaeufig?: (punkte: Punkt[]) => void,
 ): Promise<RoutenPlan> {
   melde?.({ phase: 'kueste' });
   let box = routenBox([a, b]);
-  
+
   const hafenLauf = hafenDaten([a, b]).catch(() => ({ kueste: [] as [Punkt, Punkt][], molen: [] as [Punkt, Punkt][] }));
   let k = await kuestenlinienUmGebiet(box.swLat, box.swLon, box.neLat, box.neLon).catch(() => null);
   let kueste = k?.linien ?? null;
@@ -253,8 +235,7 @@ export async function planeRoute(
   };
   melde?.({ phase: 'weg' });
   let u0 = weg([...(kueste ?? [])]);
-  
-  
+
   if (!u0 && kueste) {
     const rand2 = randZweiterVersuch(a, b);
     const box2 = boxUm([a, b], rand2);
@@ -267,7 +248,7 @@ export async function planeRoute(
     }
   }
   const hafen = await hafenLauf;
-  
+
   const durchHafen = <T extends { punkte: Punkt[]; umfahren: boolean }>(x: T | null): T | null => {
     if (!x || (!hafen.molen.length && !hafen.kueste.length)) return x;
     const punkte = ohneMolen(x.punkte, [...hafen.kueste, ...(vtg ?? [])], hafen.molen);
@@ -280,10 +261,9 @@ export async function planeRoute(
   melde?.({ phase: 'weg' });
   const sperre: [Punkt, Punkt][] = [...(kueste ?? [])];
   for (const g of g0.gefahren) sperre.push(...gefahrAlsKueste(g, abstandSm));
-  
-  
+
   const u = (g0.gefahren.length ? durchHafen(weg(sperre)) : null) ?? u0;
-  
+
   const g1 = u ? await gefahrenEntlang(u.punkte) : g0;
   const gefahren = new Map<string, Gefahr>();
   for (const g of [...g0.gefahren, ...g1.gefahren]) gefahren.set(`${g.lat},${g.lon},${g.art}`, g);
@@ -295,15 +275,13 @@ export async function planeRoute(
   return { punkte: ohneStummel(u.punkte, hafenSperre), gerade: !u.umfahren, ohneWeg: false, daten };
 }
 
-
 export interface RoutenPruefung {
   gefahr: GefahrenBefund;
-  
+
   ueberLand: number[];
-  
+
   durchVtg: number[];
 }
-
 
 export function pruefeRoute(punkte: readonly Punkt[], daten: RoutenDaten): RoutenPruefung {
   const ueberLand: number[] = [];
@@ -321,10 +299,7 @@ export function pruefeRoute(punkte: readonly Punkt[], daten: RoutenDaten): Route
   return { gefahr: pruefeGefahren(punkte, daten.gefahren), ueberLand, durchVtg };
 }
 
-
 export const TIEFE_HAFEN_SM = 0.3;
-
-
 
 export interface Untiefe { m: number; lat: number; lon: number; sm: number }
 
@@ -335,7 +310,7 @@ export async function flachsteStelle(punkte: readonly Punkt[]): Promise<Untiefe 
   if (!p) return null;
   const gesamt = probe.at(-1)?.cum ?? 0;
   let best: Untiefe | null = null;
-  
+
   p.punkte.forEach((q, i) => {
     if (q.tiefeM === null || q.cum < TIEFE_HAFEN_SM || q.cum > gesamt - TIEFE_HAFEN_SM) return;
     if (best && q.tiefeM >= best.m) return;
@@ -345,12 +320,11 @@ export async function flachsteStelle(punkte: readonly Punkt[]): Promise<Untiefe 
   return best;
 }
 
-
 export async function ladeNavDatenVor(b: Box): Promise<{ kueste: boolean; gefahren: boolean }> {
   const [k, g] = await Promise.all([
     kuestenlinienUmGebiet(b.swLat, b.swLon, b.neLat, b.neLon).catch(() => null),
     gefahrenImGebiet(b, false),
-    
+
     ladeHoheitImGebiet(b).catch(() => false),
   ]);
   return { kueste: !!k && !k.rueckfall, gefahren: !g.unvollstaendig };

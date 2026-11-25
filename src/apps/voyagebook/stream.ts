@@ -4,8 +4,6 @@ import { aktuelleSprache } from '@/shell/sprache';
 import { holeEigenenStream, setzeEigenenStream, streamLink, type ToernZeile } from '@/data/toernApi';
 import { STRINGS } from './strings';
 
-
-
 const wort = (s: string): string => STRINGS[aktuelleSprache()][s] ?? s;
 const $ = (id: string) => document.getElementById(id);
 
@@ -25,7 +23,6 @@ export function initStreamDialog(
   const schliesse = () => { overlay.hidden = true; modal.beimSchliessen(); };
   const modal = initModal(modalEl, schliesse);
 
-  
   function zeigeFrist(gueltigBis: string | null | undefined): void {
     if (!frist) return;
     const bis = gueltigBis ? new Date(gueltigBis) : null;
@@ -35,7 +32,6 @@ export function initStreamDialog(
     frist.textContent = wort(Date.now() < bis.getTime() ? 'stream.fristBis' : 'stream.fristVorbei').replace('{zeit}', zeit);
   }
 
-  
   function zeige(token: string | null, aktiv: boolean): void {
     schalter!.checked = aktiv;
     linkBereich!.hidden = !aktiv || !token;

@@ -1,9 +1,6 @@
 import { liesSitzungsToken } from '@/shell/session';
 import { API_BASIS } from '@/shell/api';
 
-
-
-
 let tokenVonAussen: string | null = null;
 export function setzeProxyToken(t: string | null | undefined): void { tokenVonAussen = t ?? null; }
 
@@ -14,11 +11,9 @@ function token(): string | null {
 
 const istAbbruch = (err: unknown): boolean => err instanceof DOMException && err.name === 'AbortError';
 
-
 let streamToken: string | null = null;
 export function setzeStreamProxy(t: string | null): void { streamToken = t || null; }
 const streamBasis = () => `${API_BASIS}/api/stream/${encodeURIComponent(streamToken!)}`;
-
 
 export function serverPfad(url: string): string | null {
   const u = new URL(url);
@@ -28,7 +23,6 @@ export function serverPfad(url: string): string | null {
   if (u.hostname === 'www.skipperguide.de' && u.pathname === '/api.php') return `/api/osm/skipperguide${u.search}`;
   return null;
 }
-
 
 export async function holeUeberServer(url: string, init: RequestInit = {}): Promise<Response> {
   const t = token();
@@ -50,7 +44,6 @@ export async function holeUeberServer(url: string, init: RequestInit = {}): Prom
   }
   return fetch(url, init);
 }
-
 
 export async function overpassUeberServer(ql: string, signal: AbortSignal): Promise<unknown | null> {
   const t = token();

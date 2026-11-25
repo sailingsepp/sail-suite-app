@@ -2,8 +2,6 @@ import { bearingDeg, distNM } from './geo';
 import { nf } from './time';
 import type { Punkt, Sprache } from './types';
 
-
-
 export const BEI_SM = 1;
 export const MAX_SM = 25;
 

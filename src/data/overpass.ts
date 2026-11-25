@@ -10,24 +10,22 @@ import { elementeImUmkreis } from '@/core/umgebung';
 import { istSeeobjekt } from '@/core/osmAuszug';
 import { kuesteAusKacheln, kuesteAusKachelnMitBudget } from './kuestenKacheln';
 
-
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
 
 export interface OverpassElement {
   type: 'node' | 'way' | 'relation' | 'area';
   id?: number;
-  
+
   members?: { type: string; ref: number; role?: string }[];
   lat?: number;
   lon?: number;
   center?: { lat: number; lon: number };
-  
+
   geometry?: { lat: number; lon: number }[];
-  
+
   bounds?: { minlat: number; minlon: number; maxlat: number; maxlon: number };
   tags?: Record<string, string>;
 }
-
 
 class OverpassUeberlastet extends Error {}
 
@@ -35,10 +33,7 @@ export async function queryOverpass(ql: string, timeoutMs = 8000): Promise<Overp
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    
-    
-    
-    
+
     let ueberServer: unknown | null;
     try {
       ueberServer = await overpassUeberServer(ql, controller.signal);
@@ -72,17 +67,13 @@ export async function queryOverpass(ql: string, timeoutMs = 8000): Promise<Overp
       throw new Error(msg);
     }
     const data = await res.json() as { elements?: OverpassElement[]; remark?: string };
-    
-    
-    
-    
+
     if (overpassAbbruch(data.remark)) throw new OverpassUeberlastet('Overpass-Abbruch: ' + data.remark);
     return data.elements ?? [];
   } finally {
     clearTimeout(timer);
   }
 }
-
 
 export function overpassAbbruch(remark: string | undefined): boolean {
   return !!remark && /runtime error|timed out|out of memory/i.test(remark);
@@ -91,7 +82,6 @@ export function overpassAbbruch(remark: string | undefined): boolean {
 function warte(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-
 
 async function queryOverpassMitWiederholung(ql: string, timeoutMs: number, versuche = 3, pauseMs = 3000): Promise<OverpassElement[]> {
   for (let versuch = 1; ; versuch++) {
@@ -113,13 +103,11 @@ function klassifiziere(tags: Record<string, string>): AnkerplatzArt {
 export interface AnkerplatzTreffer {
   art: 'marina' | 'bucht';
   name: string | null;
-  
+
   dist: number;
 }
 
-
 const ANKER_RADIUS_M = 1000;
-
 
 const ANKER_CACHE = new Map<string, Promise<AnkerplatzAbfrage | null>>();
 
@@ -127,12 +115,10 @@ function ankerSchluessel(p: Punkt): string {
   return `${p.lat.toFixed(5)},${p.lon.toFixed(5)}`;
 }
 
-
 export interface AnkerplatzAbfrage {
   treffer: AnkerplatzTreffer[];
   elemente: OverpassElement[];
 }
-
 
 async function sucheAnkerplaetze(punkt: Punkt, radiusM: number, geduldig = false): Promise<AnkerplatzAbfrage | null> {
   const r = Math.round(radiusM);
@@ -145,39 +131,25 @@ async function sucheAnkerplaetze(punkt: Punkt, radiusM: number, geduldig = false
     + `node["seamark:type"="anchorage"]${um};`
     + `node["natural"="bay"]${um};`
     + `way["natural"="bay"]${um};`
-    
-    
-    
-    
-    
+
     + `node["seamark:type"="small_craft_facility"]${um};`
     + `node["seamark:type"="mooring"]${um};`
-    
-    
-    
-    
-    
+
     + `node["seamark:light:character"]${um};`
     + `node["seamark:light:1:character"]${um};`
     + `);out tags center;`;
 
-  
-  
   const lokal = await umgebungLokal(punkt, r);
   if (lokal) return alsAbfrage(punkt, elementeImUmkreis(lokal, punkt, r));
   try {
-    
-    
-    
-    
-    
+
     const elemente = geduldig ? await queryOverpassMitWiederholung(ql, 30_000, 2) : await queryOverpass(ql);
     return alsAbfrage(punkt, elemente);
   } catch {
-    
+
     const vomServer = await ladeUmgebungFuer(punkt, r).catch(() => null);
     if (vomServer) return alsAbfrage(punkt, elementeImUmkreis(vomServer, punkt, r));
-    return null; 
+    return null;
   }
 }
 
@@ -194,21 +166,18 @@ function alsAbfrage(punkt: Punkt, elemente: OverpassElement[]): AnkerplatzAbfrag
   return { treffer, elemente };
 }
 
-
 export function ankerplatzAbfrage(punkt: Punkt, geduldig = false): Promise<AnkerplatzAbfrage | null> {
   const key = ankerSchluessel(punkt);
   const vorhanden = ANKER_CACHE.get(key);
   if (vorhanden) return vorhanden;
   const lauf = sucheAnkerplaetze(punkt, ANKER_RADIUS_M, geduldig).then((ergebnis) => {
-    
-    
+
     if (ergebnis === null) ANKER_CACHE.delete(key);
     return ergebnis;
   });
   ANKER_CACHE.set(key, lauf);
   return lauf;
 }
-
 
 export function naechsterImRadius(treffer: AnkerplatzTreffer[], radiusM: number): AnkerplatzTreffer | null {
   const grenzeNM = radiusM / 1852;
@@ -221,37 +190,29 @@ export function naechsterImRadius(treffer: AnkerplatzTreffer[], radiusM: number)
 }
 
 async function naechsterTreffer(punkt: Punkt, radiusM: number): Promise<AnkerplatzTreffer | null> {
-  
-  
-  
+
   const alle = radiusM > ANKER_RADIUS_M
     ? await sucheAnkerplaetze(punkt, radiusM)
     : await ankerplatzAbfrage(punkt);
   return alle ? naechsterImRadius(alle.treffer, radiusM) : null;
 }
 
-
 export async function findAnkerplatzArt(punkt: Punkt, radiusM = 600): Promise<AnkerplatzArt> {
   const nah = await naechsterTreffer(punkt, radiusM);
   if (nah) return nah.art;
-  
-  
-  
+
   return artAusTitel(await naechsterTreffer(punkt, ANKER_RADIUS_M));
 }
-
 
 export function artAusTitel(titel: AnkerplatzTreffer | null): AnkerplatzArt {
   return titel?.name && titel.art === 'marina' ? 'marina' : null;
 }
-
 
 export async function findAnkerplatzName(punkt: Punkt, radiusM = ANKER_RADIUS_M): Promise<{ art: 'marina' | 'bucht'; name: string } | null> {
   const treffer = await naechsterTreffer(punkt, radiusM);
   if (!treffer?.name) return null;
   return { art: treffer.art, name: treffer.name };
 }
-
 
 export async function findInselName(punkt: Punkt, radiusNM = 4): Promise<string[]> {
   const r = Math.round(radiusNM * 1852);
@@ -266,10 +227,9 @@ export async function findInselName(punkt: Punkt, radiusNM = 4): Promise<string[
     }
     return [...namen];
   } catch {
-    return []; 
+    return [];
   }
 }
-
 
 export async function inselAmUfer(punkt: Punkt, radiusNM = 0.5): Promise<string | null> {
   const r = Math.round(radiusNM * 1852);
@@ -289,13 +249,11 @@ export async function inselAmUfer(punkt: Punkt, radiusNM = 0.5): Promise<string 
   return inselDesNaechstenUfers(punkt, ways, inseln);
 }
 
-
 export async function umgebungFuerLogbuch(
   punkt: Punkt, sprache: 'de' | 'en', uferNM = 2, ortM = 8000,
 ): Promise<{ insel: string | null; orte: OrtKandidat[]; landpunkt: Punkt | null }> {
   const r = Math.round(uferNM * 1852);
-  
-  
+
   const ql = `[out:json][timeout:25];`
     + `way(around:${r},${punkt.lat},${punkt.lon})["natural"="coastline"]->.c;`
     + `.c out geom;`
@@ -316,7 +274,6 @@ export async function umgebungFuerLogbuch(
   return { insel: inselDesNaechstenUfers(punkt, ways, inseln), orte, landpunkt: landpunktAmUfer(punkt, ways) };
 }
 
-
 export async function inselMitNamen(punkt: Punkt, name: string, radiusM = 20_000): Promise<boolean> {
   const n = name.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
   const um = `(around:${radiusM},${punkt.lat},${punkt.lon})["place"="island"]["name"="${n}"]`;
@@ -324,7 +281,6 @@ export async function inselMitNamen(punkt: Punkt, name: string, radiusM = 20_000
   const elemente = await queryOverpassMitWiederholung(ql, 30_000, 2);
   return elemente.some((e) => e.tags?.name === name);
 }
-
 
 export async function gemeindeAmPunkt(punkt: Punkt): Promise<string | null> {
   const ql = `[out:json][timeout:25];is_in(${punkt.lat},${punkt.lon})->.a;`
@@ -336,17 +292,15 @@ export async function gemeindeAmPunkt(punkt: Punkt): Promise<string | null> {
   return treffer ? ohneVerwaltungswort(treffer.name) : null;
 }
 
-
 export async function inselAmLandpunkt(punkt: Punkt, sprache: 'de' | 'en' = 'de'): Promise<string | null> {
   const ql = `[out:json][timeout:25];is_in(${punkt.lat},${punkt.lon})->.a;`
     + `area.a["place"~"^(island|islet)$"]["name"];out tags;`;
   const elemente = await queryOverpassMitWiederholung(ql, 30_000, 2);
   const flaechen = elemente.filter((e) => e.tags?.name && e.tags.place);
-  
+
   const insel = flaechen.find((e) => e.tags!.place === 'island') ?? flaechen[0];
   return osmNameInSprache(insel?.tags, sprache);
 }
-
 
 export async function findInselnFuerPunkte(punkte: readonly Punkt[]): Promise<string[][]> {
   try {
@@ -355,7 +309,6 @@ export async function findInselnFuerPunkte(punkte: readonly Punkt[]): Promise<st
     return punkte.map((): string[] => []);
   }
 }
-
 
 export async function findInselnFuerPunkteOderWirf(punkte: readonly Punkt[]): Promise<string[][]> {
   if (punkte.length === 0) return [];
@@ -379,11 +332,10 @@ export async function findInselnFuerPunkteOderWirf(punkte: readonly Punkt[]): Pr
       aktuell.push(el.tags.name);
     }
   }
-  
+
   if (trenner < punkte.length) throw new Error('Overpass is_in: unvollstaendige Antwort');
   return ergebnis;
 }
-
 
 function gradPuffer(latRef: number, nm: number): { dLat: number; dLon: number } {
   const dLat = nm / 60;
@@ -391,11 +343,9 @@ function gradPuffer(latRef: number, nm: number): { dLat: number; dLon: number } 
   return { dLat, dLon };
 }
 
-
 export interface Zeitbudget { timeoutMs: number; versuche: number; pauseMs: number }
 const BUDGET_HINTERGRUND: Zeitbudget = { timeoutMs: 20_000, versuche: 3, pauseMs: 3000 };
 export const BUDGET_INTERAKTIV: Zeitbudget = { timeoutMs: 12_000, versuche: 2, pauseMs: 2000 };
-
 
 async function fetchKuestenlinien(
   s: number, w: number, n: number, e: number, budget: Zeitbudget,
@@ -419,15 +369,13 @@ async function fetchKuestenlinien(
         linien.push([{ lat: geo[i]!.lat, lon: geo[i]!.lon }, { lat: geo[i + 1]!.lat, lon: geo[i + 1]!.lon }]);
       }
     }
-    
-    
+
     void inCache(gross, linien);
     return linien;
   } catch {
-    return null; 
+    return null;
   }
 }
-
 
 export async function kuestenlinienUmPunkt(
   punkt: Punkt, radienNM: number[] = [1.5, 4, 10], budget: Zeitbudget = BUDGET_HINTERGRUND,
@@ -437,9 +385,7 @@ export async function kuestenlinienUmPunkt(
     const linien = await fetchKuestenlinien(
       punkt.lat - dLat, punkt.lon - dLon, punkt.lat + dLat, punkt.lon + dLon, budget,
     );
-    
-    
-    
+
     if (linien === null) return [];
     if (linien.length) return linien;
   }
@@ -453,16 +399,11 @@ export interface Ausweichziel {
   lon: number;
 }
 
-
-
 const GOLF_NAME = /^(κόλπος|kolpos|kólpos|golfo|golfe|gulf)(\s|$)|(^|\s)körfezi$/iu;
-
 
 export const istGolfName = (name: string): boolean => GOLF_NAME.test(name.trim());
 
-
 export const BUCHT_MAX_KM = 5;
-
 
 function diagonaleKm(b: OverpassElement['bounds']): number | null {
   if (!b) return null;
@@ -484,7 +425,6 @@ function klassifiziereAusweich(tags: Record<string, string>, bounds?: OverpassEl
   return null;
 }
 
-
 export async function findAusweichziele(
   punkt: Punkt, radiusNM = 8,
   budget: Zeitbudget = { timeoutMs: 20_000, versuche: 3, pauseMs: 3000 },
@@ -492,21 +432,14 @@ export async function findAusweichziele(
 ): Promise<Ausweichziel[]> {
   const r = Math.round(radiusNM * 1852);
   const um = `(around:${r},${punkt.lat},${punkt.lon})`;
-  
-  
-  
-  
-  
-  
-  
-  
+
   const ql = `[out:json][timeout:20];(`
     + `node["leisure"="marina"]${um};way["leisure"="marina"]${um};`
     + `node["seamark:type"="harbour"]${um};way["seamark:type"="harbour"]${um};`
     + `node["seamark:type"="anchorage"]${um};`
     + `node["natural"="bay"]${um};way["natural"="bay"]${um};`
     + `);out tags center;`;
-  
+
   const lokal = await umgebungLokal(punkt, r);
   if (lokal) return alsAusweichziele(elementeImUmkreis(lokal, punkt, r));
   try {
@@ -516,7 +449,7 @@ export async function findAusweichziele(
     const vomServer = await ladeUmgebungFuer(punkt, r).catch(() => null);
     if (vomServer) return alsAusweichziele(elementeImUmkreis(vomServer, punkt, r));
     if (wirfBeiFehler) throw err;
-    return []; 
+    return [];
   }
 }
 
@@ -534,7 +467,6 @@ export function alsAusweichziele(elemente: OverpassElement[]): Ausweichziel[] {
   return out;
 }
 
-
 export async function ausweichzieleImGebiet(
   swLat: number, swLon: number, neLat: number, neLon: number,
 ): Promise<Ausweichziel[]> {
@@ -545,14 +477,11 @@ export async function ausweichzieleImGebiet(
   }
 }
 
-
 export async function ausweichzieleImGebietOderWirf(
   swLat: number, swLon: number, neLat: number, neLon: number,
 ): Promise<Ausweichziel[]> {
   const box = `(${swLat.toFixed(4)},${swLon.toFixed(4)},${neLat.toFixed(4)},${neLon.toFixed(4)})`;
-  
-  
-  
+
   const ql = `[out:json][timeout:40];(`
     + `node["leisure"="marina"]${box};way["leisure"="marina"]${box};`
     + `node["seamark:type"="harbour"]${box};way["seamark:type"="harbour"]${box};`
@@ -573,7 +502,6 @@ export async function ausweichzieleImGebietOderWirf(
   return out;
 }
 
-
 export async function umgebungImGebietOderWirf(
   swLat: number, swLon: number, neLat: number, neLon: number,
 ): Promise<{ elemente: OverpassElement[]; orte: OverpassElement[] }> {
@@ -588,17 +516,16 @@ export async function umgebungImGebietOderWirf(
     + `node["seamark:type"="mooring"]${box};`
     + `node["seamark:light:character"]${box};way["seamark:light:character"]${box};`
     + `node["seamark:light:1:character"]${box};way["seamark:light:1:character"]${box};`
-    
+
     + `nw["seamark:type"~"^(light_(major|minor|float|vessel)|(buoy|beacon)_(lateral|cardinal|isolated_danger|safe_water|special_purpose))$"]${box};`
     + `nw["man_made"="lighthouse"]${box};nw["seamark:light:colour"]${box};nw["seamark:light:1:colour"]${box};`
     + `);out tags center;`;
   const orte =`[out:json][timeout:60];node["place"~"^(city|town|village|hamlet)$"]${box};out tags;`;
   const e = await queryOverpassMitWiederholung(seezeichen, 70_000);
   const o = await queryOverpassMitWiederholung(orte, 70_000);
-  
+
   return { elemente: e.filter((el) => !el.tags || istSeeobjekt(el.tags)), orte: o };
 }
-
 
 export async function kuestenlinienUmStrecke(
   a: Punkt, b: Punkt, pufferNM = 0.3, budget: Zeitbudget = BUDGET_HINTERGRUND,
@@ -611,32 +538,25 @@ export async function kuestenlinienUmStrecke(
   ) ?? [];
 }
 
-
 export interface KuestenlinienGebiet {
   linien: [Punkt, Punkt][];
   rueckfall: boolean;
-  
+
   vereinfachtM?: number;
 }
 
-
 export const MAX_STRECKEN_GEBIET = 25_000;
-
 
 export async function kuestenlinienUmGebiet(
   swLat: number, swLon: number, neLat: number, neLon: number, budget: Zeitbudget = BUDGET_HINTERGRUND,
 ): Promise<KuestenlinienGebiet | null> {
-  
-  
-  
-  
+
   const kacheln = await kuesteAusKachelnMitBudget({ swLat, swLon, neLat, neLon }, MAX_STRECKEN_GEBIET);
   if (kacheln) return { linien: kacheln.linien, rueckfall: false, vereinfachtM: kacheln.toleranzM };
   const linien = await fetchKuestenlinien(swLat, swLon, neLat, neLon, budget);
   const { kuestenlinienRueckfall } = await import('./kuestenlinienFallback');
   if (linien !== null && linien.length <= MAX_STRECKEN_GEBIET) return { linien, rueckfall: false };
-  
-  
+
   const rueckfall = await kuestenlinienRueckfall(swLat, swLon, neLat, neLon);
   if (rueckfall !== null) return { linien: rueckfall, rueckfall: true };
   return linien !== null ? { linien, rueckfall: false } : null;

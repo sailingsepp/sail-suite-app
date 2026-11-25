@@ -1,13 +1,11 @@
 import { distNM } from './geo';
 
-
 export interface GrenzUrteil {
   warnen: boolean;
   zuletzt: string | null;
-  
+
   art?: 'eintritt' | 'verlassen';
 }
-
 
 export const VERLASSEN_RUHE_MS = 60 * 60_000;
 
@@ -24,7 +22,6 @@ export function grenzUrteil(
   return { warnen: false, zuletzt: bisher };
 }
 
-
 export function hoheitAusAntwort(
   a: { hoheit?: string; awz?: string; alle?: readonly { name: string; art: string }[] } | null,
   staat: (hoheit: string) => string | null,
@@ -35,14 +32,12 @@ export function hoheitAusAntwort(
   return istHoheSee(a) ? null : undefined;
 }
 
-
 export function istHoheSee(a: { hoheit?: string; awz?: string; alle?: readonly { name: string; art: string }[] }): boolean {
   if (a.hoheit || a.awz) return false;
   const alle = a.alle ?? [];
   if (alle.some((e) => e.art.toLowerCase() === 'nation')) return false;
   return alle.some((e) => e.art.toLowerCase() === 'iho sea area' || /^high seas\b/i.test(e.name));
 }
-
 
 export function stichprobenEntlang(
   punkte: readonly { lat: number; lon: number }[], abstandSm = 10, min = 3, max = 12,

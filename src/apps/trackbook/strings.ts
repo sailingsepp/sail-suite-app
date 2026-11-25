@@ -1,8 +1,6 @@
 import type { Sprache } from '@/core/types';
 import type { TourSchritt } from '@/shell/strings';
 
-
-
 export const TITLE: Record<Sprache, string> = {
   de: 'TörnNavLog: Logbuch und Backup-Navigation',
   en: 'SailPilot: logbook and backup navigation',
@@ -15,7 +13,7 @@ export const DESCRIPTION: Record<Sprache, string> = {
 
 export const STRINGS: Record<Sprache, Record<string, string>> = {
   de: {
-    
+
     'footer.credits': 'Daten © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-Mitwirkende · <a href="https://www.openseamap.org/" target="_blank" rel="noopener">OpenSeaMap</a> · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> (CC&nbsp;BY&nbsp;4.0) · <a href="https://emodnet.ec.europa.eu/en/bathymetry" target="_blank" rel="noopener">EMODnet Bathymetry</a> · <a href="https://doi.org/10.5067/MEaSUREs/SRTM/SRTMGL1.003" target="_blank" rel="noopener">NASA SRTM</a> · <a href="https://marineregions.org/" target="_blank" rel="noopener">Marine Regions</a> · <a href="https://view.eumetsat.int/" target="_blank" rel="noopener">EUMETSAT</a> · <a href="https://aviationweather.gov/" target="_blank" rel="noopener">NOAA Aviation Weather Center</a> · <a href="https://meteo.data.gouv.fr/" target="_blank" rel="noopener">Météo-France</a> · <a href="https://meteo.hr/" target="_blank" rel="noopener">DHMZ</a> · <a href="https://www.emy.gr/en/marine" target="_blank" rel="noopener">HNMS</a> · <a href="https://www.meteoam.it/" target="_blank" rel="noopener">Servizio Meteo AM</a> · <a href="https://www.mgm.gov.tr/" target="_blank" rel="noopener">MGM</a> · <a href="https://www.aemet.es/" target="_blank" rel="noopener">© AEMET</a> · <a href="https://www.dom.org.cy/FORECAST/index.html" target="_blank" rel="noopener">Cyprus Dept. of Meteorology</a> · <a href="https://www.eumetnet.eu/observations/weather-radar-network/" target="_blank" rel="noopener">EUMETNET</a> OPERA, E-SOH (CC&nbsp;BY&nbsp;4.0) · <a href="https://mappe.protezionecivile.gov.it/en/risks-maps-and-dashboards/radar-map/" target="_blank" rel="noopener">Radar-DPC</a> (CC&nbsp;BY-SA&nbsp;4.0) · <a href="https://doi.org/10.17882/109129" target="_blank" rel="noopener">TICON-4</a> (CC&nbsp;BY/BY-NC)',
     'header.title': 'TörnNavLog',
     'header.handbuch': 'Handbuch',
@@ -26,19 +24,13 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'kachel.strecke': 'Strecke über Grund',
     'kachel.dauer': 'Seit dem Ablegen',
 
-    
-    
-    
     'btn.transportGruppe': 'Aufzeichnung steuern',
-    
-    
-    
-    
+
     'btn.start': 'Start',
     'btn.startTitel': 'Aufzeichnung starten: die Etappen trennt die Dämmerung von selbst',
     'btn.fortsetzen': 'Weiter',
     'btn.fortsetzenTitel': 'Aufzeichnung fortsetzen: dieselbe Etappe läuft weiter',
-    
+
     'nav.langDruecken': 'Zum Auslösen lange drücken',
     'nav.langDrueckenTitel': 'lange drücken',
     'weiter.fernFrage': 'Dieses Gerät ist {abstand} von der letzten Position der Yacht entfernt. Aufzeichnung trotzdem fortsetzen?',
@@ -86,7 +78,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'btn.eintrag': 'Eintrag',
     'btn.segel': 'Unter Segeln',
     'btn.motor': 'Unter Maschine',
-    
+
     'antrieb.titelMotor': 'Ab wann unter Maschine?',
     'antrieb.titelSegel': 'Ab wann unter Segeln?',
     'antrieb.okMotor': 'Unter Maschine eintragen',
@@ -171,10 +163,6 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
 
     'btn.foto': 'Foto',
 
-    
-    
-    
-    
     'menu.statistik': 'Bericht des Navigators',
     'statistik.titel': 'Bericht aus dem Büro des Navigators',
     'statistik.gesamt': 'Ganzer Törn',
@@ -232,7 +220,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'foto.grossTitel': 'Foto vergrößert ansehen',
 
     'toern.titel': 'Törn',
-    
+
     'sonne.unter': 'Sonnenuntergang um {uhr} · in {rest}',
     'sonne.auf': 'Sonnenaufgang um {uhr} · in {rest}',
     'mond.Neumond': 'Neumond',
@@ -302,13 +290,9 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'zw.steil.2': 'sehr steil',
     'zw.steil.3': 'extrem steil',
     'mond.unterText': 'Monduntergang {uhr}',
-    
-    
-    
-    
+
     'toern.keinAktiver': 'Gerade ist kein Törn aktiv. Aufgezeichnet wird trotzdem, die Fahrten gehören dann zu keinem Törn. Einen in <a href="/voyagebook/">TörnBuch</a> aktivierten Törn übernimmt TörnNavLog von selbst.',
-    
-    
+
     'toern.aktivAbzeichen': 'aktiv',
     'toern.fertig': 'Fertig',
     'toern.motorstundenTitel': 'Motorstunden',
@@ -317,7 +301,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'toern.motorstundenFehler': 'Der Zähler kann nicht rückwärts laufen: Der Stand muss über dem zuletzt eingetragenen liegen. Nicht übernommen.',
     'toern.motorstundenSpeichern': 'Speichern',
     'toern.dieselFehler': 'Jeder Tankvorgang braucht eine Literzahl ab 0. Tankvorgänge nicht übernommen.',
-    
+
     'toern.motorstundenEnde': 'Motorstunden bei Törnende',
     'toern.beendetHinweis': 'Törn beendet. Jetzt Motorstunden bei Törnende und getankten Diesel eintragen: auch später noch hier oder im TörnBuch möglich.',
     'toern.letzterNachtragen': 'Beendeten Törn „{name}“ nachtragen',
@@ -397,9 +381,6 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'gezeiten.wetterOffline': 'Kein Netz: der Wetteranteil kommt aus dem Copernicus-Modell und braucht Empfang.',
     'gezeiten.wetterFehlt': 'Für diese Position liefert das Modell derzeit keinen Wetteranteil.',
 
-    
-    
-    
     'ais.titel': 'Schiffe in meiner Nähe',
     'ais.hinweis': 'Laut AIS, empfangen von Landstationen (aisstream.io). '
       + 'Boote ohne AIS sind nicht dabei, und die Abdeckung hat Lücken: Was hier fehlt, kann trotzdem da sein.',
@@ -433,9 +414,6 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'ais.warnungWeg': 'Verstanden',
     'ais.warnungLog': 'Verstanden und ins Logbuch',
 
-    
-    
-    
     'seegrenze.warnungTitel': '⚠ Seegrenze voraus',
     'seegrenze.warnungHinweis': 'Vorhersage nach aktuellem Kurs und aktueller Fahrt, keine amtliche Grenzfestlegung '
       + '(Marine Regions/VLIZ, wissenschaftliche Arbeitsgrundlage). Bitte gegen die amtliche Seekarte prüfen, '
@@ -444,8 +422,6 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
 
     'menu.datensicherung': 'Wachwechsel',
 
-    
-    
     'wetter.titel': 'Wind & See beobachtet',
     'wetter.hinweis': 'Was du an Bord siehst: Windmesser, Wellen, Böen. Das ist eine Beobachtung und steht im Logbuch auch so drin, getrennt von der Vorhersage. Leere Felder bleiben leer. Richtung: woher der WAHRE Wind kommt, rechtweisend 0–360°. Nicht der scheinbare Windwinkel vom Display und nicht, wohin er weht.',
     'wetter.wind': 'Wind (kn)',
@@ -460,7 +436,6 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'wetter.genauigkeitTitel': 'Stabilität der Vorhersage',
     'wetter.genauigkeitZeile': 'Bei {treffer} von {gesamt} Aktualisierungen blieb die Vorhersage für denselben Zeitpunkt praktisch gleich (weniger als {kn} kn und {grad}° Unterschied).',
 
-    
     'motorwache.frageMotor': 'Motor hörbar. Unter Maschine eintragen?',
     'motorwache.frageSegel': 'Kein Motor mehr hörbar. Unter Segeln eintragen?',
     'motorwache.jaMotor': 'Ja, unter Maschine',
@@ -476,20 +451,10 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'motorklang.verweigert': 'Mikrofon nicht freigegeben',
     'motorklang.fehlt': 'Kein Mikrofon',
     'motorklang.wartet': 'Wartet',
-    
-    
-    
-    
-    
-    
-    
+
     'menu.coastguard': 'Kontrollansicht',
     'menu.funkspruch': 'Funkspruch',
 
-    
-    
-    
-    
     'funkspruch.titel': 'Funkspruch',
     'funkspruch.auswahlHinweis': 'Welche Meldung? Die Vorlage erscheint auf Englisch: international gültige Funksprache.',
     'funkspruch.securite': 'Sicherheitsmeldung: keine Gefahr, aber wichtige Information',
@@ -617,7 +582,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'pause.mehrere': 'Liegezeiten',
     'pause.hinweis': 'Das Schiff lag still: angelegt, vor Anker, in einer Bucht oder mit „Pause". Zählt zur Dauer des Tages, nicht zur Fahrzeit.',
     'kachel.fahrzeit': 'davon in Fahrt',
-    
+
     'vorladen.navDaten': 'Küste und Gefahren für die Routenplanung werden geladen …',
     'vorladen.seekarte': 'Seekarte wird geladen …',
     'nav.modusGruppe': 'Ansicht',
@@ -863,8 +828,6 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
       'Kein Speicher verfügbar: auf diesem Gerät kann nicht aufgezeichnet werden.',
     'fehler.eintragSpeichern': 'Logeintrag nicht gespeichert. Nach dem Neuladen fehlt er; Speicher des Geräts prüfen.',
 
-    
-    
     'sync.titel': 'Wachwechsel',
     'sync.hinweis':
       'Eine Fahrt an ein Crewmitglied dieses Törns übergeben, ohne zweite Anmeldung. Crew, Unterschriften und Fotos bleiben auf dem Gerät.',
@@ -896,11 +859,8 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'kachel.strecke': 'Distance over ground',
     'kachel.dauer': 'Since casting off',
 
-    
     'btn.transportGruppe': 'Recording controls',
-    
-    
-    
+
     'btn.start': 'Start',
     'btn.startTitel': 'Start recording: twilight separates the legs by itself',
     'btn.fortsetzen': 'Resume',
@@ -952,7 +912,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'btn.eintrag': 'Entry',
     'btn.segel': 'Under sail',
     'btn.motor': 'Under engine',
-    
+
     'antrieb.titelMotor': 'Under engine from when?',
     'antrieb.titelSegel': 'Under sail from when?',
     'antrieb.okMotor': 'Log under engine',
@@ -1351,8 +1311,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'coastguard.strecke': 'Distance over ground',
     'coastguard.maschine': 'Under engine (recorded)',
     'coastguard.ohneAngabe': '{d} of it not recorded',
-    
-    
+
     'coastguard.motor': 'Engine hours (meter)',
     'coastguard.motorLeer': 'read off the panel',
     'coastguard.motorFehlt': 'no reading entered yet',
@@ -1476,7 +1435,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'pause.mehrere': 'stops',
     'pause.hinweis': 'The boat lay still: alongside, at anchor, in a bay or on "Pause". Counts towards the day\'s duration, not the time under way.',
     'kachel.fahrzeit': 'of that under way',
-    
+
     'vorladen.navDaten': 'Loading coastline and hazards for route planning …',
     'vorladen.seekarte': 'Loading the chart …',
     'nav.modusGruppe': 'View',

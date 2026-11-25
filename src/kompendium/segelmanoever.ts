@@ -7,8 +7,6 @@ import {
 } from './yacht';
 import type { Sprache } from '@/core/types';
 
-
-
 const L = 5;
 const TEXT = 'var(--text)';
 const GRAU = 'var(--muted)';
@@ -28,16 +26,13 @@ function marker(...farben: string[]): { defs: string; id: (f: string) => string 
 const tx = (x: number, y: number, s: string, klasse = 'kp-rr-l', anker2 = 'middle') =>
   `<text x="${k(x)}" y="${k(y)}" text-anchor="${anker2}" class="${klasse}">${esc(s)}</text>`;
 
-
-
-
 function bootOben(cx: number, cy: number, kurs: number, hervor = false): string {
   const ww = windZumBug(0, kurs);
-  const seite = ww >= 0 ? 1 : -1; 
+  const seite = ww >= 0 ? 1 : -1;
   const b = (baumWinkel(ww) * Math.PI) / 180;
   const vorDemWind = Math.abs(ww) > 170;
   const farbe = hervor ? 'var(--gelb)' : TEXT;
-  
+
   const baum = `<line x1="0" y1="-3" x2="${k(-seite * Math.sin(b) * 15)}" y2="${k(-3 + Math.cos(b) * 15)}" stroke="${farbe}" stroke-width="2.4" stroke-linecap="round"/>`;
   const bv = vorDemWind ? (80 * Math.PI) / 180 : Math.min(b * 0.9 + 0.03, 1.3);
   const vs = vorDemWind ? -seite : seite;
@@ -82,8 +77,6 @@ export function zeichnungKursrose(t: T): string {
     + tx(16, 458, t('Winkel zum wahren Wind, Richtwerte für Fahrtenyachten', 'Angles to the true wind, typical values for cruising yachts'), 'kp-rr-s', 'start')
     + '</svg>';
 }
-
-
 
 function szene(label: string, inhalt: (iso: Iso, m: ReturnType<typeof marker>) => string): string {
   const m = marker(TEXT, AMBER, GRAU);
@@ -168,8 +161,6 @@ export function zeichnungAnkerauf(t: T): string {
       + marke(iso, [0.8, -3.6, 0], t('Ruder hart Steuerbord', 'rudder hard to starboard'), 22, 'start');
   });
 }
-
-
 
 const fig = (svg: string, unterschrift: string) => `<figure class="kp-fig">${svg}<figcaption class="kp-small">${unterschrift}</figcaption></figure>`;
 const schritte = (s: string[]) => `<ol class="kp-steps">${s.map((x) => `<li>${x}</li>`).join('')}</ol>`;
@@ -288,7 +279,6 @@ ${schritte(beidrehen)}</div></div>
 ${en ? quelle(sprache, 'points_sail', 'wiki_amwind', 'pbo_halse', 'nammert', 'sg_wende', 'sg_halse', 'wiki_qwende', 'sg_beiliegen', 'heaving_to')
     : quelle(sprache, 'wiki_amwind', 'points_sail', 'wiki_wende', 'sg_wende', 'wiki_halse', 'sg_halse', 'wiki_qwende', 'sg_beiliegen')}`;
 }
-
 
 export function ankernUnterSegel(sprache: Sprache, block: (titel: string, zeichnung: string, unterschrift: string, zweck: string,
   vorbereitung: string, schritte2: readonly string[], grenzen: string) => string): string {

@@ -4,7 +4,6 @@ import {
   KOMPASS_BIS, KOMPASS_PX_JE_GRAD, KOMPASS_VON, bandVersatz, kompassMarken, naehereAn,
 } from '@/core/kompassband';
 
-
 const HOEHE = 26;
 
 let el: HTMLElement | null = null;
@@ -49,7 +48,6 @@ function schritt(jetzt: number): void {
   if (angezeigt !== ziel) rahmen = requestAnimationFrame(schritt);
 }
 
-
 export function setzeKompass(box: HTMLElement | null, cog: number | null, sprache: Sprache, titel: string): void {
   if (!box) return;
   if (el !== box || gebautFuer !== sprache) { el = box; baue(box, sprache); }
@@ -61,6 +59,6 @@ export function setzeKompass(box: HTMLElement | null, cog: number | null, sprach
   } else if (angezeigt === null) {
     angezeigt = 0; stelle();
   } else stelle();
-  
+
   if (wertEl) wertEl.textContent = cog === null ? `${titel} –` : `${titel} ${kursGrad(cog)}`;
 }

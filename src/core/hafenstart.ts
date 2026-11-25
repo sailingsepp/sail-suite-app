@@ -1,20 +1,15 @@
 import type { Punkt } from './types';
 import { baueWassergitter, boxUm, liegtAnLand } from './landumfahrung';
 
-
-
-
 export const HAFENSTART_ZELLE_SM = 0.003;
 
 export const HAFENSTART_VOR_SM = 0.02;
 
 export const HAFENSTART_ANSCHLUSS_SM = 0.04;
 
-
 function xy(p: Punkt, o: Punkt): [number, number] {
   return [(p.lon - o.lon) * 60 * Math.cos((o.lat * Math.PI) / 180), (p.lat - o.lat) * 60];
 }
-
 
 export function imPolygon(p: Punkt, ring: readonly Punkt[]): boolean {
   let innen = false;
@@ -25,7 +20,6 @@ export function imPolygon(p: Punkt, ring: readonly Punkt[]): boolean {
   }
   return innen;
 }
-
 
 export function abstandZumRandSm(p: Punkt, ring: readonly Punkt[]): number {
   let min = Infinity;
@@ -38,7 +32,6 @@ export function abstandZumRandSm(p: Punkt, ring: readonly Punkt[]): number {
   }
   return min;
 }
-
 
 export function startVorHafen(
   p: Punkt,
@@ -55,8 +48,6 @@ export function startVorHafen(
   };
   const wasser = (q: Punkt) => !liegtAnLand(q, kueste);
 
-  
-  
   const x0 = Math.floor((p.lon - g.swLon) / g.dLon), y0 = Math.floor((p.lat - g.swLat) / g.dLat);
   const r = Math.ceil(HAFENSTART_ANSCHLUSS_SM / g.zelleSm);
   const kandidaten: { i: number; d: number }[] = [];
@@ -72,8 +63,6 @@ export function startVorHafen(
   const start = kandidaten.find((k) => wasser(mitte(k.i)));
   if (!start) return null;
 
-  
-  
   const besucht = new Uint8Array(g.nx * g.ny);
   const schlange = new Int32Array(g.nx * g.ny);
   let kopf = 0, ende = 0;

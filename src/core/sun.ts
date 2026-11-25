@@ -1,14 +1,10 @@
 import { toRad, toDeg } from './geo';
 
-
-
 const J2000 = 2451545.0009;
-
 
 const SCHIEFE_DER_EKLIPTIK = 23.4397;
 
 export type Daemmerungsstufe = 'sonne' | 'buergerlich' | 'nautisch' | 'astronomisch';
-
 
 export const DAEMMERUNG_NAME: Record<Daemmerungsstufe, string> = {
   sonne: 'Sonnenuntergang',
@@ -17,14 +13,12 @@ export const DAEMMERUNG_NAME: Record<Daemmerungsstufe, string> = {
   astronomisch: 'astronomische Dämmerung',
 };
 
-
 export const DAEMMERUNGSWINKEL: Record<Daemmerungsstufe, number> = {
-  sonne: -0.833, 
+  sonne: -0.833,
   buergerlich: -6,
   nautisch: -12,
   astronomisch: -18,
 };
-
 
 function julianischeTageszahl(dateStr: string): number {
   const [y, m, d] = dateStr.split('-').map(Number) as [number, number, number];
@@ -39,7 +33,6 @@ function julianischesDatumZuDate(jd: number): Date {
   return new Date((jd - 2440587.5) * 86400000);
 }
 
-
 function norm360(x: number): number {
   return ((x % 360) + 360) % 360;
 }
@@ -49,11 +42,9 @@ export interface Sonnenzeit {
   unter: Date;
 }
 
-
 export function tageSeitJ2000(d: Date): number {
   return d.getTime() / 86400000 - 10957.5;
 }
-
 
 export function sonnenOrt(d: Date): { ra: number; dec: number } {
   const n = tageSeitJ2000(d);
@@ -68,32 +59,24 @@ export function sonnenOrt(d: Date): { ra: number; dec: number } {
   };
 }
 
-
 export function sternzeit(d: Date): number {
   return norm360(280.16 + 360.9856235 * tageSeitJ2000(d));
 }
-
 
 export function hoeheAusStundenwinkel(stundenwinkelDeg: number, decDeg: number, lat: number): number {
   const h = toRad(stundenwinkelDeg), dec = toRad(decDeg), phi = toRad(lat);
   return toDeg(Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(h)));
 }
 
-
 export function sonnenhoehe(lat: number, lon: number, d: Date): number {
   const { ra, dec } = sonnenOrt(d);
   return hoeheAusStundenwinkel(sternzeit(d) + lon - ra, dec, lat);
 }
 
-
 export function sonnenzeiten(lat: number, lon: number, dateStr: string, elevationDeg: number): Sonnenzeit | null {
   const jd = julianischeTageszahl(dateStr);
-  const lw = -lon; 
+  const lw = -lon;
 
-  
-  
-  
-  
   const nStern = jd - J2000 - lw / 360;
   const n = Math.round(nStern);
   const jStern = J2000 + lw / 360 + n;

@@ -7,8 +7,6 @@ import { metarKlartext } from '@/briefing/metar';
 import { holeMetar } from '@/data/metar';
 import type { Sprache } from '@/core/types';
 
-
-
 const TEXTE: Record<Sprache, Record<string, string>> = {
   de: {
     laedt: 'METAR wird geladen.', keine: 'Keine aktuelle Meldung.', weg: 'METAR-Dienst nicht erreichbar.',
@@ -21,7 +19,6 @@ const TEXTE: Record<Sprache, Record<string, string>> = {
     quelle: 'Source: NOAA Aviation Weather Center', schliessen: 'Close', roh: 'Raw report',
   },
 };
-
 
 const ALT_MS = 3 * 3600_000;
 
@@ -59,7 +56,6 @@ function alterText(ms: number, s: Sprache): string {
   const d = min < 60 ? `${min} min` : `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')} min`;
   return s === 'de' ? `vor ${d}` : `${d} ago`;
 }
-
 
 export async function oeffneMetar(icao: string, name: string): Promise<void> {
   const b = baue();

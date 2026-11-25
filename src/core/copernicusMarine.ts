@@ -2,59 +2,54 @@ import type { Strom, Seegang, Gezeit } from './types';
 import { alsUtc, type UtcDate } from './time';
 import { kreuzWinkel } from '@/data/marine';
 
-
-
-
 export interface CopernicusGitter {
   lat: number[];
   lon: number[];
-  
+
   zeiten: string[];
-  
+
   u: (number | null)[][][];
-  
+
   v: (number | null)[][][];
-  
+
   hs: (number | null)[][][];
-  
+
   richtung: (number | null)[][][];
-  
+
   periode: (number | null)[][][];
-  
+
   windseeHoehe?: (number | null)[][][];
-  
+
   windseeRichtung?: (number | null)[][][];
-  
+
   windseePeriode?: (number | null)[][][];
-  
+
   duenungHoehe?: (number | null)[][][];
-  
+
   duenungRichtung?: (number | null)[][][];
-  
+
   duenungPeriode?: (number | null)[][][];
-  
+
   maxHoehe?: (number | null)[][][];
-  
+
   stokesU?: (number | null)[][][];
-  
+
   stokesV?: (number | null)[][][];
-  
+
   temperatur?: (number | null)[][][];
-  
+
   wasserstand?: (number | null)[][][];
-  
+
   wasserstandOhneGezeit?: (number | null)[][][];
-  
+
   wasserstandOhneGezeitTakt?: 'PT1H' | 'P1D';
 }
-
 
 export function parseZeitpunkt(s: string): number {
   const gekuerzt = s.length > 23 ? s.slice(0, 23) : s;
   const mitZone = gekuerzt.endsWith('Z') ? gekuerzt : gekuerzt + 'Z';
   return new Date(mitZone).getTime();
 }
-
 
 function unterIndex(achse: number[], wert: number): number | null {
   if (achse.length < 2) return null;
@@ -63,7 +58,6 @@ function unterIndex(achse: number[], wert: number): number | null {
   if (i === -1) i = achse.length - 2;
   return i;
 }
-
 
 function bilinear(lat: number[], lon: number[], werte: (number | null)[][], zielLat: number, zielLon: number): number | null {
   const i = unterIndex(lat, zielLat);
@@ -76,7 +70,6 @@ function bilinear(lat: number[], lon: number[], werte: (number | null)[][], ziel
   return a * (1 - tLat) * (1 - tLon) + b * (1 - tLat) * tLon + c * tLat * (1 - tLon) + d * tLat * tLon;
 }
 
-
 function bilinearWinkel(lat: number[], lon: number[], werteGrad: (number | null)[][], zielLat: number, zielLon: number): number | null {
   const cosWerte = werteGrad.map((zeile) => zeile.map((v) => (v == null ? null : Math.cos((v * Math.PI) / 180))));
   const sinWerte = werteGrad.map((zeile) => zeile.map((v) => (v == null ? null : Math.sin((v * Math.PI) / 180))));
@@ -85,7 +78,6 @@ function bilinearWinkel(lat: number[], lon: number[], werteGrad: (number | null)
   if (c == null || s == null) return null;
   return ((Math.atan2(s, c) * 180) / Math.PI + 360) % 360;
 }
-
 
 function zeitBracket(zeitenMs: number[], zielMs: number): { i0: number; i1: number; frac: number } {
   let idx = zeitenMs.findIndex((t) => t > zielMs);
@@ -97,7 +89,6 @@ function zeitBracket(zeitenMs: number[], zielMs: number): { i0: number; i1: numb
   return { i0, i1, frac };
 }
 
-
 function feldAn(
   g: { lat: number[]; lon: number[] }, feld: (number | null)[][][],
   bracket: { i0: number; i1: number; frac: number }, lat: number, lon: number,
@@ -107,7 +98,6 @@ function feldAn(
   if (w0 == null || w1 == null) return null;
   return w0 + (w1 - w0) * bracket.frac;
 }
-
 
 function winkelAn(
   g: { lat: number[]; lon: number[] }, feld: (number | null)[][][],
@@ -128,7 +118,6 @@ function geparsteZeiten(g: CopernicusGitter): number[] {
   return t;
 }
 
-
 export function gitterFrisch(g: CopernicusGitter, zeitpunkt: UtcDate): boolean {
   const zeiten = geparsteZeiten(g);
   if (zeiten.length === 0) return false;
@@ -137,20 +126,16 @@ export function gitterFrisch(g: CopernicusGitter, zeitpunkt: UtcDate): boolean {
 
 const MS_ZU_KN = 3600 / 1852;
 
-
 export function stromAusGitter(g: CopernicusGitter, lat: number, lon: number, zeitpunkt: UtcDate): Strom {
   const bracket = zeitBracket(geparsteZeiten(g), zeitpunkt.getTime());
   const u = feldAn(g, g.u, bracket, lat, lon);
   const v = feldAn(g, g.v, bracket, lat, lon);
   if (u == null || v == null) return { speed: 0, dir: 0, valid: false };
   const speedMs = Math.hypot(u, v);
-  
-  
-  
+
   const dir = ((Math.atan2(u, v) * 180) / Math.PI + 360) % 360;
   return { speed: speedMs * MS_ZU_KN, dir, valid: true };
 }
-
 
 export function seegangAusGitter(g: CopernicusGitter, lat: number, lon: number, zeitpunkt: UtcDate): Seegang {
   const none: Seegang = {
@@ -170,9 +155,6 @@ export function seegangAusGitter(g: CopernicusGitter, lat: number, lon: number, 
   const swellDirG = g.duenungRichtung ? winkelAn(g, g.duenungRichtung, bracket, lat, lon) : null;
   const swellTpG = g.duenungPeriode ? feldAn(g, g.duenungPeriode, bracket, lat, lon) : null;
 
-  
-  
-  
   const getrennt = windWaveDirG != null && swellDirG != null;
   const windWaveHs = windWaveHsG ?? hs;
   const windWaveTp = windWaveTpG ?? tp;
@@ -180,8 +162,7 @@ export function seegangAusGitter(g: CopernicusGitter, lat: number, lon: number, 
   const swellHs = swellHsG ?? 0;
   const swellTp = swellTpG ?? 0;
   const swellDir = swellDirG ?? 0;
-  
-  
+
   const L = windWaveTp > 0 ? (9.81 * windWaveTp * windWaveTp) / (2 * Math.PI) : 0;
 
   const maxIndividualHs = g.maxHoehe ? feldAn(g, g.maxHoehe, bracket, lat, lon) : null;
@@ -200,21 +181,17 @@ export function seegangAusGitter(g: CopernicusGitter, lat: number, lon: number, 
     steep: L > 0 ? windWaveHs / L : 0,
     kreuzWinkel: kreuzWinkel(windWaveHs, windWaveDir, swellHs, swellDir, getrennt),
     valid: true,
-    
-    
-    
+
     ...(maxIndividualHs != null ? { maxIndividualHs } : {}),
     ...(stokesSpeed != null && stokesDir != null ? { stokesSpeed, stokesDir } : {}),
   };
 }
-
 
 export function temperaturAusGitter(g: CopernicusGitter, lat: number, lon: number, zeitpunkt: UtcDate): number | null {
   if (!g.temperatur) return null;
   const bracket = zeitBracket(geparsteZeiten(g), zeitpunkt.getTime());
   return feldAn(g, g.temperatur, bracket, lat, lon);
 }
-
 
 export function temperaturTagAusGitter(g: CopernicusGitter, lat: number, lon: number, dateStr: string): number[] {
   if (!g.temperatur) return [];
@@ -227,7 +204,6 @@ export function temperaturTagAusGitter(g: CopernicusGitter, lat: number, lon: nu
   return werte;
 }
 
-
 let mittelfeldCache: WeakMap<CopernicusGitter, (number | null)[][]> | null = null;
 function wasserstandMittelfeld(g: CopernicusGitter): (number | null)[][] {
   mittelfeldCache ??= new WeakMap();
@@ -237,7 +213,6 @@ function wasserstandMittelfeld(g: CopernicusGitter): (number | null)[][] {
   mittelfeldCache.set(g, feld);
   return feld;
 }
-
 
 export function wasserstandAusGitter(g: CopernicusGitter, lat: number, lon: number, zeitpunkt: UtcDate): Gezeit {
   const none: Gezeit = { hoeheM: 0, valid: false };
@@ -249,8 +224,6 @@ export function wasserstandAusGitter(g: CopernicusGitter, lat: number, lon: numb
   if (mittel == null) return none;
   return { hoeheM: roh - mittel, valid: true };
 }
-
-
 
 let mittelOhneGezeitCache: WeakMap<CopernicusGitter, (number | null)[][]> | null = null;
 function mittelfeldOhneGezeit(g: CopernicusGitter): (number | null)[][] {
@@ -273,11 +246,9 @@ function mittelfeld(g: CopernicusGitter, schichten: (number | null)[][][]): (num
   }));
 }
 
-
 export function gitterTeiltGezeit(g: CopernicusGitter): boolean {
   return !!g.wasserstand && !!g.wasserstandOhneGezeit;
 }
-
 
 export function modellGezeitAusGitter(g: CopernicusGitter, lat: number, lon: number, zeitpunkt: UtcDate): number | null {
   if (!g.wasserstand || !g.wasserstandOhneGezeit) return null;
@@ -287,7 +258,6 @@ export function modellGezeitAusGitter(g: CopernicusGitter, lat: number, lon: num
   const ohne = feldAn(g, g.wasserstandOhneGezeit, bracket, lat, lon);
   return mit == null || ohne == null ? null : mit - ohne;
 }
-
 
 export function wetteranteilAusGitter(g: CopernicusGitter, lat: number, lon: number, zeitpunkt: UtcDate): Gezeit {
   const none: Gezeit = { hoeheM: 0, valid: false };
@@ -301,20 +271,19 @@ export function wetteranteilAusGitter(g: CopernicusGitter, lat: number, lon: num
 }
 
 export interface ModellWasserstand {
-  
+
   zeit: Date;
-  
+
   gezeitM: number | null;
-  
+
   wetterM: number;
 }
-
 
 export function modellWasserstandReihe(g: CopernicusGitter, lat: number, lon: number): ModellWasserstand[] {
   if (!gitterTeiltGezeit(g)) return [];
   const out: ModellWasserstand[] = [];
   for (const ms of geparsteZeiten(g)) {
-    
+
     const zeit = alsUtc(new Date(ms));
     const gezeit = modellGezeitAusGitter(g, lat, lon, zeit);
     const wetter = wetteranteilAusGitter(g, lat, lon, zeit);
@@ -322,7 +291,6 @@ export function modellWasserstandReihe(g: CopernicusGitter, lat: number, lon: nu
   }
   return out;
 }
-
 
 export function extremeAusReihe(reihe: readonly { zeit: Date; hoeheM: number }[]): { zeit: Date; hoeheM: number; art: 'HW' | 'NW' }[] {
   const out: { zeit: Date; hoeheM: number; art: 'HW' | 'NW' }[] = [];
@@ -342,12 +310,10 @@ export function extremeAusReihe(reihe: readonly { zeit: Date; hoeheM: number }[]
   return out;
 }
 
-
 export function revierDeckt(bbox: [number, number, number, number], lat: number, lon: number): boolean {
   const [minLon, minLat, maxLon, maxLat] = bbox;
   return lon >= minLon && lon <= maxLon && lat >= minLat && lat <= maxLat;
 }
-
 
 export function zuschneiden(g: CopernicusGitter, sued: number, west: number, nord: number, ost: number): CopernicusGitter {
   const bereich = (achse: number[], von: number, bis: number): [number, number] => {
@@ -373,16 +339,13 @@ export function zuschneiden(g: CopernicusGitter, sued: number, west: number, nor
   return aus as unknown as CopernicusGitter;
 }
 
-
 export function zuschneidenUm(g: CopernicusGitter, punkte: readonly { lat: number; lon: number }[], randGrad: number): CopernicusGitter {
   if (!punkte.length) return g;
   const lats = punkte.map((p) => p.lat), lons = punkte.map((p) => p.lon);
   return zuschneiden(g, Math.min(...lats) - randGrad, Math.min(...lons) - randGrad, Math.max(...lats) + randGrad, Math.max(...lons) + randGrad);
 }
 
-
 export interface KachelRaster { zeilen: number[]; spalten: number[]; zb: number; sb: number; nLat: number; nLon: number }
-
 
 export function kachelnFuer(
   r: KachelRaster, sued: number, west: number, nord: number, ost: number,
@@ -397,7 +360,6 @@ export function kachelnFuer(
   const c0 = block(r.spalten, west), c1 = block(r.spalten, ost);
   return r1 >= r0 && c1 >= c0 ? { r0, r1, c0, c1 } : null;
 }
-
 
 export function fuegeKachelnZusammen(
   kachel: (r: number, c: number) => CopernicusGitter | undefined, b: { r0: number; r1: number; c0: number; c1: number },

@@ -4,7 +4,6 @@ import { feldDeckt, wetterGitter, WETTER_NEU_MS, type WetterFeld } from '@/core/
 import { holeOpenMeteoJson, OpenMeteoKontingent } from './openMeteoNetz';
 import { FORECAST_DAYS, RECHENMODELL, VERGLEICHSMODELL } from './openMeteo';
 
-
 const DB_NAME = 'sail-suite-wetter';
 const STORE = 'felder';
 const SCHLUESSEL = 'letztes';
@@ -27,7 +26,6 @@ function oeffne(): Promise<IDBDatabase | null> {
   });
   return db;
 }
-
 
 export async function abgelegtesWetter(): Promise<WetterFeld | null> {
   if (imSpeicher !== undefined) return imSpeicher;
@@ -59,7 +57,6 @@ async function lege(f: WetterFeld): Promise<void> {
 
 type Roh = { hourly?: Record<string, unknown> };
 const hatWerte = (a: unknown): a is (number | null)[] => Array.isArray(a) && a.some((v) => v != null);
-
 
 export function feldAusAntwort(roh: unknown, lats: number[], lons: number[], geholt: number): WetterFeld | null {
   const arr = (Array.isArray(roh) ? roh : [roh]) as Roh[];
@@ -96,7 +93,6 @@ export function wetterUrl(lats: readonly number[], lons: readonly number[]): str
     + `&wind_speed_unit=kn&timezone=UTC&forecast_days=${FORECAST_DAYS}&cell_selection=sea`;
 }
 
-
 export function stromUrl(lats: readonly number[], lons: readonly number[]): string {
   const la: string[] = [], lo: string[] = [];
   for (const a of lats) for (const b of lons) { la.push(a.toFixed(2)); lo.push(b.toFixed(2)); }
@@ -106,7 +102,6 @@ export function stromUrl(lats: readonly number[], lons: readonly number[]): stri
 }
 
 const KMH_KN = 1 / 1.852;
-
 
 export function stromAusAntwort(roh: unknown, f: Pick<WetterFeld, 'lats' | 'lons' | 'zeiten'>): { strom: (number | null)[][]; stromNach: (number | null)[][] } | null {
   const arr = (Array.isArray(roh) ? roh : [roh]) as (Roh & { latitude?: number; longitude?: number; elevation?: number })[];
@@ -119,7 +114,7 @@ export function stromAusAntwort(roh: unknown, f: Pick<WetterFeld, 'lats' | 'lons
     const v = new Array<number | null>(f.zeiten.length).fill(null), d = new Array<number | null>(f.zeiten.length).fill(null);
     strom.push(v); stromNach.push(d);
     const lat = f.lats[Math.floor(k / f.lons.length)]!, lon = f.lons[k % f.lons.length]!;
-    
+
     if (typeof a?.elevation === 'number' && a.elevation > 0) return;
     if (typeof a?.latitude === 'number' && typeof a.longitude === 'number'
       && (Math.abs(a.latitude - lat) > schritt * 0.4 || Math.abs(a.longitude - lon) > schritt * 0.4)) return;
@@ -136,9 +131,7 @@ export function stromAusAntwort(roh: unknown, f: Pick<WetterFeld, 'lats' | 'lons
   return irgendwo ? { strom, stromNach } : null;
 }
 
-
 const stromVersucht = new Set<number>();
-
 
 async function ergaenzeStrom(f: WetterFeld): Promise<boolean> {
   stromVersucht.add(f.geholt);
@@ -150,15 +143,13 @@ async function ergaenzeStrom(f: WetterFeld): Promise<boolean> {
   } catch { return false; }
 }
 
-
 export type WetterLaden = { feld: WetterFeld | null; neu: boolean; fehler?: 'kontingent' | 'netz' | 'ohneOrt' };
-
 
 export async function ladeWetterkarte(punkte: readonly Punkt[], netz: boolean, jetzt = Date.now()): Promise<WetterLaden> {
   const alt = await abgelegtesWetter();
   if (!punkte.length) return alt ? { feld: alt, neu: false } : { feld: null, neu: false, fehler: 'ohneOrt' };
   if (alt && feldDeckt(alt, punkte) && jetzt - alt.geholt < WETTER_NEU_MS) {
-    
+
     if (netz && !alt.reihen.strom && !stromVersucht.has(alt.geholt) && await ergaenzeStrom(alt)) await lege(alt);
     return { feld: alt, neu: false };
   }
@@ -175,6 +166,5 @@ export async function ladeWetterkarte(punkte: readonly Punkt[], netz: boolean, j
     return { feld: alt, neu: false, fehler: e instanceof OpenMeteoKontingent ? 'kontingent' : 'netz' };
   }
 }
-
 
 export function _vergessen(): void { db = null; imSpeicher = undefined; stromVersucht.clear(); }

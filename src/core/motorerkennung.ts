@@ -1,77 +1,75 @@
 import { relAngle } from './geo';
 import { polarSpeed, mastFaktorEffektiv, FARR_BAVARIA_50, type BoatPolar } from './polar';
 
-
-
 export type Urteil = 'motor' | 'segel' | 'unklar';
 
 export type Grund =
-  | 'zu-spitz'              
-  | 'schneller-als-polare'  
-  | 'kein-wind'             
-  | 'passt-zur-polare'      
-  | 'zu-langsam'            
-  | 'liegt'                 
-  | 'manoever'              
-  | 'hafennah'              
-  | 'zu-wenig-segelwind'    
-  | 'kein-kurs';            
+  | 'zu-spitz'
+  | 'schneller-als-polare'
+  | 'kein-wind'
+  | 'passt-zur-polare'
+  | 'zu-langsam'
+  | 'liegt'
+  | 'manoever'
+  | 'hafennah'
+  | 'zu-wenig-segelwind'
+  | 'kein-kurs';
 
 export interface Lage {
-  
+
   sog: number;
-  
+
   cog: number | null;
-  
+
   windAus: number;
-  
+
   wind10: number;
-  
+
   wind80?: number | null;
   boot?: BoatPolar;
-  
+
   crewFaktor?: number;
-  
+
   abstandStartNM?: number | null;
 }
 
 export interface Befund {
   urteil: Urteil;
-  
+
   twa: number | null;
-  
+
   moeglich: number | null;
   grund: Grund;
 }
 
 export interface Optionen {
-  
+
   fahrtMinKn?: number;
-  
+
   nichtSegelbarTwa?: number;
-  
+
   ueberFaktor?: number;
-  
+
   ueberAbsolutKn?: number;
-  
+
   unterFaktor?: number;
-  
+
   windMinKn?: number;
-  
+
   segelWindMinKn?: number;
-  
+
   manoeverKn?: number;
-  
+
   spitzMinKn?: number;
-  
+
   hafenNM?: number;
-  
+
   ohneWindFahrtKn?: number;
-  
+
   halteMinutenMotor?: number;
-  
+
   halteMinutenSegel?: number;
-  
+
   mindestBeobachtungen?: number;
 }
 
@@ -92,7 +90,6 @@ export const VORGABEN: Required<Optionen> = {
   mindestBeobachtungen: 6,
 };
 
-
 export function beurteile(l: Lage, opt: Optionen = {}): Befund {
   const o = { ...VORGABEN, ...opt };
   const boot = l.boot ?? FARR_BAVARIA_50;
@@ -102,36 +99,20 @@ export function beurteile(l: Lage, opt: Optionen = {}): Befund {
 
   const twa = relAngle(l.windAus, l.cog);
 
-  
-  
-  
-  
-  
-  
-  
-  
   if (l.sog < o.manoeverKn) {
     return { urteil: 'unklar', twa, moeglich: null, grund: 'manoever' };
   }
 
-  
-  
-  
   if (l.wind10 < o.windMinKn) {
     return l.sog >= o.ohneWindFahrtKn
       ? { urteil: 'motor', twa, moeglich: null, grund: 'kein-wind' }
       : { urteil: 'unklar', twa, moeglich: null, grund: 'liegt' };
   }
 
-  
-  
   if (twa < o.nichtSegelbarTwa && l.sog >= o.spitzMinKn) {
     return { urteil: 'motor', twa, moeglich: null, grund: 'zu-spitz' };
   }
 
-  
-  
-  
   const windFuerPolare = boot.referenceHeight === '10m'
     ? l.wind10
     : l.wind10 * mastFaktorEffektiv(l.wind10, l.wind80 ?? null);
@@ -144,18 +125,10 @@ export function beurteile(l: Lage, opt: Optionen = {}): Befund {
     return { urteil: 'unklar', twa, moeglich, grund: 'zu-langsam' };
   }
 
-  
-  
-  
-  
-  
-  
-  
   if (l.wind10 < o.segelWindMinKn) {
     return { urteil: 'unklar', twa, moeglich, grund: 'zu-wenig-segelwind' };
   }
-  
-  
+
   if (l.abstandStartNM != null && l.abstandStartNM < o.hafenNM) {
     return { urteil: 'unklar', twa, moeglich, grund: 'hafennah' };
   }
@@ -166,8 +139,6 @@ export interface Beobachtung {
   t: number;
   urteil: Urteil;
 }
-
-
 
 export function laufBeginn<B extends Beobachtung>(beobachtungen: readonly B[], ziel: 'motor' | 'segel'): B | null {
   let beginn: B | null = null;
@@ -198,24 +169,10 @@ export function vorschlag(
   const fensterAb = jetzt - haltenMs;
   const imFenster = beobachtungen.filter((b) => b.t >= fensterAb);
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   if (imFenster.some((b) => b.urteil !== 'unklar' && b.urteil !== ziel)) return null;
   const treffer = imFenster.filter((b) => b.urteil === ziel);
   if (treffer.length < o.mindestBeobachtungen) return null;
 
-  
-  
-  
-  
   const erster = treffer[0]!;
   if (juengste.t - erster.t < haltenMs * 0.9) return null;
 

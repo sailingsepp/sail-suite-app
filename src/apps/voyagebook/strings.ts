@@ -1,8 +1,6 @@
 import type { Sprache } from '@/core/types';
 import type { TourSchritt } from '@/shell/strings';
 
-
-
 export const TITLE: Record<Sprache, string> = {
   de: 'TörnBuch: Crew und Törns der Suite',
   en: 'VoyageBook: crew and voyages for the suite',
@@ -15,7 +13,7 @@ export const DESCRIPTION: Record<Sprache, string> = {
 
 export const STRINGS: Record<Sprache, Record<string, string>> = {
   de: {
-    
+
     'footer.credits': 'Daten © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-Mitwirkende · <a href="https://www.openseamap.org/" target="_blank" rel="noopener">OpenSeaMap</a> · <a href="https://emodnet.ec.europa.eu/en/bathymetry" target="_blank" rel="noopener">EMODnet Bathymetry</a> · <a href="https://doi.org/10.5067/MEaSUREs/SRTM/SRTMGL1.003" target="_blank" rel="noopener">NASA SRTM</a> · <a href="https://marineregions.org/" target="_blank" rel="noopener">Marine Regions</a> · <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>',
     'header.title': 'TörnBuch',
     'header.handbuch': 'Handbuch',
@@ -27,25 +25,19 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'liste.leer': 'Noch keine Törns: leg deinen ersten an.',
     'liste.fehler': 'Törns ließen sich nicht laden. Bitte später erneut versuchen.',
     'liste.archiviert': 'archiviert',
-    
-    
+
     'liste.aktiv': 'aktiv',
-    
-    
+
     'liste.weitere': 'Weitere Törns',
-    
+
     'footer.sig': 'Sail-Suite · TörnBuch · © 2026 by Sepp',
 
     'detail.zurueck': 'Deine Törns',
-    
+
     'detail.reiterUebersicht': 'Übersicht',
     'detail.reiterCrew': 'Crew',
     'detail.reiterStatistik': 'Logbuch',
-    
-    
-    
-    
-    
+
     'fotos.titel': 'Fotos der Crew',
     'fotos.hinweis': 'Zeit und Ort liest TörnBuch aus dem Foto, sonst vom Gerät oder aus der Spur; beides lässt sich vor dem Hochladen ändern. Die Fotos stehen im Tagesblatt über dem Logbuch und auf der Stream-Seite.',
     'fotos.datei': 'Foto hinzufügen',
@@ -95,8 +87,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'stream.fristVorbei': 'Der Törn ist beendet. Dein Link galt bis {zeit}, 48 Stunden nach dem Ende des Törns.',
     'stream.schliessen': 'Schließen',
     'detail.bearbeiten': 'Bearbeiten',
-    
-    
+
     'detail.toerndaten': 'Törndaten',
     'detail.keineAngabe': 'keine Angabe',
     'detail.revier': 'Revier',
@@ -114,15 +105,11 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'detail.crewNachnamePlatzhalter': 'Nachname',
     'detail.crewDazu': '+ Hinzufügen',
     'detail.crewEinladen': 'Einladen',
-    
-    
-    
+
     'detail.crewEinladenNeu': 'Einladungslink erstellen',
-    
-    
+
     'detail.crewEinladenHinweisKurz': 'Der Link gilt sieben Tage; Vor- und Nachname kommen aus dem Profil der eingeladenen Person.',
-    
-    
+
     'detail.crewManuellHinweis': 'Für jemanden, der (noch) kein eigenes Konto hat.',
     'detail.crewEntfernenAria': '{name} aus dem Törn entfernen',
     'detail.crewEntfernenFrage.angelegt': '{name} aus dem Törn entfernen? Der Törn ist erst angelegt, es ist noch nichts aufgezeichnet: Er verschwindet nur aus der Liste dieser Person. Neu einladen geht jederzeit.',
@@ -135,7 +122,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'detail.crewLinkKopiert': 'Einladungslink kopiert. Per E-Mail verschickt, landet er gelegentlich im Spam-Ordner.',
     'detail.crewLinkFehler': 'Einladung ließ sich nicht erzeugen.',
     'detail.statistikTitel': 'Statistik',
-    
+
     'motor.titel': 'Motor & Diesel',
     'motor.hinweis': 'Abgelesen am Betriebsstundenzähler und vom Tankbeleg. Für die ganze Crew auf jedem Gerät sichtbar; die letzte Änderung gilt.',
     'motor.keine': 'Auf diesem Gerät wurde für diesen Törn nichts mit TörnNavLog aufgezeichnet. Motorstunden und Diesel bitte auf dem Gerät eintragen, auf dem TörnNavLog lief.',
@@ -148,7 +135,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'motor.fehlerStunden': 'Der Zähler kann nicht rückwärts laufen: Motorstunden nicht übernommen.',
     'motor.fehlerDiesel': 'Jeder Tankvorgang braucht eine Literzahl ab 0: Tankvorgänge nicht übernommen.',
     'motor.fehlerNetz': 'Nicht gespeichert: keine Verbindung zum Server.',
-    
+
     'kasse.reiter': 'Bordkassa',
     'kasse.wemTitel': 'Wer zahlt wem',
     'kasse.listeTitel': 'Ausgaben',
@@ -206,9 +193,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'statistik.nachtansteuerungen': 'Nachtansteuerungen',
     'statistik.fahrzeit': 'Fahrzeit',
     'statistik.schnitt': 'Ø Fahrt',
-    
-    
-    
+
     'statistik.segel': 'Unter Segeln',
     'statistik.motor': 'Unter Maschine',
     'statistik.offen': 'Ohne Angabe',
@@ -258,9 +243,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'detail.briefingFehler': 'Briefing ließ sich nicht laden.',
     'detail.briefingMeta': 'Für {datum} · geteilt am {zeitpunkt}',
     'detail.archivieren': 'Törn archivieren',
-    
-    
-    
+
     'detail.archivierenBestaetigung': 'Archivieren friert den Törn und die Profildaten der Crew zu diesem Zeitpunkt ein. Danach lässt er sich nur noch ansehen, nicht mehr bearbeiten, aktiv setzen oder um Crew erweitern. Fortfahren?',
     'detail.archiviert': 'Archiviert.',
     'detail.archivHinweis': 'Archiviert am {datum}: Der Törn ist ein Nachweis und nur noch lesbar.',
@@ -283,10 +266,6 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'funktion.deckshand': 'Deckshand',
     'funktion.pax': 'Pax',
 
-    
-    
-    
-    
     'status.platzhalter': 'Platzhalter',
     'status.eingeladen': 'Eingeladen',
     'status.mitglied': 'Mitglied',
@@ -297,10 +276,9 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'neu.titel': 'Neuer Törn',
     'neu.titelBearbeiten': 'Törn bearbeiten',
     'neu.name': 'Name',
-    
-    
+
     'neu.meineFunktion': 'Meine Rolle in diesem Törn',
-    
+
     'neu.startpunkt': 'Startpunkt',
     'neu.endpunkt': 'Endpunkt',
     'neu.punktLeer': 'Noch nicht gewählt',
@@ -314,13 +292,11 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'neu.bis': 'Bis',
     'neu.bisHinweis': '„Bis“ und Endpunkt dürfen leer bleiben. Bei einer Überstellung rechnet die Törnplanung, wann das Schiff ankommt; für einen Rundtörn braucht sie das Enddatum.',
     'neu.yachtnutzung': 'Yachtnutzung',
-    
-    
+
     'neu.optional': '· optional',
     'neu.crewErfahrungAngeben': 'Crew-Erfahrung angeben',
     'neu.crewErfahrungHinweis': 'Wird von Tagesplanung und Törnplanung übernommen.',
-    
-    
+
     'field.crewfactor': 'Crew-Faktor',
     'field.crewfactor.title': 'Geschwindigkeitsfaktor der Crew (1,0 = Werft-Polare/Regatta-Trimm): reines Tempo, siehe Zumutbarkeit für die Lesart des Fazits',
     'field.crewzumutbarkeit': 'Zumutbarkeit',
@@ -377,12 +353,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'liste.speicher': 'Speicher {belegt} von {grenze} GB belegt',
     'liste.toernZahl': '{n} von {max} eigenen Törns',
     'neu.fehlerAendern': 'Ändern hat nicht geklappt. Bitte später erneut versuchen.',
-    
-    
-    
 
-    
-    
     'crewEdit.nameGesperrt': 'Der Name kommt aus dem eigenen Profil dieses Mitglieds und lässt sich hier nicht ändern.',
     'crewEdit.vorname': 'Vorname',
     'crewEdit.nachname': 'Nachname',
@@ -404,8 +375,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'crewliste.pdfFehler': 'PDF ließ sich nicht erstellen.',
 
     'nachricht.titel': 'Nachricht an die Crew',
-    
-    
+
     'nachricht.hinweisKurz': 'Per E-Mail an alle mit hinterlegter Adresse.',
     'nachricht.platzhalter': 'Nachricht an die Crew …',
     'nachricht.senden': 'Senden',
@@ -415,23 +385,18 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'nachricht.leer': 'Bitte einen Text eingeben.',
     'nachricht.fehler': 'Senden hat nicht geklappt. Bitte später erneut versuchen.',
 
-    
-    
     'einladung.vorspann': 'Einladung zum Törn',
     'einladung.laedt': 'Lädt …',
     'einladung.text': 'Du wurdest zum Törn „{name}" eingeladen, als {funktion}.',
-    
-    
+
     'einladung.fotoBildunterschrift': 'Foto von der Yacht',
     'einladung.bereitsEingeloest': 'Diese Einladung wurde bereits eingelöst.',
     'einladung.ungueltig': 'Diese Einladung ist ungültig oder abgelaufen.',
-    
+
     'einladung.hinweis': 'Der Link gilt sieben Tage. Vor- und Nachname kommen aus deinem Profil. Hier ist keine Eingabe nötig.',
     'einladung.annehmen': 'Einladung annehmen',
     'einladung.annehmenAnmelden': 'Zum Annehmen anmelden',
-    
-    
-    
+
     'einladung.willkommen': 'Willkommen an Bord! Du bist jetzt Teil der Crew von Törn „{name}".',
     'einladung.fehler': 'Annehmen hat nicht geklappt. Bitte später erneut versuchen.',
     'footer.sourcesBody': `
@@ -459,8 +424,6 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
  Die Suche unter <b>Technik an Bord</b> (Reiter „Technik“) zeigt Fundstellen in den eigenen Handbüchern, keine Anleitung; maßgeblich sind Handbuch und Gerät. Gescannte Seiten ohne Textebene findet sie nicht. Handbücher nur für die eigene Nutzung hinzufügen.
  `,
 
-
-    
     'menu.toernliste': 'Törnliste neben dem Törn',
     'liste.offen': 'offen',
     'detail.aktiverToern': 'Aktiver Törn',
@@ -621,7 +584,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'motor.fehlerStunden': 'An hour meter cannot run backwards: engine hours not saved.',
     'motor.fehlerDiesel': 'Each refuelling needs a number of litres, 0 or more: refuelling not saved.',
     'motor.fehlerNetz': 'Not saved: no connection to the server.',
-    
+
     'kasse.reiter': 'Kitty',
     'kasse.wemTitel': 'Who pays whom',
     'kasse.listeTitel': 'Expenses',
@@ -900,8 +863,6 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
  The search under <b>Equipment on board</b> ("Equipment" tab) shows passages in your own manuals, not instructions; the manual and the device are authoritative. Scanned pages without a text layer are not found. Add manuals for your own use only.
  `,
 
-
-    
     'menu.toernliste': 'Voyage list beside the voyage',
     'liste.offen': 'open',
     'detail.aktiverToern': 'Active voyage',

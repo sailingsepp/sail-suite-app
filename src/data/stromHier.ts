@@ -3,7 +3,6 @@ import { distNM } from '@/core/geo';
 import { currentAt } from './marine';
 import { holeOpenMeteoJson } from './openMeteoNetz';
 
-
 const SCHLUESSEL = 'sail-suite:nav-strom';
 
 const NEU_SM = 3;
@@ -37,12 +36,11 @@ async function hole(lat: number, lon: number): Promise<void> {
       try { localStorage.setItem(SCHLUESSEL, JSON.stringify(ablage)); } catch {  }
     }
   } catch {
-    
+
   } finally {
     laeuft = false;
   }
 }
-
 
 export function stromHier(lat: number, lon: number, jetzt = Date.now()): Strom | null {
   ablage ??= lies();

@@ -8,9 +8,6 @@ import type { Motorablesung } from '@/core/motorstunden';
 import { API_BASIS } from '@/shell/api';
 import { merkeLesestand, lesestandRueckfall, vorlaeufigUnbekannt } from '@/shell/lesestand';
 
-
-
-
 const ZEITSCHRANKE_MS = 120_000;
 const SIGNATUR_PRAEFIX = 'sailwise:spurablage:';
 
@@ -18,12 +15,12 @@ const SIGNATUR_FASSUNG = 'v2';
 
 export interface SpurMeta {
   fahrtId: string;
-  
+
   vonUserId: string;
   eigene: boolean;
   anzahlFixe: number;
   aktualisiertAm: string;
-  
+
   beginn: number | null;
   ende: number | null;
 }
@@ -43,9 +40,9 @@ export interface GeholteSpur {
 
 export interface Motordaten {
   motorstunden: Motorablesung[];
-  
+
   dieselGetanktL: number | null;
-  
+
   tankvorgaenge?: Tankvorgang[];
 }
 
@@ -80,7 +77,6 @@ function bewerte(res: Response | null): Ergebnis {
     ? 'abgelehnt' : 'netz';
 }
 
-
 export async function ladeSpurHoch(token: string, toernId: string, payload: FahrtPayload): Promise<Ergebnis> {
   const { rumpf, gzip } = await packe(JSON.stringify({ toernId, payload }));
   const kopf: Record<string, string> = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -105,20 +101,18 @@ async function ladeBildHoch(
   ));
 }
 
-
 export async function holeSpurListe(token: string, toernId: string): Promise<SpurMeta[] | null> {
   const schluessel = `spuren?toern=${toernId}`;
   const res = await mitZeitschranke(`${API_BASIS}/api/spuren?toern=${encodeURIComponent(toernId)}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  
+
   if (!res || vorlaeufigUnbekannt(res.status)) return lesestandRueckfall<SpurMeta[]>(schluessel);
   if (!res.ok) return null;
   const liste = (await res.json().catch(() => null)) as SpurMeta[] | null;
   merkeLesestand(schluessel, liste);
   return liste;
 }
-
 
 const geholt = new Map<string, GeholteSpur>();
 
@@ -154,25 +148,18 @@ export async function holeSpur(token: string, meta: SpurMeta): Promise<GeholteSp
   return sauber;
 }
 
-
 export async function holeBildBlob(
   token: string, fahrtId: string, vonUserId: string, bildId: string,
 ): Promise<Blob | null> {
   const res = await mitZeitschranke(
     `${API_BASIS}/api/spuren/${encodeURIComponent(fahrtId)}/bilder/${encodeURIComponent(bildId)}`
-    
-    
-    
-    
+
     + `?von=${encodeURIComponent(vonUserId)}&c=1`,
     { headers: { Authorization: `Bearer ${token}` } },
   );
   if (!res?.ok) return null;
   return res.blob().catch(() => null);
 }
-
-
-
 
 export function kurzHash(text: string): string {
   let h = 0x811c9dc5;
@@ -183,14 +170,11 @@ export function kurzHash(text: string): string {
   return (h >>> 0).toString(36);
 }
 
-
 export function fahrtSignatur(anzahl: number, rest: { fahrt: Fahrt; eintraege: unknown[]; orte: unknown[] }): string {
   return `${SIGNATUR_FASSUNG}|${anzahl}|${kurzHash(JSON.stringify(rest))}`;
 }
 
-
 export const ABGELEHNT_RUHE_MS = 24 * 3600_000;
-
 
 export function mussSichern(gemerkt: string | null, signatur: string, jetzt: number): boolean {
   if (gemerkt === signatur) return false;
@@ -199,21 +183,18 @@ export function mussSichern(gemerkt: string | null, signatur: string, jetzt: num
   return true;
 }
 
-
 export interface Kandidat {
   fahrtId: string;
-  
+
   lokal: boolean;
   anzahl: number;
   beginn: number | null;
   ende: number | null;
-  
+
   meta?: SpurMeta;
 }
 
-
 export const DOPPELT_AB = 0.5;
-
 
 export function waehleFahrten(kandidaten: Kandidat[]): Kandidat[] {
   const besser = (a: Kandidat, b: Kandidat) => a.anzahl > b.anzahl || (a.anzahl === b.anzahl && a.lokal && !b.lokal);
@@ -236,14 +217,12 @@ export function waehleFahrten(kandidaten: Kandidat[]): Kandidat[] {
   return gewaehlt;
 }
 
-
 export function motordatenAus(t: Pick<Toern, 'motorstunden' | 'dieselGetanktL' | 'tankvorgaenge'> | null): Motordaten {
   return {
     motorstunden: t?.motorstunden ?? [], dieselGetanktL: t?.dieselGetanktL ?? null,
     ...(t?.tankvorgaenge ? { tankvorgaenge: t.tankvorgaenge } : {}),
   };
 }
-
 
 export function setzeDieselInToern(t: Toern, m: Pick<Motordaten, 'dieselGetanktL' | 'tankvorgaenge'>): Toern {
   const neu: Toern = { ...t };
@@ -254,14 +233,10 @@ export function setzeDieselInToern(t: Toern, m: Pick<Motordaten, 'dieselGetanktL
   return neu;
 }
 
-
 const tankMerkmal = (v: Tankvorgang): unknown[] => (v.motorstand != null ? [v.datum, v.liter, v.ort, v.motorstand] : [v.datum, v.liter, v.ort]);
 
-
 export function motorHash(m: Motordaten): string {
-  
-  
-  
+
   const tv = tankvorgaengeAus(m);
   const basis: unknown[] = [m.motorstunden.map((a) => [a.t, a.stand]), m.dieselGetanktL];
   if (!nurSumme(tv)) basis.push(tv.map(tankMerkmal));
@@ -271,8 +246,6 @@ export function motorHash(m: Motordaten): string {
 export function motordatenLeer(m: Motordaten): boolean {
   return m.motorstunden.length === 0 && m.dieselGetanktL === null;
 }
-
-
 
 function lies(schluessel: string): string | null {
   try {
@@ -286,17 +259,13 @@ function merke(schluessel: string, wert: string): void {
   try {
     localStorage.setItem(schluessel, wert);
   } catch {
-    
+
   }
 }
-
-
-
 
 async function sichereBilder(token: string, nutzerId: string, toernId: string, fahrtId: string): Promise<boolean> {
   return sichereBilderMitId(token, nutzerId, toernId, await bildIdsVon(fahrtId));
 }
-
 
 export async function sichereBilderMitId(token: string, nutzerId: string, toernId: string, ids: readonly string[]): Promise<boolean> {
   for (const id of ids) {
@@ -313,8 +282,6 @@ export async function sichereBilderMitId(token: string, nutzerId: string, toernI
 
 let laeuft = false;
 
-
-
 export async function merkeAlsGesichert(nutzerId: string, fahrt: Fahrt): Promise<void> {
   const anzahl = await anzahlFixe(fahrt.id);
   if (!anzahl) return;
@@ -322,14 +289,12 @@ export async function merkeAlsGesichert(nutzerId: string, fahrt: Fahrt): Promise
   merke(`${SIGNATUR_PRAEFIX}${nutzerId}:${fahrt.id}`, fahrtSignatur(anzahl, { fahrt, eintraege, orte }));
 }
 
-
 export interface EigenerLive {
   fahrt: { id: string; begonnen: number; beendet: number | null; zeitzone?: string; name?: string; ziel?: string; antrieb?: string };
   punkte: [number, number, number][];
   eintraege: unknown[];
   stand: { t: number; lat: number; lon: number; betriebsart?: string };
 }
-
 
 export async function holeEigenenLiveStand(token: string, toernId: string): Promise<EigenerLive[] | null> {
   const res = await mitZeitschranke(`${API_BASIS}/api/toerne/${encodeURIComponent(toernId)}/live/eigene`, {
@@ -366,14 +331,12 @@ export async function sichereFahrten(
       if (!(await sichereBilder(token, nutzerId, fahrt.toern, fahrt.id))) break;
     }
   } catch {
-    
+
   } finally {
     laeuft = false;
   }
   return gesichert;
 }
-
-
 
 export async function holeMotordaten(token: string, toernId: string): Promise<Motordaten | null | 'netz'> {
   const res = await mitZeitschranke(`${API_BASIS}/api/spuren/motordaten/${encodeURIComponent(toernId)}`, {
@@ -401,14 +364,12 @@ export function motordatenMerker(nutzerId: string, toernId: string): string {
   return `${SIGNATUR_PRAEFIX}${nutzerId}:motor:${toernId}`;
 }
 
-
 export function merkeMotordaten(nutzerId: string, toernId: string, m: Motordaten): void {
   const k = motordatenMerker(nutzerId, toernId);
   merke(k, motorHash(m));
   merke(`${k}:stunden`, stundenHash(m));
   merke(`${k}:diesel`, dieselHash(m));
 }
-
 
 export function stundenHash(m: Motordaten): string {
   return kurzHash(JSON.stringify(m.motorstunden.map((a) => [a.t, a.stand])));
@@ -417,7 +378,6 @@ export function dieselHash(m: Motordaten): string {
   const tv = tankvorgaengeAus(m);
   return kurzHash(JSON.stringify([m.dieselGetanktL, nurSumme(tv) ? null : tv.map(tankMerkmal)]));
 }
-
 
 export function geaenderteFelder(
   hier: Motordaten, merker: { ganz: string | null; stunden: string | null; diesel: string | null },
@@ -432,7 +392,6 @@ export function geaenderteFelder(
   return { stunden, diesel };
 }
 
-
 export function vereinigeAblesungen(andere: Motorablesung[], vorrang: Motorablesung[]): Motorablesung[] {
   const nachZeit = new Map<number, Motorablesung>();
   for (const a of andere) nachZeit.set(a.t, a);
@@ -440,7 +399,6 @@ export function vereinigeAblesungen(andere: Motorablesung[], vorrang: Motorables
   const reihe = [...nachZeit.values()].sort((a, b) => a.t - b.t);
   return reihe.every((a, i) => i === 0 || a.stand >= reihe[i - 1]!.stand) ? reihe : vorrang;
 }
-
 
 export function mischeMotordaten(
   hier: Motordaten | null, server: Motordaten | null, geaendert: { stunden: boolean; diesel: boolean },
@@ -458,7 +416,6 @@ export function mischeMotordaten(
 }
 
 const abgleichLaeuft = new Map<string, Promise<Motordaten | null>>();
-
 
 export function gleicheMotordatenAb(
   token: string, nutzerId: string, toernId: string, lokal: Toern | null,
@@ -478,9 +435,7 @@ export function gleicheMotordatenAb(
     let gesichert = Boolean(server) && motorHash(server!) === motorHash(ziel);
     if (!gesichert) gesichert = await schreibeMotordaten(token, toernId, ziel);
     if (gesichert) merkeMotordaten(nutzerId, toernId, ziel);
-    
-    
-    
+
     if (lokal && hier && motorHash(hier) !== motorHash(ziel)) {
       await aendereToern(lokal.id, (jetzt) => (jetzt && motorHash(motordatenAus(jetzt)) === motorHash(hier)
         ? setzeDieselInToern({ ...jetzt, motorstunden: ziel.motorstunden }, ziel) : null)).catch(() => null);

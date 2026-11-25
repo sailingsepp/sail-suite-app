@@ -1,12 +1,9 @@
 import { kuesteAusKacheln } from '@/data/kuestenKacheln';
 import { kantenAusOsm, LIEGE_MAX_M, type Kante } from '@/core/liegeplatz';
 
-
-
 const OVERPASS = 'https://overpass-api.de/api/interpreter';
 
 const RADIUS_M = LIEGE_MAX_M + 40;
-
 
 const NEU_VERSUCH_MS = 120_000;
 
@@ -15,7 +12,6 @@ const laeuft = new Map<string, Promise<void>>();
 
 const schluessel = (lat: number, lon: number) => `${lat.toFixed(4)},${lon.toFixed(4)}`;
 
-
 function stegAbfrage(lat: number, lon: number): string {
   const p = `${lat.toFixed(4)},${lon.toFixed(4)}`;
   return `[out:json][timeout:20];(way(around:${RADIUS_M},${p})[man_made~"^(pier|quay|breakwater|groyne)$"];`
@@ -23,7 +19,6 @@ function stegAbfrage(lat: number, lon: number): string {
 }
 
 type Elemente = Parameters<typeof kantenAusOsm>[0];
-
 
 async function stege(lat: number, lon: number, api: (pfad: string) => string): Promise<Kante[] | null> {
   const lies = async (r: Response): Promise<Kante[] | null> => {
@@ -53,11 +48,9 @@ async function kueste(lat: number, lon: number): Promise<Kante[] | null> {
   }
 }
 
-
 export function kantenBekannt(lat: number, lon: number): Kante[] | undefined {
   return fertig.get(schluessel(lat, lon))?.kanten;
 }
-
 
 export function holeKanten(lat: number, lon: number, api: (pfad: string) => string, fertigDann: () => void): void {
   const k = schluessel(lat, lon);
@@ -67,7 +60,7 @@ export function holeKanten(lat: number, lon: number, api: (pfad: string) => stri
     const [s, c] = await Promise.all([stege(lat, lon, api), kueste(lat, lon)]);
     laeuft.delete(k);
     if (s === null && c === null) return;
-    
+
     fertig.set(k, { kanten: [...(s ?? []), ...(c ?? [])], vollstaendig: s !== null, t: Date.now() });
     fertigDann();
   })());

@@ -6,8 +6,6 @@ import type { Liegeart } from '@/core/logbuchText';
 import { geraeteZone } from '@/core/time';
 import { opakeKachelnRaeumen } from './kachelnRaeumen';
 
-
-
 const DB_NAME = 'sail-suite-trackbook';
 
 const DB_NAME_ALT = 'sailwise-trackbook';
@@ -15,131 +13,124 @@ const DB_VERSION = 4;
 
 const MIGRATIONS_MARKE = '_migriert_von_sailwise_2026-08';
 
-
 export interface Toern {
   id: string;
   name: string;
   beschreibung?: string;
-  
+
   revier?: string;
-  
+
   von?: string;
   bis?: string;
   schiff: Schiff;
   crew: CrewMitglied[];
   angelegt: number;
-  
+
   beendet?: number;
-  
+
   unterschriften?: { skipper?: string; bewerber?: string };
-  
+
   motorstunden?: Motorablesung[];
-  
+
   dieselGetanktL?: number;
-  
+
   tankvorgaenge?: Tankvorgang[];
 }
 
-
 export interface Schiff {
   name?: string;
-  
+
   typ?: string;
-  
+
   mmsi?: string;
-  
+
   flagge?: string;
-  
+
   polarId?: string;
-  
+
   polarGuete?: 'exakt' | 'aehnlich' | 'geschaetzt';
   segeljacht?: boolean;
-  
+
   laengeM?: number;
-  
+
   lwlM?: number;
   breiteM?: number;
   tiefgangM?: number;
-  
+
   verdraengungT?: number;
   segelflaecheM2?: number;
   motorPS?: number;
   baujahr?: number;
 }
 
-
 export interface CrewMitglied {
   vorname: string;
   nachname: string;
   funktion: 'skipper' | 'co-skipper' | 'navigator' | 'smutje' | 'deckshand' | 'pax';
-  
+
   funktionForm?: 'w' | 'm' | null;
-  
+
   ausweis?: string;
   anBordSeit?: number;
   anBordBis?: number;
 }
 
-
 export { istWachfaehig } from '@/core/bereitschaft';
-
 
 export interface Ortsmarke {
   id?: number;
   fahrt: string;
-  
+
   art: 'start' | 'ziel' | 'pause';
   t: number;
   lat: number;
   lon: number;
-  
+
   name?: string;
-  
+
   versucht?: number;
-  
+
   nameForm?: number;
 }
 
-
 export interface Fahrt {
   id: string;
-  
+
   toern?: string;
-  
+
   begonnen: number;
-  
+
   zeitzone?: string;
-  
+
   beendet: number | null;
-  
+
   name?: string;
-  
+
   ziel?: string;
-  
+
   antrieb?: 'segel' | 'motor';
-  
+
   streckeNM?: number;
-  
+
   antriebNachAblegen?: 'segel' | 'motor';
-  
+
   wache?: string;
-  
-  
+
   wetterkopf?: { t: number; text: string; ort?: string; ab?: number };
-  
+
   ankerwache?: { lat: number; lon: number; radiusM: number } | null;
-  
+
   manuellePausen?: { von: number; bis: number }[];
-  
+
   geloeschteEintraege?: string[];
-  
+
   manuellePauseSeit?: number;
-  
+
   offeneUebernachtung?: {
     von: number; lat: number | null; lon: number | null; ankerwache: boolean;
-    
+
     eintragT?: number;
-    
+
     liegeart?: Liegeart;
   } | null;
 }
@@ -154,94 +145,89 @@ export type EintragArt =
   | 'ankerplatz'
   | 'kurswechsel'
   | 'fahrtwechsel'
-  
+
   | 'standort'
-  
+
   | 'aufschiesser'
-  
+
   | 'treiben'
   | 'antrieb'
   | 'wetter'
   | 'foto'
   | 'import'
   | 'luecke'
-  
-  | 'ais'
-  
-  | 'ankerwache'
-  
-  | 'tagesende'
-  
-  | 'navigation'
-  
-  | 'mob'
-  
-  | 'tanken';
 
+  | 'ais'
+
+  | 'ankerwache'
+
+  | 'tagesende'
+
+  | 'navigation'
+
+  | 'mob'
+
+  | 'tanken';
 
 export interface Bild {
   id: string;
   fahrt: string;
   t: number;
-  
+
   blob: Blob;
   breite: number;
   hoehe: number;
   bytes: number;
 }
 
-
-
 export interface AisAngabe {
   quelle: 'ais';
-  
+
   mmsi: number;
   name?: string;
-  
+
   typ?: number;
-  
+
   ziel?: string;
-  
+
   sogKn?: number;
-  
+
   cog?: number;
-  
+
   abstandNM?: number;
   peilung?: number;
-  
+
   cpaNM?: number;
   tcpaMin?: number;
-  
+
   gemeldet?: number;
 }
 
-
 export interface AnkerwacheAngabe {
-  
+
   abstandM: number;
-  
+
   peilung: number;
   radiusM: number;
 }
 
 export interface WetterAngabe {
   quelle: 'vorhersage' | 'beobachtet';
-  
+
   windKn?: number;
-  
+
   windAus?: number;
   boeKn?: number;
-  
+
   welleM?: number;
   wellePeriodeS?: number;
-  
+
   modell?: string;
   abgerufen?: number;
 }
 
-
 export interface LogEintrag {
-  
+
   id?: number;
   fahrt: string;
   t: number;
@@ -249,34 +235,28 @@ export interface LogEintrag {
   lat: number | null;
   lon: number | null;
   text?: string;
-  
+
   wetter?: WetterAngabe;
-  
+
   bild?: string;
-  
+
   ais?: AisAngabe;
-  
+
   ankerwache?: AnkerwacheAngabe;
-  
+
   liegeart?: Liegeart;
-  
+
   bearbeitet?: true;
 }
 
-
-
-
 export function neueFahrtId(t: number, zufall: () => number = Math.random): string {
   const iso = new Date(t).toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
-  
-  
-  
+
   const buchstaben = 'abcdefghijkmnpqrstuvwxyz23456789';
   let schwanz = '';
   for (let i = 0; i < 4; i++) schwanz += buchstaben[Math.floor(zufall() * buchstaben.length)];
   return iso + '-' + schwanz;
 }
-
 
 export function laufendeAus(fahrten: Fahrt[]): Fahrt | null {
   const offen = fahrten.filter((f) => f.beendet === null);
@@ -286,7 +266,6 @@ export function laufendeAus(fahrten: Fahrt[]): Fahrt | null {
 
 export type SpeicherLage = 'ok' | 'knapp' | 'kritisch';
 
-
 export function speicherLage(belegt: number, kontingent: number): SpeicherLage {
   if (!kontingent || !Number.isFinite(kontingent)) return 'ok';
   const anteil = belegt / kontingent;
@@ -295,14 +274,11 @@ export function speicherLage(belegt: number, kontingent: number): SpeicherLage {
   return 'ok';
 }
 
-
 export const BYTE_JE_FIX = 120;
 export function reichweiteStunden(frei: number, fixeJeSekunde = 1): number {
   if (frei <= 0) return 0;
   return frei / (BYTE_JE_FIX * fixeJeSekunde * 3600);
 }
-
-
 
 export function speicherVerfuegbar(): boolean {
   return typeof indexedDB !== 'undefined';
@@ -326,17 +302,12 @@ export async function oeffneLog(): Promise<IDBDatabase> {
       if (!d.objectStoreNames.contains('fahrten')) {
         d.createObjectStore('fahrten', { keyPath: 'id' });
       }
-      
-      
-      
+
       if (!d.objectStoreNames.contains('toerne')) {
         d.createObjectStore('toerne', { keyPath: 'id' });
       }
       if (!d.objectStoreNames.contains('fixe')) {
-        
-        
-        
-        
+
         const s = d.createObjectStore('fixe', { autoIncrement: true });
         s.createIndex('fahrt_t', ['fahrt', 't']);
       }
@@ -344,15 +315,12 @@ export async function oeffneLog(): Promise<IDBDatabase> {
         const s = d.createObjectStore('eintraege', { keyPath: 'id', autoIncrement: true });
         s.createIndex('fahrt_t', ['fahrt', 't']);
       }
-      
+
       if (!d.objectStoreNames.contains('orte')) {
         const s = d.createObjectStore('orte', { keyPath: 'id', autoIncrement: true });
         s.createIndex('fahrt_t', ['fahrt', 't']);
       }
-      
-      
-      
-      
+
       if (!d.objectStoreNames.contains('bilder')) {
         const s = d.createObjectStore('bilder', { keyPath: 'id' });
         s.createIndex('fahrt_t', ['fahrt', 't']);
@@ -367,11 +335,9 @@ export async function oeffneLog(): Promise<IDBDatabase> {
   return db;
 }
 
-
 const STORES_MIT_KEYPATH = ['fahrten', 'toerne', 'eintraege', 'orte', 'bilder'] as const;
 
 const STORES_OHNE_KEYPATH = ['fixe', 'meta'] as const;
-
 
 async function migriereAltenNamenFallsNoetig(neu: IDBDatabase): Promise<void> {
   const marke = await anfrage(
@@ -379,13 +345,6 @@ async function migriereAltenNamenFallsNoetig(neu: IDBDatabase): Promise<void> {
   );
   if (marke) return;
 
-  
-  
-  
-  
-  
-  
-  
   if (typeof indexedDB.databases === 'function') {
     const alle = await indexedDB.databases();
     if (alle.some((eintrag) => eintrag.name === DB_NAME_ALT)) {
@@ -394,10 +353,7 @@ async function migriereAltenNamenFallsNoetig(neu: IDBDatabase): Promise<void> {
         const r = indexedDB.deleteDatabase(DB_NAME_ALT);
         r.onsuccess = () => res();
         r.onerror = () => rej(r.error);
-        
-        
-        
-        
+
       });
     }
   }
@@ -416,9 +372,7 @@ function schreibeMigrationsMarke(neu: IDBDatabase): Promise<void> {
 
 async function kopiereAlteAblage(neu: IDBDatabase): Promise<void> {
   const alt = await new Promise<IDBDatabase>((res, rej) => {
-    
-    
-    
+
     const r = indexedDB.open(DB_NAME_ALT);
     r.onsuccess = () => res(r.result);
     r.onerror = () => rej(r.error);
@@ -470,7 +424,6 @@ interface AbgelegterFix extends Fix {
   fahrt: string;
 }
 
-
 export async function speichereToern(toern: Toern): Promise<void> {
   const d = await oeffneLog();
   const tx = d.transaction('toerne', 'readwrite');
@@ -480,7 +433,6 @@ export async function speichereToern(toern: Toern): Promise<void> {
     tx.onerror = () => rej(tx.error);
   });
 }
-
 
 export async function aendereToern(id: string, aendern: (t: Toern | null) => Toern | null): Promise<Toern | null> {
   const d = await oeffneLog();
@@ -516,14 +468,10 @@ export async function holeToern(id: string): Promise<Toern | null> {
   return t ?? null;
 }
 
-
 export async function aktuellerToern(): Promise<Toern | null> {
-  
-  
-  
+
   return (await alleToerne()).find((t) => !t.beendet) ?? null;
 }
-
 
 export async function starteFahrt(t = Date.now(), name?: string, toern?: string): Promise<Fahrt> {
   const d = await oeffneLog();
@@ -553,16 +501,13 @@ export async function beendeFahrt(id: string, t = Date.now(), streckeNM?: number
   });
 }
 
-
-
 export async function setzeFahrtZiel(id: string, ziel: string): Promise<void> {
   const d = await oeffneLog();
   const tx = d.transaction('fahrten', 'readwrite');
   const store = tx.objectStore('fahrten');
   const fahrt = (await anfrage(store.get(id) as IDBRequest<Fahrt | undefined>)) ?? null;
   if (fahrt) {
-    
-    
+
     const rest = { ...fahrt };
     delete rest.ziel;
     store.put(ziel ? { ...rest, ziel } : rest);
@@ -572,7 +517,6 @@ export async function setzeFahrtZiel(id: string, ziel: string): Promise<void> {
     tx.onerror = () => rej(tx.error);
   });
 }
-
 
 export async function setzeWache(id: string, wache: string): Promise<void> {
   const d = await oeffneLog();
@@ -589,7 +533,6 @@ export async function setzeWache(id: string, wache: string): Promise<void> {
     tx.onerror = () => rej(tx.error);
   });
 }
-
 
 export async function setzeAnkerwache(
   id: string, ankerwache: { lat: number; lon: number; radiusM: number } | null,
@@ -609,7 +552,6 @@ export async function setzeAnkerwache(
   });
 }
 
-
 export async function setzeManuellePauseSeit(id: string, seit: number | null): Promise<void> {
   const d = await oeffneLog();
   const tx = d.transaction('fahrten', 'readwrite');
@@ -625,7 +567,6 @@ export async function setzeManuellePauseSeit(id: string, seit: number | null): P
     tx.onerror = () => rej(tx.error);
   });
 }
-
 
 export async function schliesseManuellePause(id: string, von: number, bis: number): Promise<void> {
   const d = await oeffneLog();
@@ -644,7 +585,6 @@ export async function schliesseManuellePause(id: string, von: number, bis: numbe
   });
 }
 
-
 export async function setzeAntriebNachAblegen(id: string, wert: 'segel' | 'motor' | null): Promise<void> {
   const d = await oeffneLog();
   const tx = d.transaction('fahrten', 'readwrite');
@@ -660,7 +600,6 @@ export async function setzeAntriebNachAblegen(id: string, wert: 'segel' | 'motor
     tx.onerror = () => rej(tx.error);
   });
 }
-
 
 export async function setzeOffeneUebernachtung(
   id: string, wert: NonNullable<Fahrt['offeneUebernachtung']> | null,
@@ -680,18 +619,15 @@ export async function setzeOffeneUebernachtung(
   });
 }
 
-
 export async function setzeMotorstand(id: string, stand: number, t = Date.now()): Promise<Toern | null> {
   return aendereToern(id, (toern) => {
     if (!toern) return null;
-    
-    
+
     const bisher = toern.motorstunden ?? [];
     const ergaenzt = ergaenzeAblesung(bisher, { t, stand });
     return ergaenzt === bisher ? null : { ...toern, motorstunden: ergaenzt };
   });
 }
-
 
 export async function merke<T>(schluessel: string, wert: T): Promise<void> {
   const d = await oeffneLog();
@@ -711,7 +647,6 @@ export async function gemerkt<T>(schluessel: string): Promise<T | null> {
   return w ?? null;
 }
 
-
 export async function setzeWetterkopf(id: string, kopf: NonNullable<Fahrt['wetterkopf']>): Promise<void> {
   const d = await oeffneLog();
   const tx = d.transaction('fahrten', 'readwrite');
@@ -730,11 +665,9 @@ export async function laufendeFahrt(): Promise<Fahrt | null> {
   return laufendeAus(alle ?? []);
 }
 
-
 export async function beendeToern(id: string, t = Date.now()): Promise<void> {
   await aendereToern(id, (toern) => (toern ? { ...toern, beendet: t } : null));
 }
-
 
 export function fehlendeToernZuordnung(
   fahrten: readonly Pick<Fahrt, 'id' | 'toern' | 'begonnen' | 'beendet'>[],
@@ -756,7 +689,6 @@ export function fehlendeToernZuordnung(
   return raus;
 }
 
-
 export async function ordneEtappenToernZu(): Promise<number> {
   const [fahrten, toerne] = await Promise.all([alleFahrten(), alleToerne()]);
   const ende = new Map<string, number>();
@@ -777,7 +709,6 @@ export async function ordneEtappenToernZu(): Promise<number> {
   return nachtrag.size;
 }
 
-
 export async function fahrtenZuToern(toern: string): Promise<Fahrt[]> {
   return (await alleFahrten()).filter((f) => f.toern === toern).sort((a, b) => a.begonnen - b.begonnen);
 }
@@ -788,7 +719,6 @@ export async function alleFahrten(): Promise<Fahrt[]> {
   return (alle ?? []).sort((a, b) => b.begonnen - a.begonnen);
 }
 
-
 export async function uebernehmeFahrt(fahrt: Fahrt): Promise<void> {
   const d = await oeffneLog();
   const tx = d.transaction('fahrten', 'readwrite');
@@ -798,8 +728,6 @@ export async function uebernehmeFahrt(fahrt: Fahrt): Promise<void> {
     tx.onerror = () => rej(tx.error);
   });
 }
-
-
 
 export async function schreibeFixe(fahrt: string, fixe: Fix[]): Promise<void> {
   if (!fixe.length) return;
@@ -823,7 +751,6 @@ export async function schreibeFix(fahrt: string, fix: Fix): Promise<void> {
   });
 }
 
-
 export async function anzahlFixe(fahrt: string): Promise<number> {
   const d = await oeffneLog();
   const index = d.transaction('fixe').objectStore('fixe').index('fahrt_t');
@@ -835,24 +762,16 @@ export async function ladeFixe(fahrt: string): Promise<Fix[]> {
   const index = d.transaction('fixe').objectStore('fixe').index('fahrt_t');
   const bereich = IDBKeyRange.bound([fahrt, -Infinity], [fahrt, Infinity]);
   const treffer = await anfrage(index.getAll(bereich) as IDBRequest<AbgelegterFix[]>);
-  
-  
-  
-  
-  
+
   return (treffer ?? []).map((t) => {
     const fix: Fix = { t: t.t, lat: t.lat, lon: t.lon, acc: t.acc };
     if (t.speed !== undefined) fix.speed = t.speed;
     if (t.heading !== undefined) fix.heading = t.heading;
-    
-    
-    
-    
+
     if (t.quelle !== undefined) fix.quelle = t.quelle;
     return fix;
   });
 }
-
 
 export async function loescheFehlstart(fahrt: string, fixZeiten: readonly number[], eintragIds: readonly number[]): Promise<void> {
   if (!fixZeiten.length && !eintragIds.length) return;
@@ -875,7 +794,6 @@ export async function loescheFehlstart(fahrt: string, fixZeiten: readonly number
   });
 }
 
-
 export async function merkeOrt(marke: Ortsmarke): Promise<void> {
   const vorhanden = await ortsmarken(marke.fahrt);
   if (vorhanden.some((o) => o.art === marke.art && Math.abs(o.t - marke.t) < 60_000)) return;
@@ -895,13 +813,11 @@ export async function ortsmarken(fahrt: string): Promise<Ortsmarke[]> {
   return (await anfrage(index.getAll(bereich) as IDBRequest<Ortsmarke[]>)) ?? [];
 }
 
-
 export async function orteZurFahrt(
   fahrt: string,
 ): Promise<{ start?: string; ziel?: string; pausen: Ortsmarke[] }> {
   return orteAusMarken(await ortsmarken(fahrt));
 }
-
 
 export function orteAusMarken(
   marken: Ortsmarke[],
@@ -916,13 +832,11 @@ export function orteAusMarken(
   return raus;
 }
 
-
 export async function offeneOrte(): Promise<Ortsmarke[]> {
   const d = await oeffneLog();
   const alle = await anfrage(d.transaction('orte').objectStore('orte').getAll() as IDBRequest<Ortsmarke[]>);
   return (alle ?? []).filter((o) => !o.name);
 }
-
 
 export async function alleOrte(): Promise<Ortsmarke[]> {
   const d = await oeffneLog();
@@ -943,17 +857,13 @@ export async function schreibeEintrag(eintrag: LogEintrag): Promise<void> {
   const d = await oeffneLog();
   const tx = d.transaction('eintraege', 'readwrite');
   const q = tx.objectStore('eintraege').add(eintrag);
-  
-  
-  
-  
+
   q.onsuccess = () => { eintrag.id = q.result as number; };
   await new Promise((res, rej) => {
     tx.oncomplete = res;
     tx.onerror = () => rej(tx.error);
   });
 }
-
 
 export async function aktualisiereEintrag(eintrag: LogEintrag): Promise<void> {
   if (eintrag.id === undefined) return;
@@ -965,7 +875,6 @@ export async function aktualisiereEintrag(eintrag: LogEintrag): Promise<void> {
     tx.onerror = () => rej(tx.error);
   });
 }
-
 
 export async function loescheEintrag(eintrag: LogEintrag, schluessel: string): Promise<void> {
   if (eintrag.id === undefined) return;
@@ -986,7 +895,6 @@ export async function loescheEintrag(eintrag: LogEintrag, schluessel: string): P
   });
 }
 
-
 export async function stelleEintragWieder(eintrag: LogEintrag, schluessel: string): Promise<void> {
   const d = await oeffneLog();
   const tx = d.transaction(['eintraege', 'fahrten'], 'readwrite');
@@ -1004,7 +912,6 @@ export async function stelleEintragWieder(eintrag: LogEintrag, schluessel: strin
     tx.onerror = () => rej(tx.error);
   });
 }
-
 
 export async function vermerkeGeloescht(fahrtId: string, schluessel: string): Promise<void> {
   const d = await oeffneLog();
@@ -1040,9 +947,6 @@ export async function ladeEintraege(fahrt: string): Promise<LogEintrag[]> {
   return (await anfrage(index.getAll(bereich) as IDBRequest<LogEintrag[]>)) ?? [];
 }
 
-
-
-
 export async function speichereBild(bild: Bild): Promise<void> {
   const d = await oeffneLog();
   const tx = d.transaction('bilder', 'readwrite');
@@ -1053,7 +957,6 @@ export async function speichereBild(bild: Bild): Promise<void> {
   });
 }
 
-
 export async function holeBild(id: string): Promise<Bild | null> {
   const d = await oeffneLog();
   return new Promise((res, rej) => {
@@ -1062,8 +965,6 @@ export async function holeBild(id: string): Promise<Bild | null> {
     q.onerror = () => rej(q.error);
   });
 }
-
-
 
 export async function bildIdsVon(fahrt: string): Promise<string[]> {
   const d = await oeffneLog();
@@ -1084,11 +985,7 @@ export async function bilderVon(fahrt: string): Promise<Bild[]> {
 
 export async function loescheFahrt(fahrt: string): Promise<void> {
   const d = await oeffneLog();
-  
-  
-  
-  
-  
+
   const tx = d.transaction(['fahrten', 'fixe', 'eintraege', 'bilder', 'orte'], 'readwrite');
   tx.objectStore('fahrten').delete(fahrt);
   for (const name of ['fixe', 'eintraege', 'bilder', 'orte'] as const) {
@@ -1114,13 +1011,12 @@ export interface SpeicherZustand {
   belegt: number;
   kontingent: number;
   lage: SpeicherLage;
-  
+
   reichweiteH: number;
 }
 
-
 export async function speicherZustand(
-  
+
   nachRaeumen?: (s: SpeicherZustand) => void,
 ): Promise<SpeicherZustand> {
   let dauerhaft = false;
@@ -1132,7 +1028,7 @@ export async function speicherZustand(
       dauerhaft = await s.persisted();
       if (!dauerhaft && s.persist) dauerhaft = await s.persist();
     } catch {
-      
+
     }
   }
   const messen = async (): Promise<void> => {
@@ -1142,14 +1038,11 @@ export async function speicherZustand(
       belegt = e.usage ?? 0;
       kontingent = e.quota ?? 0;
     } catch {
-      
+
     }
   };
   await messen();
-  
-  
-  
-  
+
   if (speicherLage(belegt, kontingent) !== 'ok') {
     void opakeKachelnRaeumen().then((n) => {
       if (n > 0 && nachRaeumen) void speicherZustand().then(nachRaeumen);
@@ -1163,7 +1056,6 @@ export async function speicherZustand(
     reichweiteH: reichweiteStunden(kontingent - belegt),
   };
 }
-
 
 export function _verbindungVergessen(): void {
   db = null;

@@ -1,6 +1,6 @@
 import { ohneSpruenge } from '@/core/livestream';
 import { streamLogAuswahl } from '@/core/streamLog';
-import '@/shell/tokens.css'; 
+import '@/shell/tokens.css';
 import 'leaflet/dist/leaflet.css';
 import './style.css';
 import L from 'leaflet';
@@ -43,16 +43,14 @@ import { mondSvg } from '@/map/mondbild';
 import { kurslinienEnde, restUndAnkunft, type StreamRoute } from '@/core/streamRoute';
 import { initKommentare } from './kommentare';
 
-
-
 type Punkt3 = [number, number, number];
 interface Eintrag { t: number; art: string; text?: string; lat?: number | null; lon?: number | null; bild?: string; liegeart?: Liegeart }
 interface Fahrt { id: string; begonnen: number; beendet: number | null; zeitzone?: string; name?: string; ziel?: string; streckeNM?: number | null }
 interface Stand {
   t: number; lat: number; lon: number; sog: number | null; cog: number | null; streckeNM: number | null; fahrzeitS: number | null; betriebsart: string; antrieb: string | null;
-  
+
   ort?: { name: string; lat: number; lon: number };
-  
+
   route?: StreamRoute;
 }
 interface Live { fahrt: Fahrt; punkte: Punkt3[]; eintraege: Eintrag[]; stand: Stand; aktualisiert: string }
@@ -62,21 +60,20 @@ interface Seite {
     name: string; revier: string | null; von: string | null; bis: string | null; yachtnutzung: string;
     schiff: { name?: string; typ?: string; laengeM?: number; baujahr?: number; flagge?: string }; start_hafen: Hafen | null; rueckgabe_hafen: Hafen | null;
     beendet: string | null; archiviert: boolean; schiffFoto: string;
-    
+
     status?: 'laeuft' | 'beendet' | null;
   };
   geteiltVon: { vorname: string; nachname: string } | null;
   crew: { vorname: string; nachname: string; funktion: string; funktionForm?: 'w' | 'm' | null }[];
   spuren: { fahrtId: string; beginn: number | null; ende: number | null }[];
   live: Live[];
-  
+
   fotos: CrewFoto[];
 }
 interface CrewFoto { id: string; t: number; breite: number; hoehe: number; lat: number | null; lon: number | null; text: string | null; ort?: string; von: { vorname: string; nachname: string } | null }
 
 interface Ort { art: string; name?: string; t?: number; lat?: number; lon?: number }
 interface Tag { fahrt: Fahrt; punkte: Punkt3[]; eintraege: Eintrag[]; orte: Ort[] }
-
 
 const NEU_LADEN_MS = 120_000;
 
@@ -94,11 +91,6 @@ const api = (pfad: string) => `${API_BASIS}/api/stream/${encodeURIComponent(toke
 setzeStreamProxy(token);
 
 document.documentElement.lang = sprache;
-
-
-
-
-
 
 function uhrzeit(t: number, zone?: string): string {
   return uhrLtVon(t, zone);
@@ -135,15 +127,12 @@ function name(p: { vorname: string; nachname: string }): string {
   return `${p.vorname} ${p.nachname}`.trim();
 }
 
-
 function strecke(f: Fahrt, orte: { art: string; name?: string }[] = []): string {
   if (f.name) return lateinisch(f.name);
   const von = orte.find((o) => o.art === 'start')?.name;
   const nach = orte.filter((o) => o.art === 'ziel').pop()?.name ?? f.ziel;
   return [von, nach].filter(Boolean).map((n) => lateinisch(n!)).join(' → ');
 }
-
-
 
 let karte: L.Map | null = null;
 const ebeneTage = L.layerGroup();
@@ -165,11 +154,7 @@ function zeigeZurYacht(): void {
 
 function baueKarte(): L.Map {
   if (karte) return karte;
-  
-  
-  
-  
-  
+
   const beruehrung = L.Browser.mobile || matchMedia('(pointer: coarse)').matches;
   karte = L.map('st-karte', { attributionControl: true, scrollWheelZoom: false, dragging: !beruehrung });
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -183,9 +168,9 @@ function baueKarte(): L.Map {
   ebeneOrte.addTo(karte);
   ebeneLive.addTo(karte);
   karte.on('dragstart', () => setzeFolgen(false));
-  
+
   karte.getContainer().addEventListener('touchstart', (e) => { if (e.touches.length > 1) setzeFolgen(false); }, { passive: true });
-  
+
   const ZurYacht = L.Control.extend({
     onAdd: () => {
       const knopf = L.DomUtil.create('button', 'st-zur-yacht');
@@ -202,10 +187,9 @@ function baueKarte(): L.Map {
     },
   });
   new ZurYacht({ position: 'topright' }).addTo(karte);
-  
-  
+
   karte.whenReady(() => addScaleControl(karte!));
-  
+
   const Legende = L.Control.extend({
     onAdd: () => {
       const kasten = L.DomUtil.create('div', 'st-legende');
@@ -217,15 +201,12 @@ function baueKarte(): L.Map {
     },
   });
   new Legende({ position: 'bottomleft' }).addTo(karte);
-  
+
   const zoomKlasse = () => karte!.getContainer().classList.toggle('st-wechsel-aus', karte!.getZoom() < WECHSEL_AB_ZOOM);
   karte.on('zoomend', zoomKlasse);
   karte.on('moveend', () => zielSeite());
   karte.whenReady(zoomKlasse);
-  
-  
-  
-  
+
   karte.createPane('st-nacht').style.zIndex = '300';
   nachtSchleier = L.rectangle([[-85, -540], [85, 540]], {
     pane: 'st-nacht', stroke: false, fillColor: '#0a1a4a', fillOpacity: 0.38, interactive: false,
@@ -240,11 +221,9 @@ let nachtSchleier: L.Rectangle | null = null;
 
 const SONNE_UNTER_GRAD = -0.833;
 
-
 function istDunkel(lat: number, lon: number): boolean {
   return sonnenhoehe(lat, lon, new Date()) < SONNE_UNTER_GRAD;
 }
-
 
 function setzeNacht(pos: { lat: number; lon: number } | null, zone?: string): void {
   if (!karte || !nachtSchleier) return;
@@ -257,7 +236,6 @@ function setzeNacht(pos: { lat: number; lon: number } | null, zone?: string): vo
   if (nacht && pos) zeigeMond(mond, pos.lat, pos.lon, zone);
 }
 
-
 function zeigeMond(el: HTMLElement, lat: number, lon: number, zone?: string): void {
   const jetzt = new Date();
   const ph = mondphase(jetzt);
@@ -265,8 +243,7 @@ function zeigeMond(el: HTMLElement, lat: number, lon: number, zone?: string): vo
   const zeiten = mondzeiten(lat, lon, jetzt);
   const naechster = ueber ? zeiten.unter : zeiten.auf;
   const prozent = Math.round(ph.beleuchtung * 100);
-  
-  
+
   const rand = ueber ? hellerRand(lat, lon, jetzt) : (ph.zunehmend === (lat >= 0) ? 270 : 90);
   el.innerHTML = mondSvg(ph.beleuchtung, rand, ueber);
   const text = [
@@ -279,11 +256,9 @@ function zeigeMond(el: HTMLElement, lat: number, lon: number, zone?: string): vo
   el.title = text;
 }
 
-
 const nachtPos = (live: Live | null) => (live && live.stand.betriebsart !== 'gestoppt' ? live.stand : null);
 
 const latLngs = (p: Punkt3[]) => p.map((x) => [x[1], x[2]] as [number, number]);
-
 
 const ZOOM_UNTERWEGS = 12;
 function istUnterwegs(): boolean {
@@ -298,12 +273,10 @@ function yachtZoom(k: L.Map): number {
 
 let gezoomtUnterwegs: boolean | null = null;
 
-
 const WECHSEL_AB_ZOOM = 11;
 
-
 function zeichneSpur(ebene: L.LayerGroup, alle: Punkt3[], eintraege: readonly Eintrag[], zone: string | undefined, heute: boolean): void {
-  
+
   const punkte = ohneSpruenge(alle);
   if (punkte.length < 2) return;
   const p = punkte.map((x) => ({ t: x[0], lat: x[1], lon: x[2] }));
@@ -322,11 +295,8 @@ function zeichneSpur(ebene: L.LayerGroup, alle: Punkt3[], eintraege: readonly Ei
   }
 }
 
-
-
 function logListe(eintraege: Eintrag[], zone?: string): HTMLElement {
-  
-  
+
   const sortiert = streamLogAuswahl(eintraege).sort((a, b) => b.t - a.t);
   if (!sortiert.length) {
     const p = document.createElement('p');
@@ -336,7 +306,7 @@ function logListe(eintraege: Eintrag[], zone?: string): HTMLElement {
   }
   const ul = document.createElement('ul');
   ul.className = 'st-log';
-  
+
   const gruppen = tagGruppen(sortiert, (t) => tagIn(t, zone), tagIn(Date.now(), zone));
   const mitTrenner = brauchtTagTrenner(gruppen);
   for (const g of gruppen) {
@@ -372,10 +342,7 @@ function logZeile(e: Eintrag, zone?: string): HTMLLIElement {
     link.target = '_blank';
     link.rel = 'noopener';
     link.append(bild);
-    
-    
-    
-    
+
     bild.addEventListener('error', () => {
       const ersatz = document.createElement('span');
       ersatz.className = 'st-leer';
@@ -388,8 +355,6 @@ function logZeile(e: Eintrag, zone?: string): HTMLLIElement {
   return li;
 }
 
-
-
 let alleFotos: CrewFoto[] = [];
 
 const gezeigteFotos = new Set<string>();
@@ -401,7 +366,6 @@ function tagIn(t: number, zone?: string): string {
     return new Date(t).toISOString().slice(0, 10);
   }
 }
-
 
 function fotoRaster(fotos: CrewFoto[], zone?: string): HTMLElement | null {
   if (!fotos.length) return null;
@@ -420,7 +384,7 @@ function fotoRaster(fotos: CrewFoto[], zone?: string): HTMLElement | null {
     img.loading = 'lazy';
     a.append(img);
     const unter = document.createElement('p');
-    
+
     const ort = fotoOrtText({ ...f, ort: f.ort ? lateinisch(f.ort) : null }, sprache);
     unter.textContent = [uhrzeit(f.t, zone), ort, f.von ? name(f.von) : null, f.text].filter(Boolean).join(' · ');
     li.append(a, unter);
@@ -431,21 +395,16 @@ function fotoRaster(fotos: CrewFoto[], zone?: string): HTMLElement | null {
 
 const fotosAm = (tag: string, zone?: string) => alleFotos.filter((f) => tagIn(f.t, zone) === tag);
 
-
-
-
 function standOrtText(s: Stand): string {
   const name = ortFuerPosition(s, s.ort);
   return name ? lateinisch(name) : positionText(s.lat, s.lon, sprache);
 }
-
 
 let bootOrt: string | null = null;
 
 function zeile(beschriftung: string, wert: string): string {
   return `<div class="st-zeile"><dt>${escapeHtml(beschriftung)}</dt><dd>${escapeHtml(wert)}</dd></div>`;
 }
-
 
 let schiffName = '';
 
@@ -457,18 +416,18 @@ function zeigeToern(s: Seite): void {
   const flagge = flaggeDesToerns(t.schiff, t.revier);
   schiffFlaggeCode = flagge ?? null;
   $('st-name')!.textContent = t.name;
-  
+
   const status = $('st-status')!;
   status.hidden = !t.status;
   status.textContent = t.status ? wort(`status.${t.status}`) : '';
   status.dataset['status'] = t.status ?? '';
   document.title = `${t.name} · ${wort('titel')}`;
-  
+
   const link = '<a href="https://sail-suite.app/" target="_blank" rel="noopener">sail-suite.app</a>';
   $('st-geteilt')!.innerHTML = s.geteiltVon
     ? wort('geteiltVon', { n: escapeHtml(name(s.geteiltVon)), link })
     : wort('geteiltUeber', { link });
-  
+
   $('st-toern-daten')!.innerHTML = [
     t.schiff.name ? zeile(wort('name'), lateinisch(t.schiff.name)) : '',
     seeflagge(flagge)
@@ -495,15 +454,12 @@ function zeigeToern(s: Seite): void {
   }));
 }
 
-
 interface Ortsangabe { name: string; lat: number; lon: number; t: number }
-
 
 const HAFEN_NAEHE_M = 1000;
 
 const abstandM = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) =>
   Math.hypot(a.lat - b.lat, (a.lon - b.lon) * Math.cos((a.lat * Math.PI) / 180)) * 60 * 1852;
-
 
 function ortsangaben(tage: readonly Tag[], live: Live | null): Ortsangabe[] {
   const aus: Ortsangabe[] = [];
@@ -526,12 +482,10 @@ function naechsteAngabe(p: Hafen, angaben: readonly Ortsangabe[]): string | null
   return best?.name ?? null;
 }
 
-
 function hafenAngabe(p: Hafen, angaben: readonly Ortsangabe[]): string | null {
   const aus = naechsteAngabe(p, angaben);
   return glieder(aus).length >= 3 ? aus : ausfuehrlicher(aus, zielname(p.lat, p.lon));
 }
-
 
 function routeZiel(r: StreamRoute): string | null {
   const z = r.punkte[r.punkte.length - 1]!;
@@ -550,12 +504,10 @@ function kopfFeld(beschriftung: string, wert: string, vorweg = ''): string {
   return `<div class="st-kopf-feld"><dt>${escapeHtml(beschriftung)}</dt><dd>${vorweg}${escapeHtml(wert)}</dd></div>`;
 }
 
-
 const flaggeVorweg = (code: string | undefined, px: number) => {
   const svg = seeflaggeSvg(code, px, sprache);
   return svg ? `${svg} ` : '';
 };
-
 
 function zeigeKopf(s: Seite, tage: readonly Tag[], live: Live | null): void {
   letzterKopf = [s, tage, live];
@@ -572,12 +524,11 @@ function zeigeKopf(s: Seite, tage: readonly Tag[], live: Live | null): void {
   const bezug = yachtPos ?? (t.start_hafen ? [t.start_hafen.lat, t.start_hafen.lon] as [number, number] : null);
   const seegebiet = !t.revier && bezug ? revierName(bezug[0], bezug[1], sprache) : null;
   const gross = (x: string) => x.charAt(0).toLocaleUpperCase(sprache) + x.slice(1);
-  
-  
+
   $('st-kopf-daten')!.innerHTML = kopfPaare([
     [
       zeitraum ? kopfFeld(wort('zeitraum'), zeitraum) : '',
-      
+
       t.revier ? kopfFeld(wort('revier'), revierNachgezogen(t.revier, t.start_hafen, t.rueckgabe_hafen) ?? t.revier)
         : seegebiet ? kopfFeld(wort('seegebiet'), gross(seegebiet)) : '',
     ],
@@ -593,7 +544,7 @@ function routeZeilen(s: Stand, unterwegs: boolean, zone: string | undefined): st
   const r = s.route;
   if (!r || s.betriebsart === 'gestoppt') return [];
   const z = r.punkte[r.punkte.length - 1]!;
-  
+
   const { restSm, ankunft } = restUndAnkunft(r, { t: s.t, lat: s.lat, lon: s.lon, sog: unterwegs ? s.sog : null });
   return [
     zeile(wort('route.ziel'), routeZiel(r) ?? positionText(z[0], z[1], sprache)),
@@ -609,61 +560,54 @@ function zeigeAktuell(live: Live | null): void {
   instrumente.hidden = !live;
   if (!live) return;
   const s = live.stand;
-  
-  
+
   const l = lageVon(s, live.eintraege);
   const unterwegs = s.betriebsart === 'laeuft' && (l === 'segel' || l === 'motor');
   instrumente.innerHTML = fahrtmesser(unterwegs ? s.sog : null, sprache) + kompass(unterwegs ? s.cog : null, sprache);
   const zone = live.fahrt.zeitzone;
   $('st-stand')!.textContent = `${wort('stand')} ${uhrzeit(s.t, zone)} (${vorWieLange(s.t)})`;
   $('st-werte')!.innerHTML = [
-    
+
     zeile(wort('position'), standOrtText(s)),
     unterwegs && s.sog != null ? zeile(wort('fahrt'), `${nf(s.sog, 1, sprache)} ${wort('kn')}`) : '',
     unterwegs && s.cog != null ? zeile(wort('kurs'), kursGrad(s.cog)) : '',
-    
+
     s.streckeNM ? zeile(wort('streckeHeute'), `${nf(s.streckeNM, 1, sprache)} ${wort('sm')}`) : '',
     s.fahrzeitS ? zeile(wort('fahrzeit'), dauer(s.fahrzeitS)) : '',
     unterwegs && s.antrieb ? zeile(wort('antrieb'), wort(`antrieb.${s.antrieb}`)) : '',
-    
+
     ...routeZeilen(s, unterwegs, zone),
   ].join('');
-  
+
   $('st-zustand')!.textContent = s.betriebsart === 'pausiert' || s.betriebsart === 'pausiert-anker'
     ? lageText(l, live.eintraege) : wort(`zustand.${s.betriebsart}`);
-  
-  
+
   const grenze = VERALTET_UNTERWEGS_MS;
   const veraltet = $('st-veraltet')!;
   veraltet.hidden = Date.now() - s.t < grenze || s.betriebsart !== 'laeuft';
   veraltet.textContent = wort('veraltet', { n: String(grenze / 60_000) });
-  
-  
-  
+
   const heuteTag = tagIn(Date.now(), zone);
   const fz = liveFahrtagZeit(live);
   const laufTitel = tagIn(fz, zone) === heuteTag
     ? wort('heute') : wort('laeuftSeit', { tag: datum(fz, zone) });
   $('st-heute-titel')!.textContent = [wort('logbuch'), laufTitel, strecke(live.fahrt)].filter(Boolean).join(' · ');
-  
+
   const zt = zeitzoneText(Date.now(), zone, sprache === 'de' ? 'de' : 'en');
   $('st-heute-zone')!.textContent = zt ? `LT = ${zt}` : '';
   const heuteFotos = fotoRaster(fotosAm(tagIn(fz, zone), zone), zone);
   $('st-heute-log')!.replaceChildren(...(heuteFotos ? [heuteFotos] : []), logListe(live.eintraege, zone));
 }
 
-
 function lageText(l: Lage, eintraege: readonly Eintrag[]): string {
   const art = l === 'angelegt' || l === 'liegeplatz' ? festmachart(eintraege) : null;
   return wort(art ? `lage.fest.${art}` : LAGE_WORT[l]);
 }
 
-
 const LAGE_WORT: Record<Lage, string> = {
   segel: 'lage.segel', motor: 'lage.motor', ankernd: 'lage.anker', treibend: 'lage.treibend',
   angelegt: 'lage.fest', liegeplatz: 'lage.fest',
 };
-
 
 function lageVon(stand: Stand, eintraege: readonly Eintrag[]): Lage {
   const betriebsart = stand.betriebsart as Parameters<typeof lage>[0]['betriebsart'];
@@ -671,16 +615,14 @@ function lageVon(stand: Stand, eintraege: readonly Eintrag[]): Lage {
   return lage({ betriebsart, antrieb, abgelegt: eintraege.some((e) => e.art === 'start'), eintraege }) ?? lageNachTag(eintraege);
 }
 
-
 function zeichneBoot(lat: number, lon: number, kurs: number | null, l: Lage, text: string, anker: [number, number] = MARKE_ANKER): void {
   const name = schiffName ? `<span class="st-boot-name">${escapeHtml(schiffName)}<small>${escapeHtml(text)}</small></span>` : `<span class="st-boot-name st-boot-nur">${escapeHtml(text)}</span>`;
-  
+
   const lichter = (l === 'segel' || l === 'motor') && istDunkel(lat, lon) ? l : null;
   const boot = L.divIcon({ className: 'st-boot', html: yachtMarke(kurs, l === 'segel', lichter, schiffFlaggeCode) + name, iconSize: [MARKE_PX, MARKE_PX], iconAnchor: anker });
   L.marker([lat, lon], { icon: boot, keyboard: false, title: [schiffName, text, bootOrt ?? positionText(lat, lon, sprache)].filter(Boolean).join(' · ') })
     .addTo(ebeneLive);
 }
-
 
 function zeichneBootAmPlatz(
   lat: number, lon: number, kurs: number | null, l: Lage, eintraege: readonly Eintrag[], punkte: readonly Punkt3[], neu: () => void,
@@ -690,7 +632,7 @@ function zeichneBootAmPlatz(
   if (art === 'heck' || art === 'bug' || art === 'laengsseits') {
     const kanten = kantenBekannt(lat, lon);
     holeKanten(lat, lon, api, neu);
-    
+
     let anfahrt: { lat: number; lon: number } | null = null;
     for (let i = punkte.length - 1; i >= 0; i--) {
       const q = punkte[i]!;
@@ -712,24 +654,21 @@ function zeichneLive(live: Live | null): void {
   if (!live || !karte) return;
   const s = live.stand;
   const l = lageVon(s, live.eintraege);
-  
+
   zeichneRoute(s, l);
   zeichneSpur(ebeneLive, live.punkte, live.eintraege, live.fahrt.zeitzone, true);
   bootOrt = ortFuerPosition(s, s.ort) ? standOrtText(s) : null;
   zeichneBootAmPlatz(s.lat, s.lon, s.cog ?? null, l, live.eintraege, live.punkte, () => { if (aktuellesLive === live) zeichneLive(live); });
 }
 
-
 const ROUTE_FARBE = '#D6409F';
 const KURS_FARBE = '#3B7DD8';
-
-
 
 let zielMarke: L.Marker | null = null;
 function zielSeite(): void {
   const el = zielMarke?.getElement();
   if (!karte || !zielMarke || !el) return;
-  
+
   let x: number;
   try { x = karte.latLngToContainerPoint(zielMarke.getLatLng()).x; } catch { return; }
   el.classList.toggle('st-ziel-links', x > karte.getSize().x / 2);
@@ -746,7 +685,7 @@ function zeichneRoute(s: Stand, l: Lage): void {
   }
   const unterwegs = s.betriebsart === 'laeuft' && (l === 'segel' || l === 'motor');
   if (r && r.punkte.length >= 2) {
-    
+
     const z = r.punkte[r.punkte.length - 1]!;
     const { ankunft } = restUndAnkunft(r, { t: s.t, lat: s.lat, lon: s.lon, sog: unterwegs ? s.sog : null });
     const zone = aktuellesLive?.fahrt.zeitzone;
@@ -764,7 +703,6 @@ function zeichneRoute(s: Stand, l: Lage): void {
   if (ende) L.polyline([[s.lat, s.lon], ende], { color: KURS_FARBE, weight: 2, opacity: 0.55, dashArray: '2 6', interactive: false, className: 'st-kurslinie' }).addTo(ebeneLive);
 }
 
-
 let letzterTag: Tag | null = null;
 function zeichneLetztenTag(tag: Tag): void {
   letzterTag = tag;
@@ -780,7 +718,6 @@ function zeichneLetztenTag(tag: Tag): void {
     if (!aktuellesLive && letzterTag === tag) zeichneLetztenTag(tag);
   });
 }
-
 
 function kursAm(p: Punkt3[]): number | null {
   const b = p[p.length - 1]!;
@@ -803,7 +740,7 @@ let fruehereLive = new Map<string, Live>();
 let mitSpur = new Set<string>();
 
 async function holeTag(sp: { fahrtId: string; ende: number | null }): Promise<Tag | null> {
-  
+
   const live = fruehereLive.get(sp.fahrtId) ?? (aktuellesLive?.fahrt.id === sp.fahrtId ? aktuellesLive : null);
   const stand = `${sp.ende ?? ''}|${live?.stand.t ?? ''}`;
   const bekannt = tageCache.get(sp.fahrtId);
@@ -827,12 +764,11 @@ function hebeHervor(tag: Tag): void {
   if (!karte || tag.punkte.length < 2) return;
   setzeFolgen(false);
   hervorgehoben?.remove();
-  
+
   hervorgehoben = L.polyline(latLngs(ohneSpruenge(tag.punkte)), { color: '#0B1E2D', weight: 10, opacity: 0.35, interactive: false }).addTo(karte);
   hervorgehoben.bringToBack();
   karte.fitBounds(hervorgehoben.getBounds(), { padding: [24, 24] });
 }
-
 
 function liveFahrtagZeit(live: Live): number {
   const punkte: Punkt3[] = live.punkte.length ? live.punkte : [[live.stand.t, live.stand.lat, live.stand.lon]];
@@ -841,17 +777,15 @@ function liveFahrtagZeit(live: Live): number {
 
 type Spur = Seite['spuren'][number];
 
-
 function tagSpanne(sp: Spur): { von: number | null; bis: number | null; zone: string | undefined } {
   const tag = tageCache.get(sp.fahrtId);
-  
+
   const live = fruehereLive.get(sp.fahrtId) ?? (aktuellesLive?.fahrt.id === sp.fahrtId ? aktuellesLive : null);
   const ersatz = live ? { lat: live.stand.lat, lon: live.stand.lon } : null;
   const von = tag ? fahrtagZeit(tag.fahrt.begonnen, tag.eintraege, tag.punkte, ersatz) : sp.beginn;
   const letzter = tag?.punkte[tag.punkte.length - 1]?.[0];
   return { von, bis: letzter ?? sp.ende ?? von, zone: tag?.fahrt.zeitzone };
 }
-
 
 function tagNummern(s: Seite): { von: number; bis: number }[] {
   return fahrtagBereiche(s.spuren.map((sp) => {
@@ -860,7 +794,6 @@ function tagNummern(s: Seite): { von: number; bis: number }[] {
     return { von: v, bis: bis !== null ? tagIn(Math.max(bis, von ?? bis), zone) : v };
   }));
 }
-
 
 function tagTitel(sp: Spur, nr: { von: number; bis: number } | undefined, i: number): string {
   const tag = tageCache.get(sp.fahrtId);
@@ -874,7 +807,6 @@ function tagTitel(sp: Spur, nr: { von: number; bis: number } | undefined, i: num
   return [titel, wann, route, laeuft].filter(Boolean).join(' · ');
 }
 
-
 function beschrifteTage(s: Seite): void {
   const titel = [...$('st-tage')!.querySelectorAll<HTMLElement>('details > summary')];
   const nummern = tagNummern(s);
@@ -884,7 +816,7 @@ function beschrifteTage(s: Seite): void {
 function zeigeTage(s: Seite): void {
   const liste = $('st-tage')!;
   $('st-tage-bereich')!.hidden = s.spuren.length === 0;
-  
+
   const offen = new Set([...liste.querySelectorAll<HTMLDetailsElement>('details[open]')].map((d) => d.dataset.fahrt));
   const nummern = tagNummern(s);
   liste.replaceChildren(...s.spuren.map((sp, i) => {
@@ -918,7 +850,6 @@ function zeigeTage(s: Seite): void {
   }));
 }
 
-
 async function zeichneAlleTage(s: Seite): Promise<Tag[]> {
   ebeneTage.clearLayers();
   const tage = (await Promise.all(s.spuren.map((sp) => holeTag(sp)))).filter((t): t is Tag => t !== null);
@@ -926,13 +857,11 @@ async function zeichneAlleTage(s: Seite): Promise<Tag[]> {
   return tage.sort((a, b) => a.fahrt.begonnen - b.fahrt.begonnen);
 }
 
-
 const LIEGE_EINTRAEGE = new Set(['anlegen', 'ankern', 'treiben']);
 
 const GLEICHER_PLATZ_M = 200;
 
 interface Platz { lat: number; lon: number; nacht: boolean; name: string; zeilen: string[] }
-
 
 function zeichneOrte(tage: Tag[], live: Live | null, beendet: boolean): void {
   ebeneOrte.clearLayers();
@@ -982,7 +911,6 @@ function zeichneOrte(tage: Tag[], live: Live | null, beendet: boolean): void {
   }
 }
 
-
 function zeigeUebrigeFotos(): void {
   const bereich = $('st-fotos-bereich')!;
   const ziel = $('st-fotos-uebrig')!;
@@ -1020,15 +948,14 @@ let zoomVoll = true;
 
 let tageMeilen: { id: string; m: Meilen }[] = [];
 
-
 function zeigeMeilen(live: Live | null): void {
-  
+
   const tage = tageMeilen.filter((t) => t.id !== live?.fahrt.id).map((t) => t.m);
   const m = addiere(...tage, ...(live ? [meilenEinesTages(ohneSpruenge(live.punkte), live.eintraege, live.stand.streckeNM)] : []));
   const zeile = $('st-meilen')!;
   zeile.hidden = m.gesamtNM <= 0;
   const sm = (x: number) => `${nf(x, 1, sprache)} ${wort('sm')}`;
-  
+
   const teil = (x: number, s: string, farbe: string) => `<span class="st-meilen-teil" style="--farbe:${farbe}">`
     + `<i aria-hidden="true"></i><b>${escapeHtml(sm(x))}</b> ${escapeHtml(wort(s))}</span>`;
   zeile.setAttribute('aria-label', wort('meilen.label', { g: sm(m.gesamtNM), m: sm(m.motorNM), s: sm(m.segelNM) }));
@@ -1036,7 +963,6 @@ function zeigeMeilen(live: Live | null): void {
     + teil(m.segelNM, 'meilen.segel', SPURFARBE.segel) + teil(m.motorNM, 'meilen.motor', SPURFARBE.motor)
     + (m.offenNM >= 0.05 ? teil(m.offenNM, 'meilen.offen', SPURFARBE.offen) : '');
 }
-
 
 const WETTER_MS = 30 * 60_000;
 const WETTER_SM = 2;
@@ -1059,7 +985,6 @@ async function zeigeWetter(pos: [number, number] | null): Promise<void> {
   if (jetzt) kachel.innerHTML = wetterKachel(jetzt, sprache);
 }
 
-
 let aktuellesLive: Live | null = null;
 let laedt = false;
 
@@ -1076,7 +1001,7 @@ async function ladeSeite(): Promise<void> {
   try {
     const r = await fetch(api(''));
     if (r.status === 404) { meldung.textContent = wort('nichtFrei'); $('st-inhalt')!.hidden = true; return; }
-    
+
     if (r.status === 410) {
       const bis = ((await r.json().catch(() => ({}))) as { bis?: string }).bis;
       const zeit = bis ? datumUhrLtVon(Date.parse(bis), sprache === 'de' ? 'de' : 'en', { weekday: 'short', day: 'numeric', month: 'numeric' }) : '';
@@ -1093,12 +1018,9 @@ async function ladeSeite(): Promise<void> {
   }
   meldung.textContent = '';
   $('st-inhalt')!.hidden = false;
-  
+
   const live = roh.live.length ? [...roh.live].sort((a, b) => b.stand.t - a.stand.t)[0]! : null;
-  
-  
-  
-  
+
   mitSpur = new Set(roh.spuren.map((sp) => sp.fahrtId));
   fruehereLive = new Map(roh.live.filter((l) => l !== live).map((l) => [l.fahrt.id, l]));
   const ohneSpur = [...fruehereLive.values()].filter((l) => !mitSpur.has(l.fahrt.id))
@@ -1114,10 +1036,7 @@ async function ladeSeite(): Promise<void> {
   $('st-karte-bereich')!.hidden = !hatAufzeichnung;
   zeigeAktuell(live);
   zeigeKopf(s, [...tageCache.values()].filter((t) => t.fahrt.id !== live?.fahrt.id).sort((a, b) => a.fahrt.begonnen - b.fahrt.begonnen), live);
-  
-  
-  
-  
+
   const sTage: Seite = live
     ? { ...s, spuren: [...s.spuren, { fahrtId: live.fahrt.id, beginn: live.fahrt.begonnen, ende: live.stand.t }] }
     : s;
@@ -1130,8 +1049,7 @@ async function ladeSeite(): Promise<void> {
   zeichneFotos();
   const tage = await zeichneAlleTage(s);
   beschrifteTage(sTage);
-  
-  
+
   tageMeilen = tage.map((t) => ({
     id: t.fahrt.id,
     m: meilenEinesTages(ohneSpruenge(t.punkte), t.eintraege, fruehereLive.get(t.fahrt.id)?.stand.streckeNM ?? t.fahrt.streckeNM ?? null),
@@ -1144,11 +1062,7 @@ async function ladeSeite(): Promise<void> {
     zeichneLetztenTag(tag);
     ruhend = tag.punkte[tag.punkte.length - 1] ?? null;
   }
-  
-  
-  
-  
-  
+
   yachtPos = live ? [live.stand.lat, live.stand.lon] : ruhend ? [ruhend[1], ruhend[2]] : null;
   void zeigeWetter(yachtPos);
   zeigeZurYacht();
@@ -1168,7 +1082,6 @@ async function ladeSeite(): Promise<void> {
 interface StandAntwort {
   live: { fahrtId: string; stand: Stand; punkte: Punkt3[]; eintraege: { anzahl: number; letzter: number } } | null;
 }
-
 
 async function holeStand(): Promise<void> {
   if (laedt || document.hidden || !token) return;

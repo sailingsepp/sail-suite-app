@@ -1,8 +1,6 @@
 import type { GebietsBericht, GebietsHerkunft } from '@/briefing/amtlich';
 import { API_BASIS } from '@/shell/api';
 
-
-
 const PFAD: Record<GebietsHerkunft, string> = {
   hnms: '/api/hnms', meteomar: '/api/meteomar', mgm: '/api/mgm', aemet: '/api/aemet', dom: '/api/dom',
 };
@@ -13,7 +11,6 @@ const titelText = (x: unknown): { titel: string; text: string } | null => {
   const o = x as { titel?: unknown; text?: unknown } | null;
   return o && text(o.titel) && text(o.text) ? { titel: o.titel, text: o.text } : null;
 };
-
 
 export function pruefeGebietsBericht(j: unknown): GebietsBericht | null {
   const o = j as Partial<Record<keyof GebietsBericht, unknown>> | null;
@@ -60,7 +57,6 @@ export async function holeGebietsBericht(herkunft: GebietsHerkunft, basis = API_
     return null;
   }
 }
-
 
 export async function ladeMeteomarSeegebiete() {
   return (await import('@/core/meteomarSeegebieteDaten')).METEOMAR_SEEGEBIETE;

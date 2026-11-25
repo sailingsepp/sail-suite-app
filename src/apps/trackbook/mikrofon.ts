@@ -1,4 +1,3 @@
-
 import { klangMessung } from '@/core/motorklang';
 import type { KlangMessung } from '@/core/antriebKlang';
 
@@ -113,7 +112,6 @@ async function oeffne(): Promise<void> {
   }
 }
 
-
 export function mikrofonSoll(an: boolean): void {
   if (!an && Date.now() < schonBis) return;
   soll = an && motorklangAn();
@@ -122,14 +120,12 @@ export function mikrofonSoll(an: boolean): void {
   if (m && m.ctx.state !== 'running') setzeStatus('tippen');
 }
 
-
 export function mikrofonStarten(): void {
   if (!motorklangAn()) return;
   soll = true;
   schonBis = Date.now() + 15_000;
   beiBeruehrung();
 }
-
 
 export function beiBeruehrung(): void {
   if (!soll || tonLaeuft()) return;
@@ -138,7 +134,6 @@ export function beiBeruehrung(): void {
     void m.ctx.resume().then(() => setzeStatus(m?.ctx.state === 'running' ? 'laeuft' : 'tippen')).catch(() => {});
   }
 }
-
 
 export function vorTon(dauerMs = 15_000): void {
   tonBis = Math.max(tonBis, Date.now() + dauerMs);
@@ -149,23 +144,19 @@ export function nachTon(): void {
   tonBis = 0;
 }
 
-
 export function klangJetzt(): KlangMessung | null {
   if (!m || !puffer || m.ctx.state !== 'running' || gefuellt < puffer.length) return null;
   if (status !== 'laeuft') setzeStatus('laeuft');
-  
+
   const x = new Float32Array(puffer.length);
   x.set(puffer.subarray(schreib));
   x.set(puffer.subarray(0, schreib), puffer.length - schreib);
   return klangMessung(x, fs);
 }
 
-
 export function initMikrofon(): void {
   document.addEventListener('pointerdown', beiBeruehrung, { passive: true });
-  
-  
-  
+
   document.addEventListener('click', beiBeruehrung, { passive: true });
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && m && m.ctx.state !== 'running') setzeStatus('tippen');

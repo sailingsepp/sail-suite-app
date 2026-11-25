@@ -6,26 +6,24 @@ import { escapeHtml } from '@/core/html';
 import { lateinisch } from '@/core/umschrift';
 import { marinaVoraus, VORAUS_MAX_SM } from '@/core/marinaVoraus';
 
-
-
 export type FunkspruchArt = 'securite' | 'panpan' | 'mayday' | 'maydayrelay' | 'maydaycancel' | 'liegeplatz';
 
 export interface FunkspruchDaten {
   schiffsname: string;
   mmsi: string;
   position: { lat: number; lon: number } | null;
-  
+
   personenAnBord: number | null;
-  
+
   laengeM?: number | null;
   breiteM?: number | null;
   tiefgangM?: number | null;
-  
+
   ziel?: string | null;
-  
+
   cog?: number | null;
   laeuft?: boolean;
-  
+
   marinaVoraus?: { name: string; distanzSm: number } | null;
 }
 
@@ -35,8 +33,6 @@ function wort(schluessel: string): string {
   return STRINGS[aktuelleSprache()][schluessel] ?? schluessel;
 }
 
-
-
 function alsHtmlMitPlatzhaltern(text: string): string {
   return text
     .split(/(\[[^[\]]*\])/g)
@@ -45,7 +41,6 @@ function alsHtmlMitPlatzhaltern(text: string): string {
       : escapeHtml(teil)))
     .join('');
 }
-
 
 const POSITION_TIMEOUT_MS = 8_000;
 
@@ -66,7 +61,6 @@ function kennung(d: FunkspruchDaten): { name: string; mmsi: string } {
     mmsi: d.mmsi.trim() || '[MMSI]',
   };
 }
-
 
 function positionsZeile(d: FunkspruchDaten): string {
   return d.position
@@ -163,7 +157,6 @@ function baueMaydayRelay(d: FunkspruchDaten): string {
   ].join('\n');
 }
 
-
 function baueMaydayCancel(d: FunkspruchDaten, urspruenglicherMayday: number | null): string {
   const { name, mmsi } = kennung(d);
   const zeitpunkt = urspruenglicherMayday
@@ -180,7 +173,6 @@ function baueMaydayCancel(d: FunkspruchDaten, urspruenglicherMayday: number | nu
   ].join('\n');
 }
 
-
 function zahlMeter(m: number | null | undefined, ersatz: string): string {
   return m != null && m > 0 ? `${Number(m.toFixed(1))} metres` : ersatz;
 }
@@ -188,7 +180,7 @@ function zahlMeter(m: number | null | undefined, ersatz: string): string {
 function baueLiegeplatz(d: FunkspruchDaten): string {
   const { name } = kennung(d);
   const ziel = d.ziel?.trim() ? lateinisch(d.ziel.trim()) : '';
-  
+
   const voraus = d.marinaVoraus ? lateinisch(d.marinaVoraus.name) : '';
   const marina = voraus || (/marina/i.test(ziel) ? ziel : '[MARINA NAME]');
   return [
@@ -214,16 +206,13 @@ function baueLiegeplatz(d: FunkspruchDaten): string {
   ].join('\n');
 }
 
-
 const SUCHE_TIMEOUT_MS = 10_000;
-
 
 let paket: import('@/core/vorrechnung').VorrechnungPaket | null = null;
 
 function mitZeitschranke<T>(zusage: Promise<T>, ms: number): Promise<T | null> {
   return Promise.race([zusage, new Promise<null>((ok) => { setTimeout(() => ok(null), ms); })]);
 }
-
 
 async function plaetzeUm(pos: { lat: number; lon: number }): Promise<import('@/core/marinaVoraus').Liegeplatz[]> {
   const box = { swLat: pos.lat - 0.05, swLon: pos.lon - 0.07, neLat: pos.lat + 0.05, neLon: pos.lon + 0.07 };
@@ -239,7 +228,6 @@ async function plaetzeUm(pos: { lat: number; lon: number }): Promise<import('@/c
   return liegeplaetzeUmOrt(pos, VORAUS_MAX_SM + 0.2, { timeoutMs: SUCHE_TIMEOUT_MS, versuche: 1, pauseMs: 0 });
 }
 
-
 async function sucheMarinaVoraus(d: FunkspruchDaten): Promise<FunkspruchDaten> {
   if (!d.laeuft || !d.position) return d;
   try {
@@ -249,7 +237,6 @@ async function sucheMarinaVoraus(d: FunkspruchDaten): Promise<FunkspruchDaten> {
     return d;
   }
 }
-
 
 const LETZTER_MAYDAY_SCHLUESSEL = 'sail-suite:letzter-mayday';
 
@@ -268,17 +255,16 @@ function letzteMaydayZeit(): number | null {
 
 interface FunkspruchTyp {
   art: FunkspruchArt;
-  
+
   proword: string;
-  
+
   klasse: string;
   bauen: (d: FunkspruchDaten) => string;
-  
+
   brauchtPosition: boolean;
-  
+
   vorbereiten?: (d: FunkspruchDaten) => Promise<FunkspruchDaten>;
 }
-
 
 const TYPEN: FunkspruchTyp[] = [
   { art: 'securite', proword: 'SÉCURITÉ', klasse: 'securite', bauen: baueSecurite, brauchtPosition: true },
@@ -289,7 +275,7 @@ const TYPEN: FunkspruchTyp[] = [
     art: 'maydaycancel', proword: 'MAYDAY CANCEL', klasse: 'maydaycancel',
     bauen: (d) => baueMaydayCancel(d, letzteMaydayZeit()), brauchtPosition: true,
   },
-  
+
   {
     art: 'liegeplatz', proword: 'BERTH REQUEST', klasse: 'routine', bauen: baueLiegeplatz, brauchtPosition: false,
     vorbereiten: sucheMarinaVoraus,
@@ -299,7 +285,6 @@ const TYPEN: FunkspruchTyp[] = [
 let auswahlModal: ModalHandle | null = null;
 let textModal: ModalHandle | null = null;
 let holeDaten: () => FunkspruchDaten = () => ({ schiffsname: '', mmsi: '', position: null, personenAnBord: null });
-
 
 let abbruchAngefordert = false;
 
@@ -319,7 +304,6 @@ function schliesseVorlage(): void {
   textModal?.beimSchliessen();
 }
 
-
 function setzeAuswahlStatus(text: string): void {
   const statusEl = $('tb-funkspruch-auswahl-status');
   if (statusEl) statusEl.textContent = text;
@@ -332,16 +316,12 @@ function setzeAuswahlStatus(text: string): void {
 async function zeigeVorlage(t: FunkspruchTyp): Promise<void> {
   abbruchAngefordert = false;
   let d = holeDaten();
-  
-  
-  
-  
-  
+
   if (!d.position && t.brauchtPosition) {
     setzeAuswahlStatus(wort('funkspruch.ortLaeuft'));
     const frisch = await holeFrischePosition();
     setzeAuswahlStatus('');
-    if (abbruchAngefordert) return; 
+    if (abbruchAngefordert) return;
     d = { ...d, position: frisch };
   }
   if (t.vorbereiten) {
@@ -389,7 +369,6 @@ function oeffneAuswahl(): void {
   $('tb-funkspruch-auswahl-modal')?.removeAttribute('hidden');
   auswahlModal?.beimOeffnen();
 }
-
 
 export function initFunkspruch(daten: () => FunkspruchDaten): void {
   holeDaten = daten;

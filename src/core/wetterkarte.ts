@@ -2,9 +2,6 @@ import type { Punkt } from './types';
 import { punktBei } from './routenGrenzen';
 import { bearingDeg, distNM } from './geo';
 
-
-
-
 export const WETTER_SCHRITT_GRAD = 0.25;
 
 export const WETTER_RAND_GRAD = 0.75;
@@ -14,20 +11,18 @@ export const WETTER_MAX_PUNKTE = 200;
 
 export const WETTER_NEU_MS = 3 * 3600_000;
 
-
 export type WetterEbene = 'wind' | 'boeen' | 'regen' | 'gewitter' | 'blitze' | 'strom';
 export type GewitterStufe = 'gewitter' | 'neigung';
 
-
 export interface WetterFeld {
-  
+
   geholt: number;
-  
+
   modell: 'ecmwf_ifs025' | 'best_match';
-  
+
   lats: number[];
   lons: number[];
-  
+
   zeiten: number[];
   reihen: {
     wind: (number | null)[][];
@@ -37,7 +32,7 @@ export interface WetterFeld {
     code: (number | null)[][];
     cape: (number | null)[][];
     li: (number | null)[][];
-    
+
     strom?: (number | null)[][];
     stromNach?: (number | null)[][];
   };
@@ -45,7 +40,6 @@ export interface WetterFeld {
 
 const aufRaster = (x: number, s: number, auf: boolean) => (auf ? Math.ceil(x / s - 1e-9) : Math.floor(x / s + 1e-9)) * s;
 const rund = (x: number) => Math.round(x * 1e4) / 1e4;
-
 
 export function wetterGitter(
   punkte: readonly Punkt[], rand = punkte.length > 1 ? WETTER_RAND_GRAD : WETTER_RAND_OHNE_ROUTE_GRAD,
@@ -69,13 +63,11 @@ export function wetterGitter(
   }
 }
 
-
 export function feldDeckt(f: Pick<WetterFeld, 'lats' | 'lons'>, punkte: readonly Punkt[]): boolean {
   const s = f.lats[0], n = f.lats.at(-1), w = f.lons[0], o = f.lons.at(-1);
   if (s === undefined || n === undefined || w === undefined || o === undefined) return false;
   return punkte.every((p) => p.lat >= s && p.lat <= n && p.lon >= w && p.lon <= o);
 }
-
 
 export function ersteStunde(zeiten: readonly number[], jetzt: number): number {
   const i = zeiten.findIndex((t) => t >= jetzt - 30 * 60_000);
@@ -97,7 +89,6 @@ function ecken(f: Pick<WetterFeld, 'lats' | 'lons'>, lat: number, lon: number): 
   ];
 }
 
-
 function gewichtet(e: Ecke[], reihe: (number | null)[][], t: number): number | null {
   let summe = 0, gs = 0;
   for (const { k, g } of e) {
@@ -110,13 +101,12 @@ function gewichtet(e: Ecke[], reihe: (number | null)[][], t: number): number | n
 
 export interface WetterAmPunkt {
   kn: number;
-  
+
   von: number;
   boeenKn: number | null;
   regenMm: number | null;
   gewitter: GewitterStufe | null;
 }
-
 
 export function wetterAn(f: WetterFeld, t: number, lat: number, lon: number): WetterAmPunkt | null {
   const e = ecken(f, lat, lon);
@@ -138,7 +128,6 @@ export function wetterAn(f: WetterFeld, t: number, lat: number, lon: number): We
   };
 }
 
-
 export function stromAn(f: WetterFeld, t: number, lat: number, lon: number): { speed: number; dir: number; valid: true } | null {
   const e = ecken(f, lat, lon);
   const kn = f.reihen.strom, nach = f.reihen.stromNach;
@@ -156,7 +145,6 @@ export function stromAn(f: WetterFeld, t: number, lat: number, lon: number): { s
   return { speed: Math.hypot(x, y), dir: ((Math.atan2(x, y) * 180) / Math.PI + 360) % 360, valid: true };
 }
 
-
 export const GEWITTER_CAPE = 1000;
 export const GEWITTER_LI_GEDECKELT = 2;
 export function gewitterStufe(code: number | null, cape: number | null, li: number | null): GewitterStufe | null {
@@ -164,7 +152,6 @@ export function gewitterStufe(code: number | null, cape: number | null, li: numb
   if (cape !== null && cape >= GEWITTER_CAPE && (li === null || li <= GEWITTER_LI_GEDECKELT)) return 'neigung';
   return null;
 }
-
 
 export const STARKREGEN_MM = 5;
 
@@ -204,7 +191,6 @@ export function windFarbe(kn: number): RGB { return zwischen(WIND_STUFEN, kn).rg
 export function stromFarbe(kn: number): RGB { return zwischen(STROM_STUFEN, kn).rgb; }
 export const hex = ([r, g, b]: RGB): string => `#${[r, g, b].map((x) => x.toString(16).padStart(2, '0')).join('')}`;
 
-
 export function regenFarbe(mm: number): [RGB, number] | null {
   if (!(mm >= REGEN_STUFEN[0]![0])) return null;
   const { rgb, i, f } = zwischen(REGEN_STUFEN, mm);
@@ -212,21 +198,17 @@ export function regenFarbe(mm: number): [RGB, number] | null {
   return [rgb, i === 0 ? a1 : a0 + (a1 - a0) * f];
 }
 
-
 const mercY = (lat: number) => 0.5 - Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) / (2 * Math.PI);
 const latAusMercY = (y: number) => (360 / Math.PI) * Math.atan(Math.exp((0.5 - y) * 2 * Math.PI)) - 90;
-
 
 export function zeilenBreiten(nord: number, sued: number, hoehe: number): number[] {
   const a = mercY(nord), b = mercY(sued);
   return Array.from({ length: hoehe }, (_, r) => latAusMercY(a + ((r + 0.5) / hoehe) * (b - a)));
 }
 
-
 export function ausduennung(abstandPx: number, ziel = 56): number {
   return abstandPx > 0 ? Math.max(1, Math.ceil(ziel / abstandPx)) : 1;
 }
-
 
 export function yachtNach(rest: readonly Punkt[], fahrtKn: number, stunden: number): { p: Punkt; kurs: number; sm: number; amZiel: boolean } | null {
   if (!rest.length) return null;
@@ -242,12 +224,10 @@ export function yachtNach(rest: readonly Punkt[], fahrtKn: number, stunden: numb
   return { p, kurs, sm, amZiel: sm >= gesamt - 1e-9 };
 }
 
-
 export function mercatorVerhaeltnis(f: Pick<WetterFeld, 'lats' | 'lons'>): number {
   const breite = (f.lons.at(-1)! - f.lons[0]!) / 360;
   return breite > 0 ? (mercY(f.lats[0]!) - mercY(f.lats.at(-1)!)) / breite : 1;
 }
-
 
 export function flaechenWerte(
   f: WetterFeld, groesse: 'wind' | 'boeen' | 'regen', t: number, breite: number, hoehe: number,
@@ -265,7 +245,6 @@ export function flaechenWerte(
   }
   return aus;
 }
-
 
 export function flaechenStufen(f: WetterFeld, t: number, breite: number, hoehe: number): Uint8Array {
   const aus = new Uint8Array(breite * hoehe);

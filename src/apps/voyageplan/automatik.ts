@@ -1,4 +1,3 @@
-
 import type L from 'leaflet';
 import { UEBERNAHME_SPAET_AB_UHR } from '@/core/zielfunktion';
 import { aktuelleSprache } from '@/shell/sprache';
@@ -54,7 +53,6 @@ import {
 let karte: L.Map | null = null;
 let planEbenen: L.LayerGroup | null = null;
 
-
 let letzteAntwort: Extract<RechnerAntwort, { lage: 'gefunden' }> | null = null;
 
 let letzterKontext: WunschlisteKontext | undefined;
@@ -66,15 +64,12 @@ let planLaufStartIso: string | null = null;
 
 export function planLaufNummer(): number { return planLauf; }
 
-
 export function letzterGerechneterPlan(): { ergebnis: WochenplanErgebnis; netz: Kandidatennetz; startDatumIso: string } | null {
   const a = letzteAntwort;
   if (!a || !planLaufStartIso) return null;
   const zweite = gewaehlteOption === OPTION_SCHLUESSEL_2 ? a.optionen?.[1]?.ergebnis ?? null : null;
   return { ergebnis: zweite ?? a.ergebnis, netz: a.netz, startDatumIso: planLaufStartIso };
 }
-
-
 
 let zweiteOptionAktiv = false;
 
@@ -85,17 +80,13 @@ export function setzeZweiteOptionSichtbarkeit(aktiv: boolean): void {
   const umschaltWrap = $('vp-zweite-option-umschalten-wrap');
   if (umschaltWrap) umschaltWrap.hidden = aktiv;
   if (!aktiv) {
-    
-    
-    
+
     const box2 = $('vp-woche-automatisch-2');
     if (box2) { box2.hidden = true; box2.innerHTML = ''; }
     zeigeOptionsSpalten(null);
     renderOptionenVergleich(null, aktuelleSprache());
     zeigeOptionenHinweis(null);
-    
-    
-    
+
     const token = liesSitzungsToken();
     if (token && app.toern && !app.nurLesen) {
       void loescheOption(token, app.toern.id, OPTION_SCHLUESSEL_2);
@@ -103,13 +94,9 @@ export function setzeZweiteOptionSichtbarkeit(aktiv: boolean): void {
   }
 }
 
-
-
-
 function nachtVorgabenFuerToern(): NachtVorgaben {
   return nachtVorgabenAus(planungJetzt());
 }
-
 
 function crewHinweisNachtfahrt(): string | null {
   if (!app.crewFunktionen || nachtfahrtCrewReicht(app.crewFunktionen)) return null;
@@ -118,12 +105,9 @@ function crewHinweisNachtfahrt(): string | null {
   return wort('automatik.crewNichtWachfaehig', { n: String(wachfaehige) });
 }
 
-
 let grenzHinweis: string | null = null;
 
 let freieRundeHinweis: string | null = null;
-
-
 
 const RECHNUNG_LAEUFT_KEY = 'sail-suite:vp-rechnung-laeuft';
 let wachsperre: WakeLockSentinel | null = null;
@@ -135,7 +119,7 @@ async function wachsperreHolen(): Promise<void> {
   try {
     wachsperre = await navigator.wakeLock.request('screen');
   } catch {
-    wachsperre = null; 
+    wachsperre = null;
   }
 }
 
@@ -152,7 +136,6 @@ function merkeRechnungLaeuft(an: boolean): void {
   } catch {  }
 }
 
-
 function letzteRechnungUnterbrochen(): boolean {
   try {
     const marke = localStorage.getItem(RECHNUNG_LAEUFT_KEY);
@@ -164,7 +147,6 @@ function letzteRechnungUnterbrochen(): boolean {
   }
 }
 
-
 export function setzeFortschritt(anteil: number | null): void {
   const rahmen = $('vp-fortschritt');
   const balken = $('vp-fortschritt-balken');
@@ -172,7 +154,6 @@ export function setzeFortschritt(anteil: number | null): void {
   rahmen.classList.toggle('vp-fortschritt-offen', anteil == null);
   balken.style.width = anteil == null ? '' : `${Math.round(Math.min(1, Math.max(0, anteil)) * 100)}%`;
 }
-
 
 function fortschrittText(f: RechnerFortschritt): string {
   const n = String(f.erledigt ?? 0), m = String(f.gesamt ?? 0);
@@ -194,7 +175,6 @@ function fortschrittText(f: RechnerFortschritt): string {
     default: return wort('automatik.rechnet');
   }
 }
-
 
 function empfehlungsSatz(e: OptionsEmpfehlung, namen: readonly [string, string]): string {
   const sp = aktuelleSprache();
@@ -219,10 +199,9 @@ function empfehlungsSatz(e: OptionsEmpfehlung, namen: readonly [string, string])
   return [wort('empfehlung.gleich'), windSatz].join(' ');
 }
 
-
 function zeigeOptionenHinweis(
   namen: readonly [string, string] | null, ep?: Entscheidungspunkt, empfehlung?: OptionsEmpfehlung | null,
-  
+
   route2?: string | null,
 ): void {
   const satz = namen && empfehlung ? empfehlungsSatz(empfehlung, namen) : '';
@@ -244,7 +223,6 @@ function zeigeOptionenHinweis(
   ].filter(Boolean).join(' ');
 }
 
-
 function ankunftsDatum(ergebnis: WochenplanErgebnis | null, von: string): string | null {
   const tag = ergebnis?.etappen[ergebnis.etappen.length - 1]?.tag;
   if (tag == null) return null;
@@ -253,7 +231,6 @@ function ankunftsDatum(ergebnis: WochenplanErgebnis | null, von: string): string
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-
 function ankunftsSatz(ergebnis: WochenplanErgebnis | null, datum: string): string {
   const tag = ergebnis?.etappen[ergebnis.etappen.length - 1]?.tag ?? 0;
   const [, m, d] = datum.split('-');
@@ -261,7 +238,6 @@ function ankunftsSatz(ergebnis: WochenplanErgebnis | null, datum: string): strin
     ziel: app.toern?.rueckgabe_hafen?.name ?? '', datum: `${d}.${m}.`, tag: String(tag),
   });
 }
-
 
 function keinPlanSatz(grund: KeinPlanGrund): string {
   const { schluessel, werte } = keinPlanTextSchluessel(grund);
@@ -272,7 +248,6 @@ function keinPlanSatz(grund: KeinPlanGrund): string {
     ...(lockerung?.weitere ?? []).map((s) => wort(s, lockerung!.werte)),
   ].filter(Boolean).join(' ');
 }
-
 
 function setzeAutomatikStatus(text: string): void {
   const status = $('vp-automatik-status');
@@ -291,7 +266,7 @@ function setzeAutomatikStatus(text: string): void {
     crewHinweisNachtfahrt(),
     zeitbudget ? wort(zeitbudget.schluessel, zeitbudget.werte) : null,
     bericht?.nachrechnungUebersprungen ? wort('automatik.nachrechnungUebersprungen') : null,
-    
+
     gedeckelt && !freieRundeHinweis ? wort(gedeckelt.schluessel, gedeckelt.werte) : null,
     ohneWetter ? wort(ohneWetter.schluessel, ohneWetter.werte) : null,
     ohneKueste ? wort(ohneKueste) : null,
@@ -302,8 +277,6 @@ function setzeAutomatikStatus(text: string): void {
   ].filter((t): t is string => t != null);
   status.textContent = teile.join(' ');
 }
-
-
 
 const WOCHE_REITER = ['auto', 'hand', 'optionen'] as const;
 
@@ -319,11 +292,9 @@ export function zeigeWochenReiter(aktiv: typeof WOCHE_REITER[number]): void {
   if (vorher !== imVergleichsReiter) zeichneOptionenAufKarte(false);
 }
 
-
 let imVergleichsReiter = false;
 
 let kartenOptionImVergleich = 0;
-
 
 function zeichneOptionenAufKarte(ausschnittAnpassen: boolean): void {
   const antwort = letzteAntwort;
@@ -340,21 +311,19 @@ function zeichneOptionenAufKarte(ausschnittAnpassen: boolean): void {
   if (ausschnittAnpassen && karte && gezeigt) passeAusschnittAn(karte, planEbenen);
 }
 
-
 function zeigeOptionAufKarte(i: 0 | 1): void {
   kartenOptionImVergleich = i;
   for (const [n, id] of [[0, 'btn-option-karte-1'], [1, 'btn-option-karte-2']] as const) {
     $(id)?.setAttribute('aria-pressed', String(n === i));
   }
   zeichneOptionenAufKarte(true);
-  
+
   const k = $('vp-karte');
   if (k) {
     const r = k.getBoundingClientRect();
     if (r.bottom < 0 || r.top > window.innerHeight) k.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
-
 
 function zeigeOptionsSpalten(
   spalten: readonly { name: string; html: string }[] | null,
@@ -375,9 +344,6 @@ function zeigeOptionsSpalten(
   }
 }
 
-
-
-
 function alsGespeicherteZeilen(etappen: readonly EtappeDaten[], startIso: string | null = null): GespeicherteEtappenZeile[] {
   return etappen.map((e, i) => {
     const erster = e.wegpunkte[0], letzter = e.wegpunkte[e.wegpunkte.length - 1];
@@ -390,15 +356,13 @@ function alsGespeicherteZeilen(etappen: readonly EtappeDaten[], startIso: string
       istHafentag,
       sm: !istHafentag && erster && letzter
         ? distNM(erster.lat, erster.lon, letzter.lat, letzter.lon) : null,
-      
+
       von: istHafentag ? null : erster ?? null,
       nach: istHafentag ? null : letzter ?? null,
       wegpunkte: istHafentag ? [] : e.wegpunkte.map((p) => ({ lat: p.lat, lon: p.lon })),
     };
   });
 }
-
-
 
 let neuZeichnen: (() => void) | null = null;
 export function automatikNeuZeichnen(): void { neuZeichnen?.(); }
@@ -408,11 +372,7 @@ export async function zeigeGespeicherteAutomatik(token: string, toernId: string)
   const vorhandene = await holeOptionen(token, toernId);
   const automatik = AUTOMATIK_SCHLUESSEL.filter((s) => vorhandene.includes(s));
   if (automatik.length === 0) return;
-  
-  
-  
-  
-  
+
   if (!automatik.includes(OPTION_SCHLUESSEL_1)) renderGespeichertenWochenplan([], aktuelleSprache());
 
   const namen: [string, string] = [wort('automatik.optionEins'), wort('automatik.optionZwei')];
@@ -420,14 +380,10 @@ export async function zeigeGespeicherteAutomatik(token: string, toernId: string)
   for (const schluessel of automatik) {
     const etappen = await holeEtappen(token, toernId, schluessel);
     if (!etappen || etappen.length === 0) continue;
-    
-    
+
     if (!aufDieKarte || etappen[0]?.gewaehlt) aufDieKarte = etappen;
     const istZweite = schluessel === OPTION_SCHLUESSEL_2;
-    
-    
-    
-    
+
     const eigenerName = eigenerOptionsName(etappen[0]?.anzeigename);
     if (etappen[0]?.gewaehlt) { gewaehlteOption = schluessel; zeigeOptionsWahl(); }
     const label = istZweite
@@ -435,7 +391,7 @@ export async function zeigeGespeicherteAutomatik(token: string, toernId: string)
       : (automatik.length > 1 ? (eigenerName ?? wort('automatik.optionEins')) : undefined);
     if (label) namen[istZweite ? 1 : 0] = label;
     if (istZweite) {
-      
+
       setzeZweiteOptionSichtbarkeit(true);
       const box2 = $('vp-woche-automatisch-2');
       if (box2) box2.hidden = false;
@@ -456,18 +412,14 @@ export async function zeigeGespeicherteAutomatik(token: string, toernId: string)
     );
     if (karte) passeAusschnittAn(karte, planEbenen);
   }
-  
-  
+
   zeigeOptionenHinweis(automatik.includes(OPTION_SCHLUESSEL_1) && automatik.includes(OPTION_SCHLUESSEL_2) ? namen : null);
 }
-
-
 
 function versteckeWochenbriefingAktionen(): void {
   const box = $('vp-briefing-aktionen');
   if (box) box.hidden = true;
 }
-
 
 async function holeRevierwetterFuerErstenFahrtag(
   ergebnis: WochenplanErgebnis, netz: Kandidatennetz, startDatumIso: string,
@@ -486,7 +438,6 @@ async function holeRevierwetterFuerErstenFahrtag(
   );
 }
 
-
 async function zeigeWochenbriefingAktionen(
   ergebnis: WochenplanErgebnis, netz: Kandidatennetz, begruendung: Begruendungsspur | null, startDatumIso: string,
 ): Promise<void> {
@@ -503,9 +454,7 @@ async function zeigeWochenbriefingAktionen(
       ? `${app.toern.name}: Voyage plan` : `${app.toern.name}: Törnplan`;
   }
   box.hidden = false;
-  
-  
-  
+
   const startDatum = nDate(`${startDatumIso}T00:00:00`);
   initVorlesen(abschnitte);
   initShare(abschnitte);
@@ -513,26 +462,21 @@ async function zeigeWochenbriefingAktionen(
   initServerTeilen(abschnitte, startDatum, 'voyageplan');
 }
 
-
-
 function liesOptionsname2(): string {
   const input = $('in-options-name-2') as HTMLInputElement | null;
-  
-  
+
   return input?.value.trim() || wort('automatik.optionZwei');
 }
 
-
 export async function planVorschlagenKlick(kontextUeberschreibung?: WunschlisteKontext): Promise<void> {
   letzterKontext = kontextUeberschreibung;
-  
+
   await rahmenGespeichert();
   if (!app.toern) return;
-  
-  
+
   letzteAntwort = null;
   planEbenen?.clearLayers();
-  
+
   if (!kontextUeberschreibung && planungJetzt().planungsart === 'ueberstellung') {
     renderOptionenVergleich(null, aktuelleSprache());
     zeigeOptionenHinweis(null);
@@ -548,18 +492,13 @@ export async function planVorschlagenKlick(kontextUeberschreibung?: WunschlisteK
     if (status) status.textContent = wort(fehlendeEingabeSchluessel(wkontext));
     return;
   }
-  
-  
-  
-  
-  
+
   freieRundeHinweis = hatEtwasZuPlanen(zustand1.wunschziele, zustand1.endziel)
     ? null : wort('automatik.freieRunde', { r: String(planungJetzt().regelmassSm) });
 
   const vorpruefung = pruefeMachbarkeit(eingabe);
   if (vorpruefung.befund === 'gehtNicht') {
-    
-    
+
     if (status) status.textContent = wort('wunschliste.gehtNicht', { n: String(vorpruefung.grund?.fehlendeTage ?? 0) });
     return;
   }
@@ -572,7 +511,7 @@ export async function planVorschlagenKlick(kontextUeberschreibung?: WunschlisteK
   setzeFortschritt(null);
   if (ladeanzeige) ladeanzeige.hidden = false;
   if (status) status.textContent = wort('automatik.rechnet');
-  
+
   rechnungLaeuft = true;
   merkeRechnungLaeuft(true);
   void wachsperreHolen();
@@ -585,24 +524,21 @@ export async function planVorschlagenKlick(kontextUeberschreibung?: WunschlisteK
       ? { name: liesOptionsname2(), wunschziele: [...zustand2.wunschziele], endziel: zustand2.endziel }
       : null;
     const uebernahme = uebernahmeZeitpunkt(wkontext!.toern);
-    
+
     const offenesEnde = istOffeneUeberstellung(wkontext!.toern);
     const rueckgabe = offenesEnde ? null : rueckgabeZeitpunkt(wkontext!.toern);
     const planung = planungJetzt();
     const anfrage: RechnerAnfrage = {
       start: { ort: wkontext!.start!, name: wkontext!.startName },
-      
+
       rueckgabehafen: rueckgabehafenFuerRechner() ?? (offenesEnde ? null : starthafenAlsZiel(wkontext!.start)),
       ...(uebernahme ? { uebernahmeIso: naiveIso(uebernahme) } : {}),
       ...(rueckgabe ? { rueckgabeIso: naiveIso(rueckgabe) } : {}),
       ohneUmkehrpunkt: ohneUmkehrpunktFuerToern(),
       ...(offenesEnde ? { offenesEnde: true } : {}),
-      
-      
-      
+
       fixierungen: (() => {
-        
-        
+
         const versatz = app.toern?.von && wkontext!.toern.von
           ? Math.round((Date.parse(`${wkontext!.toern.von}T00:00:00Z`) - Date.parse(`${app.toern.von}T00:00:00Z`)) / 86_400_000) : 0;
         const ausPlan = liesPlanFixierungen().map((f) => ({ ...f, tag: f.tag - versatz })).filter((f) => f.tag >= 1);
@@ -631,9 +567,7 @@ export async function planVorschlagenKlick(kontextUeberschreibung?: WunschlisteK
     const abbrechen = $('btn-plan-abbrechen');
     if (abbrechen) abbrechen.hidden = false;
     const antwort = await schlagePlanVor(anfrage, (f) => {
-      
-      
-      
+
       if (status) status.textContent = fortschrittText(f);
       setzeFortschritt(f.gesamt ? (f.erledigt ?? 0) / f.gesamt : null);
     });
@@ -643,21 +577,20 @@ export async function planVorschlagenKlick(kontextUeberschreibung?: WunschlisteK
       if (status) status.textContent = wort('automatik.abgebrochen');
       return;
     }
-    
-    
+
     app.letzterBericht = antwort.lage === 'fehler' ? null : antwort.bericht;
 
     if (antwort.lage === 'fehler') {
-      letzteAntwort = null; 
+      letzteAntwort = null;
       setzeAutomatikStatus(wort('automatik.fehler', { text: antwort.text }));
       versteckeWochenbriefingAktionen();
       return;
     }
     if (antwort.lage === 'keinPlanGefunden') {
-      letzteAntwort = null; 
-      
+      letzteAntwort = null;
+
       setzeAutomatikStatus(keinPlanSatz(antwort.grund));
-      
+
       const hinweis = wort('automatik.keinPlanBox');
       renderAutomatischenWochenplan(null, null, [], aktuelleSprache(), null, { hinweis });
       if (zweiteOptionAktiv) renderAutomatischenWochenplan(null, null, [], aktuelleSprache(), null, { boxId: 'vp-woche-automatisch-2', istOption: true, hinweis });
@@ -668,8 +601,6 @@ export async function planVorschlagenKlick(kontextUeberschreibung?: WunschlisteK
       return;
     }
 
-    
-    
     const planStart = new Date(`${wkontext!.toern.von!}T00:00:00`);
     const planTagDatum = (tag: number): Date =>
       new Date(planStart.getFullYear(), planStart.getMonth(), planStart.getDate() + tag - 1);
@@ -686,20 +617,18 @@ export async function planVorschlagenKlick(kontextUeberschreibung?: WunschlisteK
     const skipperGuide = new Map((antwort.skipperGuide ?? []).map((z) => [z.knotenIndex, z] as const));
     const indizes1 = wunschzielIndizes(zustand1.wunschziele, zustand1.endziel);
     const box2 = $('vp-woche-automatisch-2');
-    
-    
-    
+
     const erstesErgebnis = antwort.optionen?.[0];
     const zweitesErgebnis = antwort.optionen?.[1];
     const indizes2 = zweitesErgebnis ? wunschzielIndizes(zustand2.wunschziele, zustand2.endziel) : [];
-    
+
     const uebernahmeSpaet = Number((app.toern?.uebernahme_zeit ?? '').slice(0, 2)) >= UEBERNAHME_SPAET_AB_UHR
       && (app.toern?.uebernahme_zeit ?? '') !== '';
-    
+
     const motorKn = app.toern ? standardSchiffConfig(app.toern).motorSpeed : 6;
     const tank = app.toern ? tankVorschlag(app.toern, motorKn) : null;
     const kraftstoff = tank ? { angabe: tank.angabe, motorKn } : null;
-    
+
     const zeichnePlan = (sp: Sprache): void => {
       renderAutomatischenWochenplan(
         erstesErgebnis ? erstesErgebnis.ergebnis : antwort.ergebnis, antwort.netz, indizes1, sp,
@@ -746,7 +675,7 @@ export async function planVorschlagenKlick(kontextUeberschreibung?: WunschlisteK
     zeichnePlan(aktuelleSprache());
     neuZeichnen = () => zeichnePlan(aktuelleSprache());
     await zeigeWochenbriefingAktionen(antwort.ergebnis, antwort.netz, antwort.begruendung, wkontext!.toern.von!);
-    
+
     const sprache = aktuelleSprache();
     const poiHinweise = (antwort.poiBasen ?? []).map((b) => {
       const werte = { poi: b.poi, basis: b.basis, tag: b.tag != null ? String(b.tag) : '–', sm: nf(b.smJeWeg, 1, sprache) };
@@ -754,9 +683,7 @@ export async function planVorschlagenKlick(kontextUeberschreibung?: WunschlisteK
         ...werte, wind: nf(b.wetter.windKn, 0, sprache), boe: nf(b.wetter.boeKn, 0, sprache),
         richtung: b.wetter.richtungDeg != null ? ` ${sprache === 'en' ? 'from' : 'aus'} ${richtungsName(b.wetter.richtungDeg, sprache)}` : '',
       });
-      
-      
-      
+
       if (!b.oeffnungszeiten) return satz;
       const quelle = b.oeffnungszeiten.quelle ? wort('automatik.poiOeffnungszeitenQuelle', { name: b.oeffnungszeiten.quelle }) : '';
       const oeffnungsSatz = b.oeffnungszeiten.urteil.urteil === 'ganztag'
@@ -771,16 +698,14 @@ export async function planVorschlagenKlick(kontextUeberschreibung?: WunschlisteK
         liste: antwort.grenzuebertritte.map((g) => `${wort('rollierend.tag', { n: String(g.tag) })} ${g.vonName} → ${g.nachName}`).join('; '),
       })
       : null;
-    
-    
+
     if (poiHinweise.length > 0) grenzHinweis = [grenzHinweis, ...poiHinweise].filter(Boolean).join(' ');
-    
+
     const ersatzHinweise = (antwort.zufahrtErsatz ?? []).map((z) => wort('automatik.zufahrtErsatz', {
       wunsch: z.wunsch, basis: z.basis, sm: nf(z.sm, 1, sprache),
     }));
     if (ersatzHinweise.length > 0) grenzHinweis = [grenzHinweis, ...ersatzHinweise].filter(Boolean).join(' ');
-    
-    
+
     const tagWort = (n: number) => wort('rollierend.tag', { n: String(n) });
     const wetterHinweise = [
       ...(antwort.abwetterOhneWunsch ? [wort('automatik.abwetterOhneWunsch', {
@@ -799,24 +724,20 @@ export async function planVorschlagenKlick(kontextUeberschreibung?: WunschlisteK
     ];
     if (wetterHinweise.length > 0) grenzHinweis = [grenzHinweis, ...wetterHinweise].filter(Boolean).join(' ');
 
-    
     zeichneOptionenAufKarte(true);
 
     const token = liesSitzungsToken();
     if (antwort.fixierungBrichtUmkehrpunkt) {
-      
+
       setzeAutomatikStatus(wort('automatik.fixierungBricht'));
     } else if (app.nurLesen) {
-      
-      
+
       const ankunft = offenesEnde ? ankunftsDatum(antwort.ergebnis, wkontext!.toern.von!) : null;
       setzeAutomatikStatus([wort('automatik.nurAngezeigt'), ankunft ? ankunftsSatz(antwort.ergebnis, ankunft) : ''].filter(Boolean).join(' '));
     } else if (token) {
       if (status) status.textContent = wort('automatik.speichertGerade');
       const startDatum = new Date(`${wkontext!.toern.von!}T00:00:00`);
-      
-      
-      
+
       const zuSpeichern = antwort.optionen
         ? antwort.optionen.map((o) => ({ schluessel: o.schluessel, name: o.name as string | null, ergebnis: o.ergebnis }))
         : [{ schluessel: OPTION_SCHLUESSEL_1, name: null, ergebnis: antwort.ergebnis },
@@ -829,9 +750,7 @@ export async function planVorschlagenKlick(kontextUeberschreibung?: WunschlisteK
           await loescheOption(token, toern.id, o.schluessel);
         }
       }
-      
-      
-      
+
       const ankunft = offenesEnde ? ankunftsDatum(antwort.ergebnis, wkontext!.toern.von!) : null;
       if (ok && ankunft && toern.bis !== ankunft) {
         ok = await schreibeAnkunftAlsBis(token, ankunft);
@@ -853,16 +772,12 @@ export async function planVorschlagenKlick(kontextUeberschreibung?: WunschlisteK
   }
 }
 
-
-
-
 function fixiereUndRechne(tag: number, ort: Punkt, name: string): void {
   const kontext = letzterKontext;
   const versatz = kontext?.toern.von && app.toern?.von
     ? Math.round((Date.parse(`${kontext.toern.von}T00:00:00Z`) - Date.parse(`${app.toern.von}T00:00:00Z`)) / 86_400_000) : 0;
   void legeTagFest({ tag: tag + versatz, ort, name }).then(() => planVorschlagenKlick(kontext));
 }
-
 
 function beiEingriff(ev: Event): void {
   const ziel = (ev.target as HTMLElement | null)?.closest<HTMLButtonElement>('button[data-aktion]');
@@ -877,7 +792,6 @@ function beiEingriff(ev: Event): void {
   if (!Number.isInteger(tag) || !ort) return;
   fixiereUndRechne(tag, ort.ort, ort.name);
 }
-
 
 function beiEtappeZiehen(tag: number, punkt: Punkt): void {
   if (!letzteAntwort || app.nurLesen) return;
@@ -895,7 +809,6 @@ function zeigeOptionsWahl(): void {
     knopf.disabled = app.nurLesen;
   }
 }
-
 
 async function waehleOption(schluessel: string): Promise<void> {
   const token = liesSitzungsToken();
@@ -918,7 +831,7 @@ async function waehleOption(schluessel: string): Promise<void> {
   if (antwort) {
     zeigeOptionAufKarte(index === 1 ? 1 : 0);
     const gewaehlt = (antwort.optionen ?? [])[index];
-    
+
     if (gewaehlt?.ergebnis && app.toern.von) {
       await zeigeWochenbriefingAktionen(gewaehlt.ergebnis, antwort.netz, gewaehlt.begruendung, app.toern.von);
     }
@@ -941,13 +854,10 @@ export function initAutomatik(k: L.Map | null, ebenen: L.LayerGroup | null): voi
     $(`tab-woche-${name}`)?.addEventListener('click', () => zeigeWochenReiter(name));
   }
   $('btn-plan-vorschlagen')?.addEventListener('click', () => { void planVorschlagenKlick(); });
-  
-  
-  
+
   $('btn-plan-abbrechen')?.addEventListener('click', () => brichPlanVorschlagAb());
   $('btn-plan-abbrechen-2')?.addEventListener('click', () => brichPlanVorschlagAb());
-  
-  
+
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') void wachsperreHolen();
   });

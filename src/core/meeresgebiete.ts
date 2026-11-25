@@ -1,14 +1,12 @@
 import type { Sprache } from './types';
 import { MEERESGEBIETE_ROH } from './meeresgebieteDaten';
 
-
-
 export interface Meeresgebiet {
-  
+
   id: string;
   iho: string;
   de: string;
-  
+
   deAus: string;
   en: string;
 }
@@ -41,13 +39,12 @@ const MEERENGEN: Record<string, Meerenge> = {
   kertsch: { de: 'Straße von Kertsch', deDurch: 'durch die Straße von Kertsch', en: 'Kerch Strait' },
 };
 
-
 const BONIFACIO_BOX = { sued: 41.1, nord: 41.5, west: 8.85, ost: 9.45 };
 
 export const INSELSTRASSE_KM = 25;
 export const NAECHSTES_BIS_KM = 5;
 const INSELSTRASSEN: { lat: number; lon: number; enge: Meerenge }[] = [
-  
+
   { lat: 36.029, lon: 23.173, enge: { de: 'Kythira Strait', deDurch: 'durch die Meerenge Kythira Strait', en: 'Kythira Strait' } },
   { lat: 35.699, lon: 23.456, enge: { de: 'Steno Antikythiro', deDurch: 'durch die Meerenge Steno Antikythiro', en: 'Steno Antikythiro' } },
   { lat: 35.922, lon: 27.5, enge: { de: 'Steno Karpathou', deDurch: 'durch die Meerenge Steno Karpathou', en: 'Steno Karpathou' } },
@@ -78,7 +75,6 @@ const FLAECHEN: Flaeche[] = MEERESGEBIETE_ROH.map((r) => {
   return { gebiet: { id: r.id, iho: r.iho, ...name }, ringe: r.ringe, box: { s, n, w, o } };
 });
 
-
 function imRing(lat: number, lon: number, ring: [number, number][]): boolean {
   let drin = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
@@ -87,7 +83,6 @@ function imRing(lat: number, lon: number, ring: [number, number][]): boolean {
   }
   return drin;
 }
-
 
 function randKm(f: Flaeche, lat: number, lon: number): number {
   const kx = 111.32 * Math.cos((lat * Math.PI) / 180), ky = 110.57;
@@ -102,7 +97,6 @@ function randKm(f: Flaeche, lat: number, lon: number): number {
   }
   return min;
 }
-
 
 export function meeresgebietAm(lat: number, lon: number): Meeresgebiet | null {
   for (const f of FLAECHEN) {
@@ -123,7 +117,6 @@ export function gebietNachId(id: string): Meeresgebiet | null {
   return FLAECHEN.find((f) => f.gebiet.id === id)?.gebiet ?? null;
 }
 
-
 export function meerengeZwischen(von: string, nach: string, lat: number, lon: number): Meerenge | null {
   const k = MEERENGE_JE_GRENZE[paar(von, nach)]?.(lat, lon);
   if (k) return MEERENGEN[k]!;
@@ -134,9 +127,6 @@ export function meerengeZwischen(von: string, nach: string, lat: number, lon: nu
   return null;
 }
 
-
-
-
 export const WECHSEL_MIN_PUNKTE = 3;
 export const WECHSEL_MIN_MS = 60_000;
 
@@ -145,11 +135,11 @@ export const NEUBEGINN_SPRUNG_SM = 100;
 
 export interface Ort { t: number; lat: number; lon: number }
 export interface GebietStand {
-  
+
   gebiet: string | null;
-  
+
   zuletzt: Ort | null;
-  
+
   kandidat: string | null;
   kandidatAb: Ort | null;
   kandidatPunkte: number;
@@ -163,7 +153,6 @@ function sm(a: Ort, b: Ort): number {
   const d = Math.sin(((b.lat - a.lat) * r) / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(((b.lon - a.lon) * r) / 2) ** 2;
   return 2 * 3440.065 * Math.asin(Math.min(1, Math.sqrt(d)));
 }
-
 
 export function gebietSchritt(stand: GebietStand, id: string | null, ort: Ort): { stand: GebietStand; uebergang: Uebergang | null } {
   const neubeginn = !stand.zuletzt || ort.t - stand.zuletzt.t > NEUBEGINN_PAUSE_MS || sm(stand.zuletzt, ort) > NEUBEGINN_SPRUNG_SM;
@@ -181,7 +170,6 @@ export function gebietSchritt(stand: GebietStand, id: string | null, ort: Ort): 
   }
   return { stand: { ...basis, kandidat: id, kandidatAb, kandidatPunkte: punkte }, uebergang: null };
 }
-
 
 export function uebergangText(u: Uebergang, sprache: Sprache): string {
   const von = gebietNachId(u.von);

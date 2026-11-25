@@ -1,10 +1,9 @@
 import { distNM } from './geo';
 
-
 export interface Zone {
-  
+
   staat: string | null;
-  
+
   hoheit?: string;
   awz?: string;
   hoheSee?: boolean;
@@ -13,7 +12,7 @@ export interface Zone {
 export interface Grenzuebergang {
   lat: number;
   lon: number;
-  
+
   sm: number;
   von: Zone;
   nach: Zone;
@@ -23,13 +22,11 @@ type P = { lat: number; lon: number };
 
 const zonenSchluessel = (z: Zone): string => z.staat ?? 'international';
 
-
 function kumuliert(punkte: readonly P[]): number[] {
   const c = [0];
   for (let i = 1; i < punkte.length; i++) c.push(c[i - 1]! + distNM(punkte[i - 1]!.lat, punkte[i - 1]!.lon, punkte[i]!.lat, punkte[i]!.lon));
   return c;
 }
-
 
 export function punktBei(punkte: readonly P[], sm: number, c: readonly number[] = kumuliert(punkte)): P {
   const gesamt = c.at(-1) ?? 0;
@@ -44,7 +41,6 @@ export function punktBei(punkte: readonly P[], sm: number, c: readonly number[] 
   }
   return punkte[0]!;
 }
-
 
 export async function grenzenEntlang(
   punkte: readonly P[], frage: (p: P) => Promise<Zone | undefined>,
@@ -79,7 +75,6 @@ export async function grenzenEntlang(
   return { liste: aus, fehlend };
 }
 
-
 export function fortschrittSm(punkte: readonly P[], boot: P): { sm: number; abstandSm: number } {
   const c = kumuliert(punkte);
   let best = { sm: 0, abstandSm: Infinity };
@@ -96,9 +91,7 @@ export function fortschrittSm(punkte: readonly P[], boot: P): { sm: number; abst
   return best;
 }
 
-
 export const GRENZE_ROUTE_ABSTAND_SM = 3;
-
 
 export function grenzStand(
   g: Pick<Grenzuebergang, 'sm'>, f: { sm: number; abstandSm: number }, sogKn: number | null, vorlaufMin = 12,

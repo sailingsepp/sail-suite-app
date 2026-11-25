@@ -1,4 +1,3 @@
-
 import type { Kandidatennetz } from './hafennetz';
 import { saisonLage, type SaisonLage } from './season';
 import type { BegruendungsSammler } from './begruendung';
@@ -8,7 +7,6 @@ import type { Punkt } from './types';
 import { schutzStufe } from './shelter';
 import { umlaufWinkel, fortschrittSm, RUECKSCHRITT_TOLERANZ_SM } from './gummiband';
 
-
 export interface EtappenKennzahlen {
   totalHrs: number | null;
   vmgShareAnteil: number | null;
@@ -17,22 +15,21 @@ export interface EtappenKennzahlen {
   maxWindKn: number | null;
   maxGustKn: number | null;
   maxHsM: number | null;
-  
+
   schutzWellenanlaufNM: number | null;
   andrang: SaisonLage | null;
   modellUebereinstimmungProzent: number | null;
-  
+
   revierSchutzhafen: boolean;
-  
+
   ablegeZeitIso: string | null;
-  
+
   lage: 'guenstig' | 'brauchbar' | 'unfahrbar' | null;
-  
+
   gewitter?: true;
-  
+
   ablegenImDunkeln?: true;
 }
-
 
 export const HAFENTAG_KENNZAHLEN: EtappenKennzahlen = {
   totalHrs: 0, vmgShareAnteil: null, motorShareAnteil: null, dunkelShareAnteil: null,
@@ -40,15 +37,13 @@ export const HAFENTAG_KENNZAHLEN: EtappenKennzahlen = {
   andrang: null, modellUebereinstimmungProzent: null, revierSchutzhafen: false, ablegeZeitIso: null, lage: null,
 };
 
-
 export function hafentagKennzahlen(
   vorige: WochenplanEtappe | undefined, datum: Date | null,
   amOrt: Pick<EtappenKennzahlen, 'schutzWellenanlaufNM' | 'revierSchutzhafen'> | null = null,
-  
+
   dieseNacht: Pick<EtappenKennzahlen, 'schutzWellenanlaufNM' | 'revierSchutzhafen'> | null = null,
 ): EtappenKennzahlen {
-  
-  
+
   const quelle = dieseNacht && (dieseNacht.schutzWellenanlaufNM != null || dieseNacht.revierSchutzhafen) ? dieseNacht
     : vorige?.kennzahlen.schutzWellenanlaufNM != null || vorige?.kennzahlen.revierSchutzhafen
       ? vorige.kennzahlen : amOrt ?? vorige?.kennzahlen ?? null;
@@ -59,7 +54,6 @@ export function hafentagKennzahlen(
     andrang: datum ? saisonLage(datum) : null,
   };
 }
-
 
 function schutzJeOrtUndNacht(
   netz: Kandidatennetz, kosten: Kostenkarte,
@@ -77,24 +71,21 @@ function schutzJeOrtUndNacht(
 }
 
 export interface EtappenBewertung {
-  
+
   score: number;
   sm: number;
   istNachtschlag: boolean;
-  
+
   regime: 'gerechnet' | 'geruest';
-  
+
   kennzahlen: EtappenKennzahlen;
 }
-
 
 export function kostenSchluessel(kanteIndex: number, tag: number): string {
   return `${kanteIndex}:${tag}`;
 }
 
-
 export type Kostenkarte = ReadonlyMap<string, EtappenBewertung>;
-
 
 export interface PflichtOrt {
   tag: number;
@@ -105,40 +96,40 @@ export interface WochenplanEingabe {
   netz: Kandidatennetz;
   startIndex: number;
   zielIndex: number;
-  
+
   gesamtFahrtage: number;
-  
+
   wunschzielKnoten: readonly number[];
   pflichtOrte?: readonly PflichtOrt[];
   kosten: Kostenkarte;
-  
+
   erreichbar?: (knotenIndex: number, tag: number, offeneWunschzielKnoten: readonly number[]) => boolean;
-  
+
   datumFuerTag?: (tag: number) => Date | null;
-  
+
   nachtfahrtBudget?: number;
-  
+
   ruhetagKnoten?: readonly number[];
-  
+
   ersterTagFrei?: boolean;
-  
+
   hafentagScore?: (knotenIndex: number, tag: number) => number;
-  
+
   freieRunde?: { regelmassSm: number };
-  
+
   liegeschutz?: ReadonlyMap<string, Pick<EtappenKennzahlen, 'schutzWellenanlaufNM' | 'revierSchutzhafen'>>;
-  
+
   saatplaene?: readonly (readonly number[])[];
-  
+
   offenesEnde?: boolean;
-  
+
   kBeste: number;
-  
+
   sammler?: BegruendungsSammler;
 }
 
 export interface WochenplanEtappe {
-  
+
   tag: number;
   vonIndex: number;
   nachIndex: number;
@@ -146,9 +137,9 @@ export interface WochenplanEtappe {
   istNachtschlag: boolean;
   sm: number;
   score: number;
-  
+
   regime: 'gerechnet' | 'geruest';
-  
+
   kennzahlen: EtappenKennzahlen;
 }
 
@@ -166,7 +157,6 @@ function vollstaendigeMaske(anzahlWunschziele: number): number {
   return anzahlWunschziele === 0 ? 0 : (1 << anzahlWunschziele) - 1;
 }
 
-
 function neueMaske(
   maske: number, knotenIndex: number, wunschzielKnoten: readonly number[],
   istHafentag = false, ruhetagKnoten: readonly number[] = [],
@@ -176,7 +166,6 @@ function neueMaske(
   if (ruhetagKnoten.includes(knotenIndex) && !istHafentag) return maske;
   return maske | (1 << bit);
 }
-
 
 function einfuegenTopK(
   liste: PfadEintrag[], kandidat: PfadEintrag, k: number, sammler?: BegruendungsSammler,
@@ -191,7 +180,6 @@ function einfuegenTopK(
     sammler.verworfen(letzte.tag, letzte.vonIndex, { nachIndex: letzte.nachIndex, grundArt: 'schlechter-score' });
   }
 }
-
 
 export function rechneWochenplaene(eingabe: WochenplanEingabe): WochenplanErgebnis[] {
   const { netz, startIndex, zielIndex, gesamtFahrtage, wunschzielKnoten, kosten, kBeste } = eingabe;
@@ -214,9 +202,6 @@ export function rechneWochenplaene(eingabe: WochenplanEingabe): WochenplanErgebn
     ausgehendeKanten.set(k.von, liste);
   });
 
-  
-  
-  
   const tag0 = new Map<string, PfadEintrag[]>();
   const startMaske = neueMaske(0, startIndex, wunschzielKnoten);
   const offeneAmStart = wunschzielKnoten.filter((_, i) => (startMaske & (1 << i)) === 0);
@@ -240,17 +225,7 @@ export function rechneWochenplaene(eingabe: WochenplanEingabe): WochenplanErgebn
         sm: number, score: number, regime: 'gerechnet' | 'geruest', kennzahlen: EtappenKennzahlen,
       ): void => {
         if (ankunftsTag > gesamtFahrtage) return;
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
         const naechteDanach = naechte + (istNachtschlag ? 1 : 0);
         if (naechteDanach > nachtfahrtBudget) {
           sammler?.verworfen(ankunftsTag, knotenIndex, { nachIndex, grundArt: 'nachtfahrtbudget' });
@@ -262,15 +237,10 @@ export function rechneWochenplaene(eingabe: WochenplanEingabe): WochenplanErgebn
             sammler?.verworfen(ankunftsTag, knotenIndex, { nachIndex, grundArt: 'fixierung' });
             return;
           }
-          
-          
-          
+
           sammler?.bindend(ankunftsTag, nachIndex, { art: 'fixierung', parameter: {}, herkunft: { art: 'nutzervorgabe' } });
         }
-        
-        
-        
-        
+
         const neueMaskeWert = neueMaske(maske, nachIndex, wunschzielKnoten, istHafentag, ruhetagKnoten);
         const offeneWunschzielKnoten = wunschzielKnoten.filter((_, i) => (neueMaskeWert & (1 << i)) === 0);
         if (!erreichbar(nachIndex, ankunftsTag, offeneWunschzielKnoten)) {
@@ -285,9 +255,7 @@ export function rechneWochenplaene(eingabe: WochenplanEingabe): WochenplanErgebn
         ziel.set(neuerSchluessel, bisher);
 
         for (const p of pfade) {
-          
-          
-          
+
           const kennzahlenHier = istHafentag
             ? hafentagKennzahlen(p.etappen[p.etappen.length - 1], datumFuerTag(ankunftsTag), schutzAmOrt.get(`${nachIndex}|${ankunftsTag}`) ?? null,
               eingabe.liegeschutz?.get(`${nachIndex}|${ankunftsTag}`) ?? null)
@@ -297,20 +265,12 @@ export function rechneWochenplaene(eingabe: WochenplanEingabe): WochenplanErgebn
         }
       };
 
-      
-      
-      
       fuegeUebergangHinzu(knotenIndex, t + 1, true, false, 0, eingabe.hafentagScore?.(knotenIndex, t + 1) ?? 0, 'gerechnet', HAFENTAG_KENNZAHLEN);
 
-      
-      
-      
       for (const { index, nach } of ausgehendeKanten.get(knotenIndex) ?? []) {
         const eintrag = kosten.get(kostenSchluessel(index, t + 1));
         if (!eintrag) {
-          
-          
-          
+
           sammler?.verworfen(t + 1, knotenIndex, { nachIndex: nach, grundArt: 'kein-kostenkarten-eintrag' });
           continue;
         }
@@ -320,11 +280,6 @@ export function rechneWochenplaene(eingabe: WochenplanEingabe): WochenplanErgebn
     }
   }
 
-  
-  
-  
-  
-  
   const endPraefix = `${zielIndex}|${gesamtFahrtage}|${volleMaske}|`;
   const endZustaende = dpNachTag.get(gesamtFahrtage);
   const endPfade: PfadEintrag[] = [];
@@ -339,33 +294,27 @@ export function rechneWochenplaene(eingabe: WochenplanEingabe): WochenplanErgebn
     .map((p) => ({ etappen: [...p.etappen], gesamtScore: p.score }));
 }
 
-
 const RAND_SKALARISIERUNGEN: ReadonlyArray<(e: EtappenBewertung) => number> = [
-  
+
   (e) => e.kennzahlen.totalHrs ?? e.score,
-  
+
   (e) => {
     const h = e.kennzahlen.totalHrs;
     return h != null && e.kennzahlen.vmgShareAnteil != null ? e.kennzahlen.vmgShareAnteil * h + 0.1 * h : e.score;
   },
-  
+
   (e) => Math.min(e.kennzahlen.schutzWellenanlaufNM ?? SCHUTZ_KAPPE_NM, SCHUTZ_KAPPE_NM)
     + 0.1 * (e.kennzahlen.totalHrs ?? 0),
 ];
 
-
 const SCHUTZ_KAPPE_NM = 20;
 
-
 export const K_JE_RANDLAUF = 5;
-
 
 export function rechneVielfaeltigeWochenplaene(eingabe: WochenplanEingabe): WochenplanErgebnis[] {
   const haupt = rechneWochenplaene(eingabe);
   if (eingabe.kosten.size === 0) return haupt;
 
-  
-  
   const hauptScore = new Map<EtappenKennzahlen, number>();
   for (const e of eingabe.kosten.values()) hauptScore.set(e.kennzahlen, e.score);
 
@@ -381,24 +330,14 @@ export function rechneVielfaeltigeWochenplaene(eingabe: WochenplanEingabe): Woch
     }
   }
 
-  
-  
-  
-  
   const vorbild = haupt[0];
   const rundKosten = vorbild ? rundreiseKosten(eingabe, vorbild) : null;
   if (rundKosten) {
     for (const plan of rechneWochenplaene({ ...ohneSammler, kosten: rundKosten, kBeste: K_JE_RANDLAUF })) alle.push(plan);
   }
 
-  
-  
-  
-  
   const woche = wocheNutzenEingabe(ohneSammler);
-  
-  
-  
+
   const wocheAusgeglichen = woche ? {
     ...woche,
     kosten: new Map([...woche.kosten].map(([k, b]) => {
@@ -414,23 +353,20 @@ export function rechneVielfaeltigeWochenplaene(eingabe: WochenplanEingabe): Woch
       alle.push({ etappen, gesamtScore: etappen.reduce((s, e) => s + e.score, 0) });
     }
   }
-  
-  
-  
-  
+
   if (woche) {
     for (const plan of rechneWochenplaene({ ...woche, kosten: ohneOffeneNaechte(woche.kosten) })) {
       const etappen = plan.etappen.map((e) => (e.istHafentag ? { ...e, score: 0 } : { ...e, score: hauptScore.get(e.kennzahlen) ?? e.score }));
       alle.push({ etappen, gesamtScore: etappen.reduce((s, e) => s + e.score, 0) });
     }
   }
-  
+
   if (eingabe.freieRunde) alle.push(...freieRundeKandidaten(ohneSammler, eingabe.freieRunde.regelmassSm));
-  
+
   if (eingabe.offenesEnde) alle.push(...ankunftsKandidaten(ohneSammler, hauptScore));
-  
+
   if (woche) alle.push(...gummibandKandidaten(ohneSammler, woche, hauptScore));
-  
+
   for (const plan of [...alle]) {
     const getauscht = schutzTausch(ohneSammler, plan);
     if (getauscht) alle.push(getauscht);
@@ -444,7 +380,6 @@ export function rechneVielfaeltigeWochenplaene(eingabe: WochenplanEingabe): Woch
   }
   return [...besteJeFolge.values()].sort((a, b) => a.gesamtScore - b.gesamtScore);
 }
-
 
 export function zerlegeRundreise(
   netz: Kandidatennetz, plan: WochenplanErgebnis, startIndex: number, zielIndex: number,
@@ -475,10 +410,9 @@ export function zerlegeRundreise(
   return { hinweg, rueckOrte, wendeTag };
 }
 
-
 export function rundreiseKosten(eingabe: WochenplanEingabe, vorbild: WochenplanErgebnis): Kostenkarte | null {
   const { netz, startIndex, zielIndex, kosten } = eingabe;
-  if (startIndex !== zielIndex) return null; 
+  if (startIndex !== zielIndex) return null;
   const teile = zerlegeRundreise(netz, vorbild, startIndex, zielIndex);
   if (!teile || teile.hinweg.length < 2) return null;
   const gesperrt = new Set<number>();
@@ -496,7 +430,6 @@ export function rundreiseKosten(eingabe: WochenplanEingabe, vorbild: WochenplanE
   return ergebnis.size < kosten.size ? ergebnis : null;
 }
 
-
 export function wocheNutzenEingabe(eingabe: WochenplanEingabe): WochenplanEingabe | null {
   const { netz, startIndex, zielIndex, kosten, gesamtFahrtage } = eingabe;
   if (kosten.size === 0) return null;
@@ -510,11 +443,9 @@ export function wocheNutzenEingabe(eingabe: WochenplanEingabe): WochenplanEingab
   for (const [schluessel, b] of kosten) {
     const [kante, tag] = schluessel.split(':').map(Number) as [number, number];
     const nach = netz.kanten[kante]?.nach ?? -1;
-    
+
     const kurz = b.sm < KURZER_FAHRTAG_SM && !(tag === 1 && eingabe.ersterTagFrei);
-    
-    
-    
+
     const s = b.kennzahlen.schutzWellenanlaufNM;
     const offen = !b.istNachtschlag && !b.kennzahlen.revierSchutzhafen && s != null && schutzStufe(s) === 'offen';
     const extra = (zaehlt(nach, tag) ? aufschlag : 0) + (kurz ? aufschlag : 0) + (offen ? aufschlag : 0);
@@ -526,7 +457,6 @@ export function wocheNutzenEingabe(eingabe: WochenplanEingabe): WochenplanEingab
   };
 }
 
-
 export function ohneOffeneNaechte(kosten: Kostenkarte): Map<string, EtappenBewertung> {
   const gedeckt = new Map<string, EtappenBewertung>();
   for (const [schluessel, b] of kosten) {
@@ -537,13 +467,11 @@ export function ohneOffeneNaechte(kosten: Kostenkarte): Map<string, EtappenBewer
   return gedeckt;
 }
 
-
 export const FREIE_RUNDE_VERSUCHE = 8;
-
 
 export function ersteWiederholung(
   plan: WochenplanErgebnis, startIndex: number, zielIndex: number, gesamtFahrtage: number,
-  
+
   netz: Kandidatennetz | null = null, naeheSm = 0,
 ): { knoten: number; ersterTag: number } | null {
   const besucht = new Map<number, number>([[startIndex, 0]]);
@@ -561,11 +489,10 @@ export function ersteWiederholung(
   return null;
 }
 
-
 export function ohneWiederholungKandidaten(
   eingabe: WochenplanEingabe, basis: WochenplanEingabe, grundlage: ReadonlyMap<string, EtappenBewertung>,
   hauptScore: ReadonlyMap<EtappenKennzahlen, number>, versuche = FREIE_RUNDE_VERSUCHE,
-  
+
   naeheSm = HEIMAT_NAEHE_SM,
 ): WochenplanErgebnis[] {
   const { netz, startIndex, zielIndex, gesamtFahrtage } = eingabe;
@@ -600,7 +527,6 @@ export function ohneWiederholungKandidaten(
   return ergebnisse;
 }
 
-
 export function wiederholungsfreieKandidaten(eingabe: WochenplanEingabe): WochenplanErgebnis[] {
   const ohneSammler: WochenplanEingabe = { ...eingabe };
   delete ohneSammler.sammler;
@@ -611,7 +537,6 @@ export function wiederholungsfreieKandidaten(eingabe: WochenplanEingabe): Wochen
   return [woche.kosten, ohneOffeneNaechte(woche.kosten)]
     .flatMap((grundlage) => ohneWiederholungKandidaten(ohneSammler, woche, grundlage, hauptScore, FREIE_RUNDE_VERSUCHE, 0));
 }
-
 
 export function freieRundeKandidaten(eingabe: WochenplanEingabe, regelmassSm: number): WochenplanErgebnis[] {
   const basis = wocheNutzenEingabe(eingabe);
@@ -628,21 +553,16 @@ export function freieRundeKandidaten(eingabe: WochenplanEingabe, regelmassSm: nu
   }
 
   const ergebnisse: WochenplanErgebnis[] = [];
-  
-  
+
   for (const grundlage of [regelmaessig, ohneOffeneNaechte(regelmaessig)]) {
     ergebnisse.push(...ohneWiederholungKandidaten(eingabe, basis, grundlage, hauptScore));
   }
   return ergebnisse;
 }
 
-
-
-
 export const SCHUTZ_TAUSCH_NAEHE_SM = 3;
 
 const SAATPLAN_MAX_ORTE = 8;
-
 
 export function meilenKosten(woche: WochenplanEingabe): Map<string, EtappenBewertung> {
   let maxSm = 0, aufschlag = 0;
@@ -655,13 +575,11 @@ export function meilenKosten(woche: WochenplanEingabe): Map<string, EtappenBewer
   return out;
 }
 
-
 function istRunde(e: WochenplanEingabe): boolean {
   if (e.startIndex === e.zielIndex) return true;
   const a = e.netz.knoten[e.startIndex]?.ort, b = e.netz.knoten[e.zielIndex]?.ort;
   return a != null && b != null && distNM(a.lat, a.lon, b.lat, b.lon) < HEIMAT_NAEHE_SM;
 }
-
 
 export function umlaufKosten(
   e: WochenplanEingabe, kosten: ReadonlyMap<string, EtappenBewertung>, richtung: 1 | -1,
@@ -693,18 +611,15 @@ export function umlaufKosten(
   return out;
 }
 
-
 function mitHauptScore(plan: WochenplanErgebnis, hauptScore: ReadonlyMap<EtappenKennzahlen, number>): WochenplanErgebnis {
   const etappen = plan.etappen.map((e) => (e.istHafentag ? { ...e, score: 0 } : { ...e, score: hauptScore.get(e.kennzahlen) ?? e.score }));
   return { etappen, gesamtScore: etappen.reduce((s, e) => s + e.score, 0) };
 }
 
-
 function nachtGedeckt(k: EtappenKennzahlen): boolean {
   if (k.revierSchutzhafen) return true;
   return k.schutzWellenanlaufNM != null && schutzStufe(k.schutzWellenanlaufNM) !== 'offen';
 }
-
 
 export function schutzTausch(e: WochenplanEingabe, plan: WochenplanErgebnis, naeheSm = SCHUTZ_TAUSCH_NAEHE_SM): WochenplanErgebnis | null {
   const kante = new Map<string, number>();
@@ -739,32 +654,22 @@ export function schutzTausch(e: WochenplanEingabe, plan: WochenplanErgebnis, nae
   return getauscht ? { etappen, gesamtScore: etappen.reduce((s, x) => s + x.score, 0) } : null;
 }
 
-
 export function gummibandKandidaten(
   eingabe: WochenplanEingabe, woche: WochenplanEingabe, hauptScore: ReadonlyMap<EtappenKennzahlen, number>,
 ): WochenplanErgebnis[] {
   const mk = meilenKosten(woche);
   const basis: WochenplanEingabe = { ...woche, kosten: mk, kBeste: K_JE_RANDLAUF };
   const out: WochenplanErgebnis[] = [];
-  
+
   const naehe = eingabe.freieRunde ? HEIMAT_NAEHE_SM : 0;
-  
-  
-  
+
   for (const kosten of [mk, ohneOffeneNaechte(mk)]) {
     for (const richtung of [1, -1] as const) {
       for (const p of rechneWochenplaene({ ...basis, kosten: umlaufKosten(eingabe, kosten, richtung) })) out.push(mitHauptScore(p, hauptScore));
     }
     out.push(...ohneWiederholungKandidaten(eingabe, { ...basis, kosten }, kosten, hauptScore, FREIE_RUNDE_VERSUCHE, naehe));
   }
-  
-  
-  
-  
-  
-  
-  
-  
+
   const wunsch = new Set(eingabe.wunschzielKnoten);
   const erreichbar = basis.erreichbar;
   const nurWunschziele = erreichbar
@@ -778,7 +683,6 @@ export function gummibandKandidaten(
   }
   return out;
 }
-
 
 export function ankunftsKandidaten(
   eingabe: WochenplanEingabe, hauptScore: ReadonlyMap<EtappenKennzahlen, number>,

@@ -13,8 +13,6 @@ import type { Liegeart } from '@/core/logbuchText';
 import { aktuellerZustand, ergaenzeEintrag, type Zustand } from './aufzeichnung';
 import { STRINGS } from './strings';
 
-
-
 const $ = (id: string): HTMLElement | null => document.getElementById(id);
 
 function wort(schluessel: string): string {
@@ -47,10 +45,9 @@ function schreibeMerker(m: TankMerker | null): void {
     if (m) localStorage.setItem(SCHLUESSEL.tankstelle, JSON.stringify(m));
     else localStorage.removeItem(SCHLUESSEL.tankstelle);
   } catch {
-    
+
   }
 }
-
 
 export function sucheTankstelle(): void {
   const hinweis = $('tb-liegeart-tankstelle');
@@ -64,7 +61,6 @@ export function sucheTankstelle(): void {
   });
 }
 
-
 export async function merkeTankstelle(liegeart: Liegeart): Promise<void> {
   const lauf = suche;
   suche = null;
@@ -74,7 +70,6 @@ export async function merkeTankstelle(liegeart: Liegeart): Promise<void> {
   const s = await lauf.catch(() => undefined);
   if (s) schreibeMerker({ fahrt, t, lat: s.lat, lon: s.lon, name: s.name, abstandM: s.abstandM });
 }
-
 
 export function nachWeiterfahren(): void {
   const m = liesMerker();
@@ -91,9 +86,7 @@ export function nachWeiterfahren(): void {
   feld?.focus();
 }
 
-
 let gesuchtFuer: number | null = null;
-
 
 export function beobachteUnterwegs(z: Zustand, fixe: readonly Fix[]): void {
   if (z.betriebsart !== 'laeuft' || !z.fahrt) return;
@@ -118,7 +111,6 @@ function schliesse(): void {
   $('tb-tank-modal')?.setAttribute('hidden', '');
   modal?.beimSchliessen();
 }
-
 
 async function trageAmToernEin(v: Tankvorgang): Promise<void> {
   const t = await aktuellerToern();

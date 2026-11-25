@@ -3,7 +3,6 @@ import { dekodiereLinie, type HoehenLinie } from '@/core/hoehen';
 import type { Box } from '@/core/landumfahrung';
 import { API_BASIS } from '@/shell/api';
 
-
 const DB_NAME = 'sail-suite-hoehen';
 const STORE = 'kacheln';
 const INDEX_SCHLUESSEL = '_index';
@@ -127,7 +126,6 @@ function holeZelle(name: string, idx: HoehenIndex, netz: boolean, basis: string)
   return lauf;
 }
 
-
 export async function ladeHoehenImGebiet(b: Box, netz: boolean, basis = API_BASIS): Promise<boolean> {
   const idx = await hoehenIndex(netz, basis);
   if (!idx) return false;
@@ -152,7 +150,6 @@ async function entpacke(b64: string): Promise<Bild> {
   } finally { URL.revokeObjectURL(url); }
 }
 
-
 export async function bereiteHoehenBilder(b: Box, stufe: 'z10' | 'z12'): Promise<boolean> {
   let neu = false;
   await Promise.all(landKachelnFuerBox(b).map(async (k) => {
@@ -167,14 +164,12 @@ export async function bereiteHoehenBilder(b: Box, stufe: 'z10' | 'z12'): Promise
       entpackt.set(schl, lauf);
     }
     await lauf;
-    
-    
+
     if (z.bilder[stufe]) neu = true;
   }));
   if (stufe === 'z12') raeumeGross();
   return neu;
 }
-
 
 function raeumeGross(): void {
   const mit = [...zellen.values()].filter((z) => z.bilder.z12).sort((a, b) => b.benutzt - a.benutzt);
@@ -185,14 +180,12 @@ function raeumeGross(): void {
   }
 }
 
-
 export function hoehenJetzt(landName: string, stufe: 'z10' | 'z12'): { linien: Linie[]; bild: Bild | null } | null {
   const z = zellen.get(hName(landName));
   if (!z) return null;
   z.benutzt = Date.now();
   return { linien: z.linien, bild: z.bilder[stufe] ?? null };
 }
-
 
 export function _vergessen(): void {
   db = null; offen = null; index = null; zellen.clear(); unterwegs.clear(); entpackt.clear();

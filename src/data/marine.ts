@@ -4,17 +4,7 @@ import { holeOpenMeteoJson } from './openMeteoNetz';
 import { mitZone } from './openMeteo';
 import { meldeFormatabweichung } from './fehlerbericht';
 
-
-
-
-
-
 const KMH_TO_KN = 1 / 1.852;
-
-
-
-
-
 
 const ZEITEN_CACHE = new WeakMap<StundenMarine, number[]>();
 function geparsteZeiten(hourly: StundenMarine): number[] {
@@ -23,13 +13,9 @@ function geparsteZeiten(hourly: StundenMarine): number[] {
   return t;
 }
 
-
-
-
 const FORECAST_DAYS = 6;
 
-const CHUNK = 10; 
-
+const CHUNK = 10;
 
 function istGueltigeMarineantwort(hourly: unknown): hourly is StundenMarine {
   if (!hourly || typeof hourly !== 'object') return false;
@@ -37,13 +23,11 @@ function istGueltigeMarineantwort(hourly: unknown): hourly is StundenMarine {
   return Array.isArray(t) && t.length > 0;
 }
 
-
 export async function fetchCurrentForPoints(points: StreckenPunkt[], zone: string | null = null): Promise<(StundenMarine | null)[]> {
   const results = new Array<StundenMarine | null>(points.length).fill(null);
   const chunks: StreckenPunkt[][] = [];
   for (let i = 0; i < points.length; i += CHUNK) chunks.push(points.slice(i, i + CHUNK));
-  
-  
+
   await Promise.all(chunks.map(async (chunk, b) => {
     const lats = chunk.map((p) => p.lat.toFixed(4)).join(',');
     const lons = chunk.map((p) => p.lon.toFixed(4)).join(',');
@@ -69,7 +53,6 @@ export async function fetchCurrentForPoints(points: StreckenPunkt[], zone: strin
   return results;
 }
 
-
 export function currentAt(hourly: StundenMarine | null, targetDate: Date): Strom {
   if (!hourly || !hourly.ocean_current_velocity) return { speed: 0, dir: 0, valid: false };
   const times = geparsteZeiten(hourly);
@@ -82,15 +65,13 @@ export function currentAt(hourly: StundenMarine | null, targetDate: Date): Strom
   const c0 = hourly.ocean_current_direction[i0], c1 = hourly.ocean_current_direction[i1];
   if (v0 == null || v1 == null || c0 == null || c1 == null) return { speed: 0, dir: 0, valid: false };
   const t0 = times[i0]!, t1 = times[i1]!;
-  
-  
+
   const frac = t1 > t0 ? Math.min(1, Math.max(0, (target - t0) / (t1 - t0))) : 0;
   const speedKmh = v0 + (v1 - v0) * frac;
   const diff = ((c1 - c0 + 540) % 360) - 180;
   const dir = (c0 + diff * frac + 360) % 360;
   return { speed: speedKmh * KMH_TO_KN, dir, valid: true };
 }
-
 
 export function waveAt(hourly: StundenMarine | null, targetDate: Date): Seegang {
   const none: Seegang = {
@@ -105,8 +86,7 @@ export function waveAt(hourly: StundenMarine | null, targetDate: Date): Seegang 
   if (idx === 0) idx = 1;
   const i0 = idx - 1, i1 = idx;
   const t0 = times[i0]!, t1 = times[i1]!;
-  
-  
+
   const frac = t1 > t0 ? Math.min(1, Math.max(0, (target - t0) / (t1 - t0))) : 0;
   const lin = (a: (number | null)[] | undefined): number | null =>
     (a && a[i0] != null && a[i1] != null) ? a[i0]! + (a[i1]! - a[i0]!) * frac : null;
@@ -120,7 +100,7 @@ export function waveAt(hourly: StundenMarine | null, targetDate: Date): Seegang 
   const tp = lin(hourly.wave_period) ?? 0;
   const windWaveHs = lin(hourly.wind_wave_height) ?? hs;
   const windWaveTp = lin(hourly.wind_wave_period) ?? tp;
-  const L = windWaveTp > 0 ? 9.81 * windWaveTp * windWaveTp / (2 * Math.PI) : 0; 
+  const L = windWaveTp > 0 ? 9.81 * windWaveTp * windWaveTp / (2 * Math.PI) : 0;
   const swellHs = lin(hourly.swell_wave_height) ?? 0;
   const swellDir = ang(hourly.swell_wave_direction) ?? 0;
   const windWaveDir = ang(hourly.wind_wave_direction) ?? ang(hourly.wave_direction) ?? 0;
@@ -137,18 +117,13 @@ export function waveAt(hourly: StundenMarine | null, targetDate: Date): Seegang 
   };
 }
 
-
 export const KREUZSEE_MIN_HS = 0.5;
-
 
 export const KREUZSEE_MIN_VERHAELTNIS = 0.4;
 
-
 export const KREUZSEE_MIN_WINKEL = 60;
 
-
 export const KREUZSEE_MIN_GEMEINSAM = 1.0;
-
 
 export function kreuzWinkel(
   windWaveHs: number, windWaveDir: number,
@@ -164,7 +139,6 @@ export function kreuzWinkel(
   return diff >= KREUZSEE_MIN_WINKEL ? diff : 0;
 }
 
-
 const WASSERSTAND_MITTEL_CACHE = new WeakMap<StundenMarine, number | null>();
 function wasserstandMittel(hourly: StundenMarine): number | null {
   if (WASSERSTAND_MITTEL_CACHE.has(hourly)) return WASSERSTAND_MITTEL_CACHE.get(hourly)!;
@@ -173,7 +147,6 @@ function wasserstandMittel(hourly: StundenMarine): number | null {
   WASSERSTAND_MITTEL_CACHE.set(hourly, mittel);
   return mittel;
 }
-
 
 export function gezeitenAt(hourly: StundenMarine | null, targetDate: Date): Gezeit {
   const none: Gezeit = { hoeheM: 0, valid: false };

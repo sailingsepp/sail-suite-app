@@ -1,5 +1,5 @@
 import 'leaflet/dist/leaflet.css';
-import '@/shell/tokens.css'; 
+import '@/shell/tokens.css';
 import './style.css';
 import './vollbild.css';
 
@@ -35,13 +35,9 @@ import { initHandplanNeu, zeigeAbTag } from './handplanNeu';
 import { initVollbild, toernGeladen } from './vollbild';
 import { ladebildGezeichnet, ladebildWeg } from '@/shell/ladebild';
 
-
-
-
 await ladebildGezeichnet();
 initIcons();
 setzeAppTexte({ titel: TITLE, beschreibung: DESCRIPTION, strings: STRINGS, tour: TOUR_STEPS });
-
 
 aktiviereLesestand();
 initOfflineHinweis();
@@ -68,10 +64,7 @@ if (merkenBox) {
   });
 }
 
-
-
 const karteEl = $('vp-karte');
-
 
 const karte = karteEl
   ? L.map(karteEl, { zoomControl: true, zoomSnap: 0.25, zoomDelta: 0.5 }).setView([44.0, 14.5], 8)
@@ -81,20 +74,17 @@ const seezeichen = karte
   ? L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', { maxZoom: 18, crossOrigin: 'anonymous', attribution: '&copy; OpenSeaMap' })
   : null;
 if (karte) {
-  
+
   einFingerScrollt(karte);
-  
-  
+
   seekartenNamen(karte, seekarteAuf(karte), { netz: () => navigator.onLine });
   addLocationSearch(karte);
-  
+
   addVtgEbene(karte);
-  
-  
+
   const objekte = objektFensterAuf(karte, { aus: zeichnetGerade });
   karte.on('click', (e: L.LeafletMouseEvent) => { void objekte.tipp(e); });
 }
-
 
 const planEbenen = karte ? L.layerGroup().addTo(karte) : null;
 
@@ -105,8 +95,6 @@ initPlanung();
 initAutomatik(karte, planEbenen);
 initRollierend();
 initHandplanNeu();
-
-
 
 async function start(): Promise<void> {
   const laedt = $('vp-laedt');
@@ -141,7 +129,7 @@ async function start(): Promise<void> {
   zeigeRaender();
   zeigePlanung();
   zeigePlanFixierungen();
-  
+
   if (zeigeWunschlisten()) setzeZweiteOptionSichtbarkeit(true);
 
   const etappen = await holeEtappen(token, toern.id);
@@ -150,11 +138,9 @@ async function start(): Promise<void> {
   setzeZeichenWerkzeuge();
   zeigeAbTag();
   void zeigeRollierend();
-  
-  
+
   void zeigeGespeicherteAutomatik(token, toern.id);
-  
-  
+
   void holeCrew(token, toern.id).then((crew) => {
     app.crewFunktionen = crew ? crew.map((c) => c.funktion) : null;
   });
@@ -165,16 +151,10 @@ async function start(): Promise<void> {
       : `<p class="vp-hinweis">${wort('woche.keineDatierteEtappe')}</p>`;
   }
 
-  
-  
   toernGeladen(app.etappen.length > 0);
 }
 
 void start();
-
-
-
-
 
 aufSprachwechsel(() => {
   if (!app.toern) return;
@@ -190,9 +170,6 @@ aufSprachwechsel(() => {
   automatikNeuZeichnen();
 });
 
-
-
-
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js')
     .then((reg) => {
@@ -202,6 +179,5 @@ if ('serviceWorker' in navigator) {
     })
     .catch((err) => console.warn('Service Worker nicht registriert:', err));
 }
-
 
 ladebildWeg();

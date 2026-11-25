@@ -1,4 +1,3 @@
-
 import type { BoatPolar } from './polar';
 
 export interface Punkt {
@@ -6,60 +5,53 @@ export interface Punkt {
   lon: number;
 }
 
-
 export interface Halt {
   min: number;
   text: string;
   wp: number;
 }
 
-
 export interface HaltZeit extends Halt {
   an: Date;
   ab: Date;
   nm: number;
-  
+
   lat?: number;
   lon?: number;
-  
+
   dunkelMin?: number;
 }
 
-
 export interface StreckenPunkt extends Punkt {
-  cum: number;            
+  cum: number;
   course: number | null;
-  
+
   halt?: Halt;
 }
 
 export interface SchiffConfig {
   model: 'polar' | 'constant';
-  speedKn: number;        
+  speedKn: number;
   motorSpeed: number;
-  minSailWind: number;    
-  boat: BoatPolar;        
-  crewFactor: number;     
-  
+  minSailWind: number;
+  boat: BoatPolar;
+  crewFactor: number;
+
   crewZumutbarkeit?: number | null;
-  sailPref: number;       
+  sailPref: number;
   useCurrent: boolean;
-  maneuverMin: number;    
-  
-  
-  
-  
+  maneuverMin: number;
+
   wachgaenger: number;
-  
+
   tiefgangM: number;
 }
 
 export interface Grenzwerte {
-  mean: number;           
-  gust: number;           
-  wave: number;           
+  mean: number;
+  gust: number;
+  wave: number;
 }
-
 
 export interface Wind {
   speed: number;
@@ -68,19 +60,18 @@ export interface Wind {
   code: number | null;
   precip: number;
   cape: number;
-  
+
   speed80: number | null;
-  
+
   visibility: number | null;
-  
+
   liftedIndex: number | null;
-  
+
   boeigWind: number;
   boeigGust: number;
-  
+
   windLuecke?: boolean;
 }
-
 
 export interface Strom {
   speed: number;
@@ -88,14 +79,12 @@ export interface Strom {
   valid: boolean;
 }
 
-
 export interface Gezeit {
   hoeheM: number;
   valid: boolean;
-  
+
   anteil?: 'wetter';
 }
-
 
 export interface Seegang {
   hs: number;
@@ -108,26 +97,26 @@ export interface Seegang {
   windWaveTp: number;
   windWaveDir: number;
   steep: number;
-  
+
   kreuzWinkel: number;
   valid: boolean;
-  
+
   maxIndividualHs?: number;
-  
+
   stokesSpeed?: number;
   stokesDir?: number;
 }
 
 export interface SegmentLoesung {
-  sog: number;            
-  stw: number;            
-  stwReal: number;        
+  sog: number;
+  stw: number;
+  stwReal: number;
   heading: number;
-  twa: number;            
-  targetTwa: number;      
-  sailWind: number;       
+  twa: number;
+  targetTwa: number;
+  sailWind: number;
   sailWind10: number;
-  aws: number;            
+  aws: number;
   awa: number;
   underMotor: boolean;
   beating: boolean;
@@ -143,15 +132,12 @@ export interface StundenWind {
   weather_code: number[];
   precipitation: number[];
   cape: number[];
-  
-  
-  
+
   pressure_msl?: number[];
   cloud_cover?: number[];
   temperature_2m?: number[];
   dew_point_2m?: number[];
-  
-  
+
   wind_speed_80m?: (number | null)[];
   visibility?: (number | null)[];
   lifted_index?: (number | null)[];
@@ -167,16 +153,12 @@ export interface StundenMarine {
   swell_wave_height: (number | null)[];
   swell_wave_period: (number | null)[];
   swell_wave_direction: (number | null)[];
-  
-  
-  
+
   wind_wave_height?: (number | null)[];
   wind_wave_period?: (number | null)[];
-  
-  
+
   wind_wave_direction?: (number | null)[];
-  
-  
+
   sea_level_height_msl?: (number | null)[];
   sea_surface_temperature?: (number | null)[];
 }
@@ -185,13 +167,11 @@ export interface Tageslicht {
   time: string[];
   sunrise: string[];
   sunset: string[];
-  
+
   uv_index_max?: number[];
 }
 
-
 export type Sprache = 'de' | 'en';
-
 
 export type Tageszeit = 'tag' | 'nacht';
 
@@ -201,9 +181,7 @@ export interface Warnung {
   text: string;
 }
 
-
 export type AnkerplatzArt = 'marina' | 'bucht' | null;
-
 
 export type EreignisTyp = 'gewitter' | 'cape' | 'regen' | 'sturm' | 'nebel';
 export interface WetterEreignis {
@@ -214,11 +192,10 @@ export interface WetterEreignis {
   precip: number;
   cape: number;
   gust: number;
-  
+
   visibility: number | null;
   type: EreignisTyp;
 }
-
 
 export interface Ablegezeit {
   departure: Date;
@@ -226,7 +203,7 @@ export interface Ablegezeit {
   maxWind: number;
   avgDiscomfort: number;
   isDaylight: boolean | null;
-  
+
   dunkelHrs: number;
   dunkelShare: number;
   safetyFail: boolean;
@@ -234,31 +211,31 @@ export interface Ablegezeit {
   totalHrs: number;
   sailHrs: number;
   manHrs: number;
-  
+
   haltHrs?: number;
-  
+
   halte?: HaltZeit[];
   avgSpeed: number;
   motorShare: number;
   beyondForecast: boolean;
-  
+
   windLuecke?: { nm: number; time: Date };
   maxCurrent: number;
   currentGainMin: number;
   blockedShare: number;
   maxGust: number;
-  
+
   maxWindAt: { nm: number; time: Date };
   maxGustAt: { nm: number; time: Date };
   maxHsAt: { nm: number; time: Date };
-  
+
   gustFactor: number;
-  
+
   gustFactorWind: number;
   gustFactorGust: number;
   meanFail: boolean;
   gustFail: boolean;
-  
+
   grenzen?: Grenzwerte;
   beatShare: number;
   gybeShare: number;
@@ -270,20 +247,20 @@ export interface Ablegezeit {
   maxSteep: number;
   steepHs: number;
   steepTp: number;
-  
+
   maxIndividualHs: number;
   stokesSpeed: number;
   stokesDir: number;
-  
+
   maxKreuzWinkel: number;
   kreuzWindWaveHs: number;
   kreuzSwellHs: number;
   headSeaShare: number;
-  
+
   followSeaShare: number;
-  
+
   messinaKabbelNM?: number;
-  
+
   messinaEinfahrt?: { zeit: Date; nachNorden: boolean; vKn: number; imFenster: boolean };
   seaFail: boolean;
   seaValid: boolean;
@@ -299,7 +276,7 @@ export interface Ablegezeit {
   windLast: number;
   twaFirst: number | null;
   twaLast: number;
-  
+
   twaMin?: number;
   twaMinNM?: number;
   twaMax?: number;

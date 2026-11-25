@@ -1,4 +1,3 @@
-
 body{ background:var(--bg); color:var(--text); margin:0; }
 .mp-kopf{ display:flex; align-items:center; gap:16px; padding:calc(10px + env(safe-area-inset-top)) 16px 10px;
   border-bottom:1px solid var(--line); background:var(--panel); }

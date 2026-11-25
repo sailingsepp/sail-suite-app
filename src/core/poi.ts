@@ -1,4 +1,3 @@
-
 import { distNM } from './geo';
 import type { Kandidatennetz, Hafenknoten } from './hafennetz';
 import type { StundenWind } from './types';
@@ -6,19 +5,17 @@ import { werteOeffnungszeiten, type OeffnungszeitenUrteil } from './oeffnungszei
 import { nDate } from './time';
 import { vorherrschendeWindrichtung } from './ausrichtung';
 
-
 export const ABSTECHER_VON_UHR = 10;
 export const ABSTECHER_BIS_UHR = 16;
 
 export interface AbstecherWetter {
-  
+
   windKn: number;
-  
+
   boeKn: number;
-  
+
   richtungDeg: number | null;
 }
-
 
 export function abstecherWetter(wind: StundenWind | null, datumIso: string): AbstecherWetter | null {
   if (!wind) return null;
@@ -39,12 +36,9 @@ export function abstecherWetter(wind: StundenWind | null, datumIso: string): Abs
   };
 }
 
-
 export const POI_BASIS_MAX_SM = 6;
 
-
 export const ORT_BASIS_BUCHT_MALUS_SM = 3;
-
 
 export function waehleOrtsbasis(
   ort: { lat: number; lon: number }, kandidaten: readonly Hafenknoten[], maxSm: number,
@@ -58,7 +52,6 @@ export function waehleOrtsbasis(
   }
   return beste;
 }
-
 
 export function ordnePoiBasen(
   netz: Kandidatennetz, poiIndizes: readonly number[], maxSm = POI_BASIS_MAX_SM,
@@ -78,7 +71,6 @@ export function ordnePoiBasen(
   }
   return ergebnis;
 }
-
 
 export function poiOeffnungszeitenUrteil(tagRoh: string, datumIso: string): OeffnungszeitenUrteil | null {
   const d = nDate(`${datumIso}T12:00:00`);

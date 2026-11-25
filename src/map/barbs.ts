@@ -1,4 +1,3 @@
-
 export function windBarbSVG(dirFrom: number, speedKn: number, lat: number, colour: string, px?: number): string {
   const L = 34, STEP = 7, BW = 14, BH = 5.5, sign = lat < 0 ? -1 : 1;
   const v = Math.round(speedKn / 5) * 5;
@@ -6,8 +5,7 @@ export function windBarbSVG(dirFrom: number, speedKn: number, lat: number, colou
   let body = '';
 
   function wrap(inner: string, rot: number): string {
-    
-    
+
     const S = px || 52;
     return `<svg viewBox="-42 -42 84 84" width="${S}" height="${S}" style="overflow:visible">`
       + `<g transform="rotate(${rot.toFixed(1)})">${inner}</g></svg>`;
@@ -33,8 +31,7 @@ export function windBarbSVG(dirFrom: number, speedKn: number, lat: number, colou
     y += STEP;
   }
   if (half) {
-    
-    
+
     if (!pen && !full) y += STEP;
     seg.push(`<line x1="0" y1="${y}" x2="${(sign * BW / 2).toFixed(1)}" y2="${(y + BH / 2).toFixed(1)}"/>`);
   }

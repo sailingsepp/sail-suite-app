@@ -2,11 +2,8 @@ import type { Punkt } from './types';
 import { destPoint, distNM, segmenteSchneidenSich } from './geo';
 import { umfahreLand, randFuer, TEILUNG_TIEFE } from './landumfahrung';
 
-
-
 const grad = (g: number, m: number) => g + m / 60;
 const P = (latG: number, latM: number, lonG: number, lonM: number): Punkt => ({ lat: grad(latG, latM), lon: grad(lonG, lonM) });
-
 
 const NORDSEKTOR: Punkt[] = [
   P(38, 13.840, 15, 37.450), P(38, 15.540, 15, 42.000), P(38, 16.240, 15, 42.800),
@@ -24,9 +21,7 @@ export const TRENNZONEN: readonly Punkt[][] = [
   [P(38, 11.833, 15, 36.147), P(38, 8.938, 15, 35.698), P(38, 8.938, 15, 35.905), P(38, 11.833, 15, 36.354)],
 ];
 
-
 export const SEKTOREN: readonly Punkt[][] = [NORDSEKTOR, SUEDSEKTOR];
-
 
 export const FAHRBAHN_PFEILE: readonly { ort: Punkt; kurs: number }[] = [
   { ort: P(38, 14.700, 15, 38.700), kurs: 60 },
@@ -35,9 +30,7 @@ export const FAHRBAHN_PFEILE: readonly { ort: Punkt; kurs: number }[] = [
   { ort: P(38, 10.300, 15, 35.400), kurs: 195 },
 ];
 
-
 export const KREISVERKEHR = { mitte: P(38, 12.680, 15, 36.400), radiusSm: 250 / 1852 };
-
 
 export const VTG_SUEDGRENZE_LAT = grad(38, 8.940);
 
@@ -64,17 +57,14 @@ function kreis(mitte: Punkt, radiusSm: number, ecken = 16): Punkt[] {
   return ring;
 }
 
-
 export const VTG_FLAECHEN: readonly Punkt[][] = [
   gegenUhr(NORDSEKTOR), gegenUhr(SUEDSEKTOR), gegenUhr(kreis(KREISVERKEHR.mitte, KREISVERKEHR.radiusSm)),
 ];
-
 
 export const KAP_ABSTAND_SM = 0.1;
 const KAP_PELORO: readonly Punkt[] = [
   { lat: 38.26785, lon: 15.65308 }, { lat: 38.26906, lon: 15.65244 }, { lat: 38.27027, lon: 15.65031 },
 ];
-
 
 function huelleLonLat(punkte: readonly Punkt[]): Punkt[] {
   const p = [...punkte].sort((a, b) => a.lon - b.lon || a.lat - b.lat);
@@ -91,23 +81,19 @@ function huelleLonLat(punkte: readonly Punkt[]): Punkt[] {
   return [...unten.slice(0, -1), ...oben.slice(0, -1)];
 }
 
-
 export const KAP_PELORO_FLAECHE: readonly Punkt[] = gegenUhr(huelleLonLat(KAP_PELORO.flatMap((m) => kreis(m, KAP_ABSTAND_SM))));
 
 const RAHMEN = { s: 38.10, n: 38.32, w: 15.50, e: 15.76 };
-
 
 export function vtgInBox(b: { swLat: number; swLon: number; neLat: number; neLon: number }): boolean {
   return b.swLat <= RAHMEN.n && b.neLat >= RAHMEN.s && b.swLon <= RAHMEN.e && b.neLon >= RAHMEN.w;
 }
 
-
 const KANTE_SM = 0.03;
-
 
 export function vtgAlsKueste(mitKap = true): [Punkt, Punkt][] {
   const aus: [Punkt, Punkt][] = [];
-  
+
   for (const ring of mitKap ? [...VTG_FLAECHEN, KAP_PELORO_FLAECHE] : VTG_FLAECHEN) {
     ring.forEach((p, i) => {
       const q = ring[(i + 1) % ring.length]!;
@@ -131,24 +117,20 @@ function imRing(p: Punkt, ring: readonly Punkt[]): boolean {
   return drin;
 }
 
-
 export function imVtg(p: Punkt): boolean {
   return VTG_FLAECHEN.some((ring) => imRing(p, ring));
 }
-
 
 export function quertVtg(a: Punkt, b: Punkt): boolean {
   if (imVtg(a) || imVtg(b)) return true;
   return VTG_FLAECHEN.some((ring) => ring.some((p, i) => segmenteSchneidenSich(a, b, p, ring[(i + 1) % ring.length]!)));
 }
 
-
 const NEU_RAND_SM = 3;
-
 
 export function wegOhneVtg(weg: readonly Punkt[], kueste: readonly [Punkt, Punkt][]): Punkt[] | null {
   if (weg.length < 2 || !weg.some((p, i) => i > 0 && quertVtg(weg[i - 1]!, p))) return null;
-  
+
   const dicht: { p: Punkt; eck: boolean }[] = [{ p: weg[0]!, eck: true }];
   for (let i = 1; i < weg.length; i++) {
     const a = weg[i - 1]!, b = weg[i]!;

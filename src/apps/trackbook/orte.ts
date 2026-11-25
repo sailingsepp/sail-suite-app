@@ -11,11 +11,7 @@ import { aktuelleSprache } from '@/shell/sprache';
 import { umgebungLokal, ladeUmgebungFuer } from '@/data/umgebung';
 import { ortsnameAusUmgebung } from '@/core/umgebung';
 
-
-
-
 const ABSTAND_MS = 1200;
-
 
 const JE_DURCHGANG = 8;
 
@@ -26,11 +22,9 @@ const schlafe = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, 
 type NachtragHoerer = (eintrag: LogEintrag) => void;
 const hoerer: NachtragHoerer[] = [];
 
-
 export function beiNamenNachtrag(fn: NachtragHoerer): void {
   hoerer.push(fn);
 }
-
 
 async function traegeNamenEin(marke: Ortsmarke, name: string, alterName?: string): Promise<void> {
   try {
@@ -41,10 +35,9 @@ async function traegeNamenEin(marke: Ortsmarke, name: string, alterName?: string
       for (const h of hoerer) h(e);
     }
   } catch {
-    
+
   }
 }
-
 
 async function benenneOhneNetz(): Promise<number> {
   const alle = await alleOrte();
@@ -54,8 +47,7 @@ async function benenneOhneNetz(): Promise<number> {
   for (const marke of alle) {
     const veraltet = !!marke.name && (marke.nameForm ?? 1) < NAMENSFORM;
     if (marke.name && !veraltet) continue;
-    
-    
+
     const neu = nameAusNaehe(marke, aktuell);
     const name = neu ?? (marke.name ? null : nameAusNaehe(marke, alt));
     if (!name || name === marke.name) continue;
@@ -65,7 +57,6 @@ async function benenneOhneNetz(): Promise<number> {
   }
   return n;
 }
-
 
 async function benenneAusUmgebung(): Promise<number> {
   const grenze = Date.now() - NEUFASSUNG_TAGE * 86_400_000;
@@ -83,15 +74,12 @@ async function benenneAusUmgebung(): Promise<number> {
   return n;
 }
 
-
 const UMGEBUNG_RADIUS_M = 8000;
-
 
 async function ladeUmgebungVor(): Promise<void> {
   const juengste = (await alleOrte()).reduce<Ortsmarke | null>((a, b) => (!a || b.t > a.t ? b : a), null);
   if (juengste) await ladeUmgebungFuer(juengste, UMGEBUNG_RADIUS_M);
 }
-
 
 async function ergaenzeFehlendeMarken(): Promise<number> {
   const grenze = Date.now() - NEUFASSUNG_TAGE * 86_400_000;
@@ -111,7 +99,6 @@ async function ergaenzeFehlendeMarken(): Promise<number> {
   return n;
 }
 
-
 export async function merkeOrtsmarke(
   fahrt: string,
   art: Ortsmarke['art'],
@@ -123,7 +110,6 @@ export async function merkeOrtsmarke(
   await benenneOhneNetz().catch(() => 0);
   await benenneAusUmgebung().catch(() => 0);
 }
-
 
 export async function loeseOrteAuf(): Promise<number> {
   if (laeuft) return 0;
@@ -144,21 +130,14 @@ export async function loeseOrteAuf(): Promise<number> {
       if (i > 0) await schlafe(ABSTAND_MS);
       try {
         const { name, vollstaendig } = await ortsangabeLogbuch({ lat: marke.lat, lon: marke.lon }, aktuelleSprache());
-        
-        
-        
+
         const neu: Ortsmarke = { ...marke, versucht: Date.now() };
-        
-        
+
         const form = vollstaendig ? NAMENSFORM : NAMENSFORM - 1;
-        
-        
-        
-        
+
         if (!darfNamenErsetzen(marke.name, vollstaendig)) {
           await speichereOrt(neu);
-          
-          
+
           break;
         }
         if (name) {
@@ -166,8 +145,7 @@ export async function loeseOrteAuf(): Promise<number> {
           neu.nameForm = form;
           aufgeloest++;
         } else if (marke.name && vollstaendig) {
-          
-          
+
           neu.nameForm = NAMENSFORM;
         }
         await speichereOrt(neu);
@@ -176,7 +154,7 @@ export async function loeseOrteAuf(): Promise<number> {
         await speichereOrt({ ...marke, versucht: Date.now() });
       }
     }
-    
+
     if (offen.length) aufgeloest += await benenneOhneNetz().catch(() => 0);
   } finally {
     laeuft = false;

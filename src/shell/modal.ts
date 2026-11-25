@@ -1,9 +1,7 @@
-
-
 export interface ModalHandle {
-  
+
   beimOeffnen(ausloeser?: HTMLElement | null, initialFokus?: HTMLElement | null): void;
-  
+
   beimSchliessen(): void;
 }
 
@@ -12,11 +10,9 @@ const FOKUSSIERBAR = 'a[href], button:not([disabled]), textarea:not([disabled]),
 
 function fokussierbareElemente(modal: HTMLElement): HTMLElement[] {
   return Array.from(modal.querySelectorAll<HTMLElement>(FOKUSSIERBAR))
-    
-    
+
     .filter((el) => el.offsetParent !== null);
 }
-
 
 function iosZoomZuruecksetzen(): void {
   const meta = document.querySelector('meta[name="viewport"]');
@@ -25,7 +21,6 @@ function iosZoomZuruecksetzen(): void {
   meta.setAttribute('content', `${original}, maximum-scale=1`);
   setTimeout(() => meta.setAttribute('content', original), 300);
 }
-
 
 export function initModal(modal: HTMLElement, schliessen: () => void): ModalHandle {
   let letzterAusloeser: HTMLElement | null = null;
@@ -54,9 +49,7 @@ export function initModal(modal: HTMLElement, schliessen: () => void): ModalHand
     beimOeffnen(ausloeser, initialFokus) {
       letzterAusloeser = ausloeser ?? (document.activeElement as HTMLElement | null);
       modal.addEventListener('keydown', keydown);
-      
-      
-      
+
       requestAnimationFrame(() => {
         const ziel = initialFokus ?? fokussierbareElemente(modal)[0];
         (ziel ?? modal).focus();

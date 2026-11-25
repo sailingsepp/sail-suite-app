@@ -1,4 +1,3 @@
-
 import type { Punkt } from './types';
 import { distNM, bearingDeg } from './geo';
 import { HAFENAUSFAHRT_MAX_SM, HAFENBECKEN_MAX_SM2, boxUm, baueWassergitter, wegImGitter, umfahreLand, geradeUeberWasser, seeweg, liegtAnLand, anschlussZelle, wasserflaechen, naechsteZelleDerFlaeche, STUFEN, type AnschlussSpeicher, type Wassergitter } from './landumfahrung';
@@ -13,17 +12,16 @@ export interface Hafenknoten {
   art: 'marina' | 'hafen' | 'bucht';
 }
 
-
 export interface Hafenkante {
   von: number;
   nach: number;
-  
+
   sm: number;
-  
+
   ueber?: Punkt[];
-  
+
   nacht?: true;
-  
+
   lang?: true;
 }
 
@@ -32,9 +30,7 @@ export interface Kandidatennetz {
   kanten: Hafenkante[];
 }
 
-
 export const KANTEN_AUFSCHLAG = 1.15;
-
 
 export const UMFAHRUNG_NACHBARN = 6;
 export const UMFAHRUNG_BUDGET_MS = 15_000;
@@ -43,13 +39,11 @@ export const VERBINDUNG_VERSUCHE = 30;
 
 export { HAFENAUSFAHRT_MAX_SM, HAFENBECKEN_MAX_SM2 } from './landumfahrung';
 
-
 function weglaenge(punkte: readonly Punkt[]): number {
   let sm = 0;
   for (let i = 1; i < punkte.length; i++) sm += distNM(punkte[i - 1]!.lat, punkte[i - 1]!.lon, punkte[i]!.lat, punkte[i]!.lon);
   return sm;
 }
-
 
 export function kantenWeg(netz: Kandidatennetz, vonIndex: number, nachIndex: number): Punkt[] {
   const von = netz.knoten[vonIndex]!.ort, nach = netz.knoten[nachIndex]!.ort;
@@ -58,7 +52,6 @@ export function kantenWeg(netz: Kandidatennetz, vonIndex: number, nachIndex: num
   const ueber = hin?.ueber ?? (zurueck?.ueber ? [...zurueck.ueber].reverse() : []);
   return [von, ...ueber, nach];
 }
-
 
 export function kantenOhneVtg(netz: Kandidatennetz, kuestenlinien: readonly [Punkt, Punkt][]): Kandidatennetz {
   if (netz.knoten.length === 0) return netz;
@@ -77,25 +70,19 @@ export function kantenOhneVtg(netz: Kandidatennetz, kuestenlinien: readonly [Pun
   return geaendert ? { knoten: netz.knoten, kanten } : netz;
 }
 
-
 export function imSuchraum(punkt: Punkt, start: Punkt, ziel: Punkt, halbachseSm: number): boolean {
   const d1 = distNM(punkt.lat, punkt.lon, start.lat, start.lon);
   const d2 = distNM(punkt.lat, punkt.lon, ziel.lat, ziel.lon);
   return d1 + d2 <= 2 * halbachseSm;
 }
 
-
 export const MAX_KANDIDATEN = 40;
-
 
 export const MAX_NACHBARN = 12;
 
-
 export const KANDIDATEN_ZELLE_SM = 3;
 
-
 export const KANDIDATEN_BUCHT_MALUS_SM = 4;
-
 
 export function korridorWege(
   bezugspunkte: readonly Punkt[], kuestenlinien: [Punkt, Punkt][],
@@ -109,8 +96,7 @@ export function korridorWege(
   for (let i = 0; i < punkte.length; i++) {
     for (let j = i + 1; j < punkte.length; j++) {
       const a = punkte[i]!, b = punkte[j]!;
-      
-      
+
       const erster = geradeUeberWasser(a, b, kuestenlinien) ? [a, b]
         : wegImGitter(g, a, b, kuestenlinien, speicher) ?? seeweg(a, b, kuestenlinien, KORRIDOR_SEEWEG_RAND_SM) ?? [a, b];
       wege.push(erster);
@@ -123,9 +109,7 @@ export function korridorWege(
   return wege;
 }
 
-
 export const KORRIDOR_SEEWEG_RAND_SM = 40;
-
 
 export const ZWEITWEG_SPERREN_SM: readonly number[] = [3, 6];
 
@@ -133,7 +117,6 @@ export const ZWEITWEG_FAKTOR = 1.6;
 
 const ZWEITWEG_FREI_ANTEIL = 0.25;
 const ZWEITWEG_FREI_MIN_SM = 4;
-
 
 function zweitweg(
   g: Wassergitter, a: Punkt, b: Punkt, erster: readonly Punkt[], kuestenlinien: [Punkt, Punkt][], sperreSm: number,
@@ -164,7 +147,6 @@ function zweitweg(
   return wegImGitter({ ...g, frei }, a, b, kuestenlinien, new Map());
 }
 
-
 export function ausfahrtAusBucht(g: Wassergitter, weg: readonly Punkt[], kuestenlinien: [Punkt, Punkt][]): Punkt[] | null {
   if (weg.length < 2) return null;
   const flaeche = wasserflaechen(g);
@@ -177,7 +159,6 @@ export function ausfahrtAusBucht(g: Wassergitter, weg: readonly Punkt[], kuesten
   return null;
 }
 
-
 function abstandZurStrecke(m: Punkt, p: Punkt, q: Punkt): number {
   const cos = Math.cos((m.lat * Math.PI) / 180);
   const ax = (p.lon - m.lon) * 60 * cos, ay = (p.lat - m.lat) * 60;
@@ -187,13 +168,11 @@ function abstandZurStrecke(m: Punkt, p: Punkt, q: Punkt): number {
   return Math.hypot(ax + t * dx, ay + t * dy);
 }
 
-
 export const WEITE_NACHBARN = 3;
 
 export const WEIT_ANTEIL_MIN = 0.5;
 
 const WEIT_KURS_ABSTAND_GRAD = 45;
-
 
 export function weiteNachbarn<T extends { sm: number; kurs: number; reichweite: number }>(
   partner: readonly T[], n: number = WEITE_NACHBARN,
@@ -211,16 +190,14 @@ export function weiteNachbarn<T extends { sm: number; kurs: number; reichweite: 
   return gewaehlt;
 }
 
-
 export function begrenzeKandidaten(
   kandidaten: readonly Hafenknoten[], bezugspunkte: readonly Punkt[], max: number = MAX_KANDIDATEN,
   wege: readonly (readonly Punkt[])[] = [],
-  
+
   zelleSm: number = KANDIDATEN_ZELLE_SM,
 ): Hafenknoten[] {
   if (kandidaten.length <= max || bezugspunkte.length === 0) return [...kandidaten];
-  
-  
+
   const mitteLat = bezugspunkte.reduce((s, b) => s + b.lat, 0) / bezugspunkte.length;
   const cos = Math.cos((mitteLat * Math.PI) / 180);
   const xy = (p: Punkt): [number, number] => [p.lon * 60 * cos, p.lat * 60];
@@ -263,23 +240,19 @@ export function begrenzeKandidaten(
   return kandidaten.filter((_, i) => behalten.has(i));
 }
 
-
 export function filtereSuchraum(
   kandidaten: readonly Hafenknoten[], start: Punkt, ziel: Punkt, halbachseSm: number,
 ): Hafenknoten[] {
   return kandidaten.filter((k) => imSuchraum(k.ort, start, ziel, halbachseSm));
 }
 
-
 export function filtereAnkerbuchten(kandidaten: readonly Hafenknoten[], erlaubt: boolean): Hafenknoten[] {
   return erlaubt ? [...kandidaten] : kandidaten.filter((k) => k.art !== 'bucht');
 }
 
-
 export const ZWILLING_OHNE_NAMEN_SM = 0.15;
 
 export const ZWILLING_MIT_NAMEN_SM = 0.5;
-
 
 export function ohnePflichtZwillinge(
   pflichtKnoten: readonly Hafenknoten[], kandidaten: readonly Hafenknoten[],
@@ -294,33 +267,27 @@ export function ohnePflichtZwillinge(
   }));
 }
 
-
 export function baueKandidatennetz(
   pflichtKnoten: readonly Hafenknoten[],
   kandidaten: readonly Hafenknoten[],
   revier: RevierRandbedingungen,
   maxStundenProTag: number,
   kuestenlinien: [Punkt, Punkt][],
-  
+
   maxNachbarn: number | null = null,
 ): Kandidatennetz {
-  
-  
-  
+
   const alle: Hafenknoten[] = [...pflichtKnoten, ...ohnePflichtZwillinge(pflichtKnoten, kandidaten)];
   const kanten: Hafenkante[] = [];
   const zuWeit = (a: Punkt, b: Punkt, sm: number): boolean => {
     const kn = referenzfahrtKn(bearingDeg(a.lat, a.lon, b.lat, b.lon), revier);
     return (sm * KANTEN_AUFSCHLAG) / kn > maxStundenProTag;
   };
-  
+
   const reichweite = (a: Punkt, b: Punkt): number =>
     (maxStundenProTag * referenzfahrtKn(bearingDeg(a.lat, a.lon, b.lat, b.lon), revier)) / KANTEN_AUFSCHLAG;
   const kurs = (a: Punkt, b: Punkt): number => bearingDeg(a.lat, a.lon, b.lat, b.lon);
 
-  
-  
-  
   const anLand = alle.map((k) => liegtAnLand(k.ort, kuestenlinien));
   for (let i = 0; i < alle.length; i++) {
     for (let j = 0; j < alle.length; j++) {
@@ -333,12 +300,6 @@ export function baueKandidatennetz(
     }
   }
 
-  
-  
-  
-  
-  
-  
   let gitter: Wassergitter | null = null;
   const holeGitter = (): Wassergitter => (gitter ??= baueWassergitter(
     boxUm(alle.map((k) => k.ort), 4), kuestenlinien, STUFEN[0]!.zelleSm, STUFEN[0]!.abstandZellen));
@@ -352,21 +313,18 @@ export function baueKandidatennetz(
         if (vorhanden.has(`${i}>${j}`) && vorhanden.has(`${j}>${i}`)) continue;
         const a = alle[i]!.ort, b = alle[j]!.ort;
         const sm = distNM(a.lat, a.lon, b.lat, b.lon);
-        
+
         if (zuWeit(a, b, sm) && zuWeit(b, a, sm)) continue;
         paare.push({ i, j, sm, pflicht: istPflicht(i) || istPflicht(j) });
       }
     }
-    
+
     const naechste = new Map<number, Set<number>>();
     for (let i = 0; i < alle.length; i++) {
       const mit = paare.filter((p) => p.i === i || p.j === i).sort((x, y) => x.sm - y.sm).slice(0, UMFAHRUNG_NACHBARN);
       naechste.set(i, new Set(mit.map((p) => (p.i === i ? p.j : p.i))));
     }
-    
-    
-    
-    
+
     const weit = new Set<string>();
     for (let i = 0; i < alle.length; i++) {
       if (istPflicht(i)) continue;
@@ -395,13 +353,7 @@ export function baueKandidatennetz(
         const weg = wegImGitter(g, alle[p.i]!.ort, alle[p.j]!.ort, kuestenlinien, speicher);
         if (weg) trage(p, weg);
       }
-      
-      
-      
-      
-      
-      
-      
+
       const flaeche = wasserflaechen(g);
       const flaecheVon = (q: Punkt): number | null => {
         const z = anschlussZelle(g, q, kuestenlinien);
@@ -413,10 +365,9 @@ export function baueKandidatennetz(
         if (f != null) zaehler.set(f, (zaehler.get(f) ?? 0) + 1);
       }
       const haupt = [...zaehler].sort((x, y) => y[1] - x[1])[0]?.[0] ?? null;
-      
+
       const eigeneFlaecheSm2 = (q: Punkt): number => {
-        
-        
+
         const x = Math.floor((q.lon - g.swLon) / g.dLon), y = Math.floor((q.lat - g.swLat) / g.dLat);
         const eigene = x >= 0 && y >= 0 && x < g.nx && y < g.ny && g.frei[y * g.nx + x] ? y * g.nx + x : null;
         const f = eigene != null ? flaeche[eigene]! : flaecheVon(q);
@@ -437,11 +388,7 @@ export function baueKandidatennetz(
           trage(p, weg);
           ausfahrt ??= ausfahrtAusBucht(g, p.i === i ? weg : [...weg].reverse(), kuestenlinien);
         }
-        
-        
-        
-        
-        
+
         if (ausfahrt) {
           const draussen = ausfahrt[ausfahrt.length - 1]!;
           for (const p of allePartner.slice(3)) {
@@ -452,16 +399,7 @@ export function baueKandidatennetz(
             trage(p, p.i === i ? weg : [...weg].reverse());
           }
         }
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
         if (haupt != null && !kanten.some((k) => k.von === i || k.nach === i)
           && eigeneFlaecheSm2(alle[i]!.ort) < HAFENBECKEN_MAX_SM2) {
           const draussen = naechsteZelleDerFlaeche(g, flaeche, haupt, alle[i]!.ort, HAFENAUSFAHRT_MAX_SM);
@@ -479,12 +417,6 @@ export function baueKandidatennetz(
     }
   }
 
-  
-  
-  
-  
-  
-  
   const begrenzt = maxNachbarn == null ? kanten : (() => {
     const jeKnoten = new Map<number, typeof kanten>();
     for (const k of kanten) {
@@ -531,7 +463,6 @@ export function baueKandidatennetz(
   });
 }
 
-
 export function erreichbarAmTag(
   knoten: Hafenknoten, tag: number, gesamtFahrtage: number, heimathafen: Punkt,
   offeneWunschziele: readonly Wunschziel[], revier: RevierRandbedingungen, maxStundenProTag: number,
@@ -539,7 +470,6 @@ export function erreichbarAmTag(
 ): boolean {
   return reichweiteAmTag(knoten.ort, tag, gesamtFahrtage, heimathafen, offeneWunschziele, revier, maxStundenProTag, reserve) >= 0;
 }
-
 
 export function verbindeTeilnetze(
   netz: Kandidatennetz,
@@ -603,7 +533,6 @@ export function verbindeTeilnetze(
   return { knoten: netz.knoten, kanten };
 }
 
-
 export const NACHTSCHLAG_MAX_STUNDEN = 24;
 
 export const NACHT_NACHBARN = 3;
@@ -612,13 +541,11 @@ export const NACHT_UMFAHRUNG_BUDGET_MS = 10_000;
 
 const NACHT_KURS_ABSTAND_GRAD = 45;
 
-
 export function nachtBonusTage(nachtfahrtBudget: number, maxStundenProTag: number): number {
   if (!(nachtfahrtBudget > 0) || !(maxStundenProTag > 0)) return 0;
   const mehr = NACHTSCHLAG_MAX_STUNDEN - 2 * maxStundenProTag;
   return mehr > 0 ? nachtfahrtBudget * Math.ceil(mehr / maxStundenProTag) : 0;
 }
-
 
 export function ergaenzeNachtkanten(
   netz: Kandidatennetz,
@@ -630,11 +557,11 @@ export function ergaenzeNachtkanten(
     erlaubt?: (k: Hafenkante) => boolean;
     n?: number;
     budgetMs?: number;
-    
+
     bisStunden?: number;
-    
+
     art?: 'nacht' | 'lang';
-    
+
     immer?: ReadonlySet<number>;
   },
 ): Kandidatennetz {
@@ -660,11 +587,7 @@ export function ergaenzeNachtkanten(
       if (h <= opt.maxStundenProTag || h > bis) return [];
       return [{ j, sm, h, kurs: bearingDeg(a.lat, a.lon, k.ort.lat, k.ort.lon) }];
     });
-    
-    
-    
-    
-    
+
     const ziel = opt.art === 'lang' ? opt.maxStundenProTag : 0.75 * bis;
     const sortiert = [...partner].sort((x, y) => Math.abs(x.h - ziel) - Math.abs(y.h - ziel) || x.sm - y.sm);
     const kursAbstand = (x: number, y: number) => { const d = Math.abs(x - y) % 360; return d > 180 ? 360 - d : d; };

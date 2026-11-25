@@ -1,14 +1,12 @@
-
 import { relAngle } from './geo';
 
 export interface Windprobe {
-  
+
   dir: number;
   speed: number;
-  
+
   zeitIso?: string;
 }
-
 
 export function vorherrschendeWindrichtung(proben: readonly Windprobe[]): number | null {
   let summeX = 0, summeY = 0;
@@ -21,12 +19,10 @@ export function vorherrschendeWindrichtung(proben: readonly Windprobe[]): number
   return ((Math.atan2(summeX, summeY) * 180) / Math.PI + 360) % 360;
 }
 
-
 function upwindGrad(etappenBearingDeg: number, vorherrschenderWindDeg: number): number {
-  const gamma = relAngle(vorherrschenderWindDeg, etappenBearingDeg); 
+  const gamma = relAngle(vorherrschenderWindDeg, etappenBearingDeg);
   return 1 - gamma / 180;
 }
-
 
 export function ausrichtungstermRundtoern(
   etappenBearingDeg: number, vorherrschenderWindDeg: number, zeitanteil: number,
@@ -35,7 +31,6 @@ export function ausrichtungstermRundtoern(
   const grad = upwindGrad(etappenBearingDeg, vorherrschenderWindDeg);
   return (grad - 0.5) * (2 * z - 1);
 }
-
 
 export function ausrichtungstermEinweg(
   etappenBearingDeg: number, vorherrschenderWindDeg: number, zeitanteil: number,

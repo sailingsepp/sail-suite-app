@@ -6,10 +6,10 @@ use at sea without a connection.
 
 | App | Version | Purpose |
 |---|---|---|
-| **VoyagePlan** · Törnplanung | 5.1.11 | Plans the whole voyage: which harbour on which day |
-| **CourseCast** · Tagesplanung | 5.7.1 | Daily weather briefing for a fixed route: when to cast off, what to expect on the way |
-| **SailPilot** · TörnNavLog | 6.2.0 | Automatic logbook and backup navigation on the phone already on board |
-| **VoyageBook** · TörnBuch | 5.1.9 | Voyage, crew list, crew kitty, statistics and PDFs |
+| **VoyagePlan** · Törnplanung | 5.1.12 | Plans the whole voyage: which harbour on which day |
+| **CourseCast** · Tagesplanung | 5.7.2 | Daily weather briefing for a fixed route: when to cast off, what to expect on the way |
+| **SailPilot** · TörnNavLog | 6.2.1 | Automatic logbook and backup navigation on the phone already on board |
+| **VoyageBook** · TörnBuch | 5.1.10 | Voyage, crew list, crew kitty, statistics and PDFs |
 
 A fifth page, `stream/`, lets people at home follow a shared voyage read-only.
 
@@ -818,7 +818,8 @@ The formulas and methods behind the suite's figures, kept current with the code.
   Mercator at zoom 10 and 12 resolution; a pixel's deviation from the flat
   value 180 sets shadow (×1.0, at most 0.6) or light (×1.3, at most 0.55)
   over a layer tint by the bands 100/200/400/700/1000/1500 m; only inside the
-  land areas.
+  land areas. From zoom 12 the isohypses are drawn smoothed like the isobaths,
+  the cut limited to 8 m and 4 m along an edge.
 - **Isobaths and depth bands of the own chart**: precomputed once from
   EMODnet Bathymetry DTM 2024 (1/16 arc minute), isobaths at 5, 10, 20 and 50 m
   and areas “shallower than” 2, 2.5, 3, 3.5, 4, 5, 10, 20 and 50 m, simplified to

@@ -5,34 +5,31 @@ import { anteil, type Anteil } from './navigatorbericht';
 import { sonnenhoehe } from './sun';
 import { distNM } from './geo';
 
-
-
-
 export interface Etappe {
-  
+
   fahrt: string;
-  
+
   von: number;
   bis: number;
-  
+
   vonOrt?: string;
   nachOrt?: string;
   vonPos?: { lat: number; lon: number };
   nachPos?: { lat: number; lon: number };
-  
+
   nm: number;
-  
+
   fahrzeitS: number;
-  
+
   dauerS: number;
   pausen: number;
   luecken: number;
   lueckenS: number;
-  
+
   nachtfahrten: number;
-  
+
   nachtansteuerung: boolean;
-  
+
   segel: Anteil;
   motor: Anteil;
   offen: Anteil;
@@ -40,61 +37,57 @@ export interface Etappe {
 
 export interface Toernbilanz {
   etappen: Etappe[];
-  
+
   nm: number;
-  
+
   fahrtage: number;
   nachtfahrten: number;
   nachtansteuerungen: number;
   fahrzeitS: number;
   dauerS: number;
-  
+
   lueckenS: number;
   lueckenAnzahl: number;
-  
+
   maxSog: number;
-  
+
   segel: Anteil;
   motor: Anteil;
   offen: Anteil;
-  
+
   ausgangsort?: string;
   zielort?: string;
   von?: number;
   bis?: number;
-  
+
   tageOhneAufzeichnung?: TagOhneAufzeichnung[];
 }
 
-
 export interface TagOhneAufzeichnung {
-  
+
   tag: string;
   vonOrt?: string;
   nachOrt?: string;
-  
+
   sehneNM: number;
-  
+
   vor: number;
 }
 
-
 export const ORTSWECHSEL_MIN_NM = 1;
-
 
 export interface FahrtMitSpur {
   id: string;
   fixe: Fix[];
   vonOrt?: string;
   nachOrt?: string;
-  
+
   manuellePausen?: ManuellePause[];
-  
+
   wechsel?: AntriebWechsel[];
-  
+
   liegeOrte?: { t: number; name: string }[];
 }
-
 
 export const NACHTLIEGEN_MIN_S = 4 * 3600;
 
@@ -104,14 +97,12 @@ export const FEHLTAG_MIN_S = 12 * 3600;
 
 export const ETAPPE_MIN_NM = 0.2;
 
-
 function beiNacht(von: number, bis: number, lat: number, lon: number): boolean {
   for (let t = von; t <= bis; t += 15 * 60_000) {
     if (sonnenhoehe(lat, lon, new Date(t)) < 0) return true;
   }
   return sonnenhoehe(lat, lon, new Date(bis)) < 0;
 }
-
 
 export function teileAnNachtliegen(
   fixe: Fix[], manuellePausen: ManuellePause[] = [], opt: SpurOptionen = {},
@@ -146,21 +137,16 @@ export interface BilanzOptionen {
   nacht?: NachtOptionen;
 }
 
-
 export function toernBilanz(fahrten: FahrtMitSpur[], opt: BilanzOptionen = {}): Toernbilanz {
   const etappen: Etappe[] = [];
   let maxSog = 0;
   let segelNM = 0; let motorNM = 0; let offenNM = 0;
   let segelS = 0; let motorS = 0; let offenS = 0;
 
-  
-  
   const teilstuecke: { f: FahrtMitSpur; fixe: Fix[]; geteilt: boolean; vonOrt?: string; nachOrt?: string }[] = [];
   for (const f of fahrten) {
     const teile = teileAnNachtliegen(f.fixe, f.manuellePausen ?? [], opt.spur ?? {});
-    
-    
-    
+
     const ortNahe = (t: number, vorMs: number, nachMs: number) => (f.liegeOrte ?? [])
       .filter((o) => o.t >= t - vorMs && o.t <= t + nachMs)
       .sort((a, b) => Math.abs(a.t - t) - Math.abs(b.t - t))[0]?.name;
@@ -184,14 +170,12 @@ export function toernBilanz(fahrten: FahrtMitSpur[], opt: BilanzOptionen = {}): 
   for (const ts of teilstuecke.sort((a, b) => (a.fixe[0]?.t ?? 0) - (b.fixe[0]?.t ?? 0))) {
     const f = ts.f;
     const a = werteSpurAus(ts.fixe, opt.spur ?? {}, f.manuellePausen ?? []);
-    
-    
+
     if (ts.geteilt && a.streckeNM < ETAPPE_MIN_NM) continue;
     const erster = a.punkte[0];
     const letzter = a.punkte[a.punkte.length - 1];
     if (!erster || !letzter) continue;
 
-    
     const ankunft = { t: letzter.t, lat: letzter.lat, lon: letzter.lon };
     const n = nachtBilanz(a.punkte, a.luecken, a.pausen, [ankunft], opt.nacht ?? {});
     const ab = antriebsbilanz(a.punkte, f.wechsel ?? [], a.luecken);
@@ -222,9 +206,6 @@ export function toernBilanz(fahrten: FahrtMitSpur[], opt: BilanzOptionen = {}): 
     segelS += ab.segelS; motorS += ab.motorS; offenS += ab.offenS;
   }
 
-  
-  
-  
   const tage = new Set<string>();
   for (const e of etappen) for (const tag of tageDerEtappe(e)) tage.add(tag);
   const ohneAufzeichnung = tageOhneAufzeichnung(etappen, tage);
@@ -261,11 +242,9 @@ export function toernBilanz(fahrten: FahrtMitSpur[], opt: BilanzOptionen = {}): 
   return bilanz;
 }
 
-
 export function durchschnittKn(b: Toernbilanz): number {
   return b.fahrzeitS > 0 ? b.nm / (b.fahrzeitS / 3600) : 0;
 }
-
 
 function tageDerEtappe(e: Pick<Etappe, 'von' | 'bis'>): string[] {
   const tage = new Set<string>();
@@ -273,7 +252,6 @@ function tageDerEtappe(e: Pick<Etappe, 'von' | 'bis'>): string[] {
   tage.add(new Date(e.bis).toISOString().slice(0, 10));
   return [...tage];
 }
-
 
 function tageOhneAufzeichnung(etappen: readonly Etappe[], tage: ReadonlySet<string>): TagOhneAufzeichnung[] {
   const raus: TagOhneAufzeichnung[] = [];
@@ -294,30 +272,23 @@ function tageOhneAufzeichnung(etappen: readonly Etappe[], tage: ReadonlySet<stri
   return raus;
 }
 
-
 export function fahrtagReihe(etappen: Pick<Etappe, 'von' | 'bis'>[], ohneAufzeichnung: readonly string[] = []): string[] {
   const alle = new Set<string>(ohneAufzeichnung);
   for (const e of etappen) for (const tag of tageDerEtappe(e)) alle.add(tag);
   return [...alle].sort();
 }
 
-
 export function fahrtagNummern(etappen: Pick<Etappe, 'von' | 'bis'>[], ohneAufzeichnung: readonly string[] = []): number[] {
   const reihe = fahrtagReihe(etappen, ohneAufzeichnung);
   return etappen.map((e) => reihe.indexOf(new Date(e.von).toISOString().slice(0, 10)) + 1);
 }
 
-
 const FEST = new Set(['ziel', 'anlegen', 'ankern']);
-
 
 export function ablegenAnlegen(
   eintraege: { art: string; t: number }[], von: number, bis: number, spielraumMs = 3_600_000,
 ): { ablegen?: number; anlegen?: number; anlegenArt?: string } {
-  
-  
-  
-  
+
   const sortiert = [...eintraege].sort((a, b) => a.t - b.t);
   const starts = sortiert.filter((x) => x.art === 'start' && x.t >= von - spielraumMs && x.t <= bis);
   const ersterStart = starts[0];
@@ -331,7 +302,6 @@ export function ablegenAnlegen(
   return raus;
 }
 
-
 export function toernAbgeschlossen(
   t: { beendet?: string | null; archiviert_am?: string | null; bis?: string | null; status?: string | null },
   jetzt: Date = new Date(),
@@ -341,7 +311,6 @@ export function toernAbgeschlossen(
   const heute = `${jetzt.getFullYear()}-${String(jetzt.getMonth() + 1).padStart(2, '0')}-${String(jetzt.getDate()).padStart(2, '0')}`;
   return t.bis < heute;
 }
-
 
 export function etappenJeFahrt(etappen: Pick<Etappe, 'fahrt'>[]): { fahrt: string; indizes: number[] }[] {
   const raus: { fahrt: string; indizes: number[] }[] = [];

@@ -6,7 +6,6 @@ import { segeltheorie, stabilitaet, segeltrimm } from './abschnitteD';
 import { segelmanoever } from './segelmanoever';
 import type { Sprache } from '@/core/types';
 
-
 export interface Abschnitt {
   schluessel: string;
   id: { de: string; en: string };
@@ -42,28 +41,25 @@ export const ABSCHNITTE: readonly Abschnitt[] = [
 ];
 
 export function abschnitt(schluessel: string | null | undefined): Abschnitt {
-  
+
   const s = schluessel === 'ankern' ? 'manoever' : schluessel;
   return ABSCHNITTE.find((a) => a.schluessel === s) ?? ABSCHNITTE[0]!;
 }
-
 
 export function zeichneAbschnitt(a: Abschnitt, sprache: Sprache): string {
   return `<section class="kp-sec" id="kp-${a.id[sprache]}" lang="${sprache}" aria-labelledby="kp-h-${a.id[sprache]}">`
     + `<p class="kp-eyebrow" id="kp-h-${a.id[sprache]}">${a.titel[sprache]}</p>${mitWasserzeichen(a.baue(sprache))}</section>`;
 }
 
-
 const WZ_MIN_BREITE = 200;
 const WZ_MIN_HOEHE = 120;
-
 
 export function mitWasserzeichen(html: string): string {
   return html.replace(/(<svg\b[^>]*viewBox="0 0 ([\d.]+) ([\d.]+)"[^>]*>)([\s\S]*?)<\/svg>/g, (ganz, kopf: string, b: string, h: string, inhalt: string) => {
     const breite = Number(b);
     const hoehe = Number(h);
     if (breite < WZ_MIN_BREITE || hoehe < WZ_MIN_HOEHE) return ganz;
-    
+
     const gr = Math.max(9, Math.min(11, breite / 55));
     const streifen = Math.round(gr + 6);
     const neuKopf = kopf.replace(/viewBox="0 0 [\d.]+ [\d.]+"/, `viewBox="0 0 ${b} ${hoehe + streifen}"`);

@@ -1,4 +1,3 @@
-
 import type { WochenplanErgebnis } from './wochenplan';
 import { type Bereitschaft, wirkung } from './bereitschaft';
 import { schutzStufe } from './shelter';
@@ -8,70 +7,67 @@ import { distNM } from './geo';
 
 const ANDRANG_ORDINAL: Record<SaisonLage, number> = { ausserhalb: 0, rand: 1, haupt: 2, spitze: 3 };
 
-
 export interface PlanKennzahlen {
-  
+
   gesamtFahrzeitHrs: number;
-  
+
   gesamtFahrzeitGeruestHrs: number;
   gesamtSm: number;
-  
+
   kreuzanteilHrs: number;
-  
+
   motoranteilHrs: number;
   gedeckteNaechte: number;
   offeneNaechte: number;
-  
+
   ungeschuetzteNaechte: number;
   maxWindKn: number | null;
   maxGustKn: number | null;
   maxHsM: number | null;
-  
+
   andrangSummeStufe: number | null;
-  
+
   modellUebereinstimmungMinProzent: number | null;
-  
+
   tageOhneKennzahl: number;
-  
+
   ausrichtung: number | null;
-  
+
   saatplanAbweichung: number | null;
-  
+
   tageUeberRegelmass: number | null;
-  
+
   langeTageAmStueck: number | null;
-  
+
   naechteOhneBucht: number | null;
-  
+
   rueckwegAmHinweg: number | null;
-  
+
   tageAmHeimathafen: number | null;
-  
+
   ueberzaehligeHafentage: number | null;
-  
+
   laengsterTagHrs: number | null;
-  
+
   wiederholteLiegeplaetze: number | null;
-  
+
   kurzeTage: number | null;
-  
+
   huellenumfangSm: number | null;
-  
+
   ankunftsTag: number | null;
-  
+
   selbstkreuzungen: number | null;
-  
+
   rueckschritte: number | null;
-  
+
   segelSm: number;
-  
+
   wertungSm: number;
   tieBreakSchluessel: number;
 }
 
-
 export const KURZER_FAHRTAG_SM = 5;
-
 
 export function zaehleUeberzaehligeHafentage(
   etappen: readonly { tag: number; istHafentag: boolean; sm: number }[], erlaubt: number, ersterTagFrei: boolean,
@@ -81,11 +77,10 @@ export function zaehleUeberzaehligeHafentage(
   return Math.max(0, hafentage - erlaubt);
 }
 
-
 export function zaehleWiederholteLiegeplaetze(
   etappen: readonly { tag: number; istHafentag: boolean; nachIndex: number }[],
   startIndex: number, zielIndex: number, gesamtFahrtage: number,
-  
+
   orte: readonly Punkt[] = [], naeheSm = 0,
 ): number {
   const besucht: number[] = [startIndex];
@@ -103,19 +98,15 @@ export function zaehleWiederholteLiegeplaetze(
   return n;
 }
 
-
 export function zaehleKurzeTage(
   etappen: readonly { istHafentag: boolean; sm: number }[], regelmassSm: number,
 ): number {
   return etappen.filter((e) => !e.istHafentag && e.sm < regelmassSm / 2).length;
 }
 
-
 export const HEIMAT_NAEHE_SM = 5;
 
-
 export const UEBERNAHME_SPAET_AB_UHR = 15;
-
 
 export function zaehleTageAmHeimathafen(
   orte: readonly { tag: number; ort: Punkt }[], heimat: readonly Punkt[], gesamtFahrtage: number,
@@ -125,9 +116,7 @@ export function zaehleTageAmHeimathafen(
     && heimat.some((h) => distNM(ort.lat, ort.lon, h.lat, h.lon) < HEIMAT_NAEHE_SM)).length;
 }
 
-
 export const RUNDREISE_NAEHE_SM = 2.5;
-
 
 export function abstandZurLinieSm(p: Punkt, linie: readonly Punkt[]): number {
   if (linie.length === 0) return Infinity;
@@ -144,41 +133,38 @@ export function abstandZurLinieSm(p: Punkt, linie: readonly Punkt[]): number {
   return min;
 }
 
-
 export function zaehleRueckwegAmHinweg(
   hinweg: readonly Punkt[], rueckOrte: readonly Punkt[], naeheSm: number = RUNDREISE_NAEHE_SM,
 ): number {
   return rueckOrte.filter((o) => abstandZurLinieSm(o, hinweg) < naeheSm).length;
 }
 
-
 export interface ReihungsKontext {
   ausrichtung?: (plan: WochenplanErgebnis) => number | null;
   saatplanAbweichung?: (plan: WochenplanErgebnis) => number | null;
-  
+
   regelmassSm?: number;
-  
+
   naechteOhneBucht?: (plan: WochenplanErgebnis) => number | null;
-  
+
   rueckwegAmHinweg?: (plan: WochenplanErgebnis) => number | null;
-  
+
   tageAmHeimathafen?: (plan: WochenplanErgebnis) => number | null;
-  
+
   ueberzaehligeHafentage?: (plan: WochenplanErgebnis) => number | null;
-  
+
   wiederholteLiegeplaetze?: (plan: WochenplanErgebnis) => number | null;
-  
+
   kurzeTage?: (plan: WochenplanErgebnis) => number | null;
-  
+
   huellenumfangSm?: (plan: WochenplanErgebnis) => number | null;
-  
+
   ankunftsTag?: (plan: WochenplanErgebnis) => number | null;
-  
+
   selbstkreuzungen?: (plan: WochenplanErgebnis) => number | null;
-  
+
   rueckschritte?: (plan: WochenplanErgebnis) => number | null;
 }
-
 
 export function planKennzahlen(plan: WochenplanErgebnis, kontext: ReihungsKontext = {}): PlanKennzahlen {
   let gesamtFahrzeitHrs = 0, gesamtFahrzeitGeruestHrs = 0, gesamtSm = 0, kreuzanteilHrs = 0, motoranteilHrs = 0;
@@ -196,7 +182,6 @@ export function planKennzahlen(plan: WochenplanErgebnis, kontext: ReihungsKontex
     gesamtSm += etappe.sm;
     tieBreakSchluessel += etappe.nachIndex;
 
-    
     if (!etappe.istHafentag && k.totalHrs != null) laengsterTagHrs = Math.max(laengsterTagHrs ?? 0, k.totalHrs);
     if (k.totalHrs == null) tageOhneKennzahl++;
     else if (etappe.regime === 'geruest') gesamtFahrzeitGeruestHrs += k.totalHrs;
@@ -215,13 +200,10 @@ export function planKennzahlen(plan: WochenplanErgebnis, kontext: ReihungsKontex
       modellMin = modellMin == null ? k.modellUebereinstimmungProzent : Math.min(modellMin, k.modellUebereinstimmungProzent);
     }
 
-    if (etappe.istNachtschlag) continue; 
+    if (etappe.istNachtschlag) continue;
 
     if (k.andrang != null) { andrangSumme += ANDRANG_ORDINAL[k.andrang]; andrangBekannt = true; }
-    
-    
-    
-    
+
     if (k.revierSchutzhafen) { gedeckteNaechte++; }
     else if (k.schutzWellenanlaufNM == null) { ungeschuetzteNaechte++; }
     else if (schutzStufe(k.schutzWellenanlaufNM) === 'offen') offeneNaechte++;
@@ -265,16 +247,11 @@ export function planKennzahlen(plan: WochenplanErgebnis, kontext: ReihungsKontex
   };
 }
 
-
 const PARETO_ACHSEN: ReadonlyArray<{ feld: keyof PlanKennzahlen; richtung: 'min' | 'max' }> = [
   { feld: 'gesamtFahrzeitHrs', richtung: 'min' },
-  
-  
-  
+
   { feld: 'gesamtFahrzeitGeruestHrs', richtung: 'min' },
-  
-  
-  
+
   { feld: 'wertungSm', richtung: 'max' },
   { feld: 'kreuzanteilHrs', richtung: 'min' },
   { feld: 'motoranteilHrs', richtung: 'min' },
@@ -284,40 +261,32 @@ const PARETO_ACHSEN: ReadonlyArray<{ feld: keyof PlanKennzahlen; richtung: 'min'
   { feld: 'maxHsM', richtung: 'min' },
   { feld: 'andrangSummeStufe', richtung: 'min' },
   { feld: 'modellUebereinstimmungMinProzent', richtung: 'max' },
-  
-  
+
   { feld: 'tageUeberRegelmass', richtung: 'min' },
-  
-  
+
   { feld: 'rueckwegAmHinweg', richtung: 'min' },
-  
-  
+
   { feld: 'tageAmHeimathafen', richtung: 'min' },
-  
-  
+
   { feld: 'ueberzaehligeHafentage', richtung: 'min' },
-  
-  
+
   { feld: 'laengsterTagHrs', richtung: 'min' },
-  
-  
+
   { feld: 'wiederholteLiegeplaetze', richtung: 'min' },
   { feld: 'kurzeTage', richtung: 'min' },
-  
+
   { feld: 'huellenumfangSm', richtung: 'max' },
   { feld: 'selbstkreuzungen', richtung: 'min' },
-  
+
   { feld: 'rueckschritte', richtung: 'min' },
-  
+
   { feld: 'ankunftsTag', richtung: 'min' },
   { feld: 'segelSm', richtung: 'max' },
 ];
 
-
 export const NICHT_PARETO_FELDER: ReadonlyArray<keyof PlanKennzahlen> = [
   'gedeckteNaechte', 'ungeschuetzteNaechte', 'tageOhneKennzahl', 'tieBreakSchluessel', 'gesamtSm',
 ];
-
 
 export function dominiert(a: PlanKennzahlen, b: PlanKennzahlen): boolean {
   let mindestensEinmalBesser = false;
@@ -333,7 +302,6 @@ export function dominiert(a: PlanKennzahlen, b: PlanKennzahlen): boolean {
   return mindestensEinmalBesser;
 }
 
-
 export function paretoFilter(plaene: readonly PlanKennzahlen[]): number[] {
   const ueberlebende: number[] = [];
   for (let i = 0; i < plaene.length; i++) {
@@ -346,112 +314,76 @@ export function paretoFilter(plaene: readonly PlanKennzahlen[]): number[] {
   return ueberlebende;
 }
 
-
 export const REIHUNGS_SCHRITTE = [
   'gedeckte_naechte',
-  
-  
-  
+
   'ankunft',
-  
-  
-  
-  
+
   'wiederholungen',
-  
-  
-  
-  
+
   'hafentage',
-  
-  
-  
-  
-  
+
   'buchten',
-  
-  
-  
-  
-  
-  
+
   'kreuzungsfrei', 'huelle', 'segelmeilen', 'meilen',
   'kurze_tage',
-  
-  
-  
-  
+
   'heimathafen',
-  
-  
-  
-  
-  
-  
-  
-  
+
   'laengster_tag',
   'rundreise',
   'kreuzanteil', 'motoranteil', 'fahrzeit',
-  
-  
+
   'lange_folge', 'lange_tage',
-  
-  
-  
+
   'ausrichtung', 'saatplan',
 ] as const;
 export type ReihungsSchritt = typeof REIHUNGS_SCHRITTE[number];
 
-
 export const AUSGESCHRIEBENE_REIHENFOLGE: ReadonlyArray<{ schritt: string; begruendung: string }> = [
   { schritt: 'Sicherheit', begruendung: 'ist ohnehin Ebene 1. Steht hier nur, damit die Reihenfolge vollständig ist' },
-  { schritt: 'Termin einhalten', begruendung: 'ohne Rückgabe kein Plan' }, 
-  { schritt: 'Wunschziele', begruendung: 'ist ebenfalls ohnehin Ebene 1, ein Plan, der eines auslässt, ist "geht nicht", kein schlechterer Plan' }, 
+  { schritt: 'Termin einhalten', begruendung: 'ohne Rückgabe kein Plan' },
+  { schritt: 'Wunschziele', begruendung: 'ist ebenfalls ohnehin Ebene 1, ein Plan, der eines auslässt, ist "geht nicht", kein schlechterer Plan' },
   { schritt: 'gedeckte Nächte', begruendung: 'die Nacht ist die Zeit ohne Ausweichmöglichkeit' },
-  { schritt: 'Früh ankommen', begruendung: 'nur bei einer Überstellung ohne Enddatum: Der erste Tag am Ziel ist das Ende des Törns' }, 
-  { schritt: 'Kein Yo-yo', begruendung: 'kein Liegeplatz doppelt, keine Etappen, die sich kreuzen, und beim Einwegtörn kein Schlag zurück gegen die Fahrtrichtung: je ein Punkt; mit Wunschziel zählt nur derselbe Liegeplatz' }, 
-  { schritt: 'Buchten bevorzugen', begruendung: 'nur mit gesetzter Präferenz: ohne sie ein No-op, kein stilles Gewicht' }, 
-  { schritt: 'Jeden Tag fahren', begruendung: 'Hafentage über die eingestellten Ruhetage hinaus: Ruhetage 0 heißt jeden Tag fahren' }, 
-  { schritt: 'Kreuzungsfrei', begruendung: 'ein Gummiband kreuzt sich nie: bei gleich viel Yo-yo die Runde mit weniger Kreuzungen' }, 
-  { schritt: 'Gummiband', begruendung: 'die Länge des Gummibands um alle Übernachtungen: Pendeln macht es nicht länger, eine Runde schon' }, 
-  { schritt: 'Gesegelte Meilen', begruendung: 'so viel segeln wie möglich: Meilen mal Segelanteil' }, 
-  { schritt: 'Meilen', begruendung: 'so viel Meilen wie möglich: wer weniger fahren will, stellt Ruhetage ein' }, 
-  { schritt: 'Keine Hüpfer', begruendung: 'nur in der freien Runde ohne Wunschziel: Fahrtage unter dem halben Regelmaß' }, 
-  { schritt: 'Törn nutzen', begruendung: 'Tage am Heimathafen sind verschenkter Törn: außer am letzten und, bei später Übernahme, am ersten Tag' }, 
-  { schritt: 'Längster Fahrtag', begruendung: 'ein freier Tag teilt eine lange Etappe: die längste Tagesfahrzeit, auf eine halbe Stunde genau' }, 
-  { schritt: 'Rundreise', begruendung: 'ein Rückweg über dieselben Liegeplätze ist kein Törn: Übernachtungen nahe einer früheren zählen' }, 
-  { schritt: 'Kreuzanteil', begruendung: 'das, was eine Crew als "anstrengend" erlebt' }, 
+  { schritt: 'Früh ankommen', begruendung: 'nur bei einer Überstellung ohne Enddatum: Der erste Tag am Ziel ist das Ende des Törns' },
+  { schritt: 'Kein Yo-yo', begruendung: 'kein Liegeplatz doppelt, keine Etappen, die sich kreuzen, und beim Einwegtörn kein Schlag zurück gegen die Fahrtrichtung: je ein Punkt; mit Wunschziel zählt nur derselbe Liegeplatz' },
+  { schritt: 'Buchten bevorzugen', begruendung: 'nur mit gesetzter Präferenz: ohne sie ein No-op, kein stilles Gewicht' },
+  { schritt: 'Jeden Tag fahren', begruendung: 'Hafentage über die eingestellten Ruhetage hinaus: Ruhetage 0 heißt jeden Tag fahren' },
+  { schritt: 'Kreuzungsfrei', begruendung: 'ein Gummiband kreuzt sich nie: bei gleich viel Yo-yo die Runde mit weniger Kreuzungen' },
+  { schritt: 'Gummiband', begruendung: 'die Länge des Gummibands um alle Übernachtungen: Pendeln macht es nicht länger, eine Runde schon' },
+  { schritt: 'Gesegelte Meilen', begruendung: 'so viel segeln wie möglich: Meilen mal Segelanteil' },
+  { schritt: 'Meilen', begruendung: 'so viel Meilen wie möglich: wer weniger fahren will, stellt Ruhetage ein' },
+  { schritt: 'Keine Hüpfer', begruendung: 'nur in der freien Runde ohne Wunschziel: Fahrtage unter dem halben Regelmaß' },
+  { schritt: 'Törn nutzen', begruendung: 'Tage am Heimathafen sind verschenkter Törn: außer am letzten und, bei später Übernahme, am ersten Tag' },
+  { schritt: 'Längster Fahrtag', begruendung: 'ein freier Tag teilt eine lange Etappe: die längste Tagesfahrzeit, auf eine halbe Stunde genau' },
+  { schritt: 'Rundreise', begruendung: 'ein Rückweg über dieselben Liegeplätze ist kein Törn: Übernachtungen nahe einer früheren zählen' },
+  { schritt: 'Kreuzanteil', begruendung: 'das, was eine Crew als "anstrengend" erlebt' },
   { schritt: 'Motoranteil', begruendung: 'ein Segeltörn soll gesegelt werden' },
   { schritt: 'Fahrzeit', begruendung: 'früher anzukommen ist selten der Zweck' },
-  { schritt: 'lange Tage am Stück', begruendung: 'zwei lange Tage hintereinander sind mehr als zweimal ein langer Tag: abschaltbar' }, 
-  { schritt: 'lange Tage', begruendung: 'Tage über dem Regelmaß: vor die Komfortzeilen gezogen, sobald „lange Tage" auf „wenn\'s sein muss" steht' }, 
-  { schritt: 'Ausrichtung', begruendung: 'gegen den Wind hinaus, mit dem Wind heim: bricht Gleichstände' }, 
-  { schritt: 'Saatplan', begruendung: 'der Saatplan entscheidet nie: bricht nur Gleichstände' }, 
+  { schritt: 'lange Tage am Stück', begruendung: 'zwei lange Tage hintereinander sind mehr als zweimal ein langer Tag: abschaltbar' },
+  { schritt: 'lange Tage', begruendung: 'Tage über dem Regelmaß: vor die Komfortzeilen gezogen, sobald „lange Tage" auf „wenn\'s sein muss" steht' },
+  { schritt: 'Ausrichtung', begruendung: 'gegen den Wind hinaus, mit dem Wind heim: bricht Gleichstände' },
+  { schritt: 'Saatplan', begruendung: 'der Saatplan entscheidet nie: bricht nur Gleichstände' },
 ];
-
 
 export interface ErklaertePraeferenzen {
   kreuzen?: Bereitschaft;
   motoren?: Bereitschaft;
   langeTage?: Bereitschaft;
-  
+
   hoechstensEinLangerTagAmStueck?: boolean;
 }
 
 const PRAEFERENZ_SCHRITT: ReadonlyArray<{ key: 'kreuzen' | 'motoren' | 'langeTage'; schritt: ReihungsSchritt }> = [
   { key: 'kreuzen', schritt: 'kreuzanteil' },
   { key: 'motoren', schritt: 'motoranteil' },
-  
-  
+
   { key: 'langeTage', schritt: 'lange_tage' },
 ];
-
 
 const WOCHEN_SCHRITTE: readonly ReihungsSchritt[] = [
   'gedeckte_naechte', 'ankunft', 'wiederholungen', 'hafentage', 'buchten', 'kreuzungsfrei', 'huelle', 'segelmeilen', 'meilen', 'kurze_tage', 'heimathafen',
 ];
-
 
 export function reihenfolgeFuer(praeferenzen: ErklaertePraeferenzen): readonly ReihungsSchritt[] {
   const vorgezogen: ReihungsSchritt[] = [];
@@ -459,13 +391,9 @@ export function reihenfolgeFuer(praeferenzen: ErklaertePraeferenzen): readonly R
     const b = praeferenzen[key];
     if (b && wirkung(b) !== 'neutral' && !vorgezogen.includes(schritt)) vorgezogen.push(schritt);
   }
-  
-  
+
   if (vorgezogen.includes('lange_tage')) vorgezogen.splice(vorgezogen.indexOf('lange_tage'), 0, 'lange_folge');
-  
-  
-  
-  
+
   const rest = REIHUNGS_SCHRITTE.filter((s) => !vorgezogen.includes(s));
   const nachWoche = Math.max(...WOCHEN_SCHRITTE.map((s) => rest.indexOf(s))) + 1;
   const alle = [...rest.slice(0, nachWoche), ...vorgezogen, ...rest.slice(nachWoche)];
@@ -474,20 +402,14 @@ export function reihenfolgeFuer(praeferenzen: ErklaertePraeferenzen): readonly R
 
 const WERT_FUER: Record<ReihungsSchritt, (p: PlanKennzahlen) => number> = {
   gedeckte_naechte: (p) => p.offeneNaechte,
-  
-  
-  
+
   buchten: (p) => p.naechteOhneBucht ?? 0,
-  
+
   hafentage: (p) => p.ueberzaehligeHafentage ?? 0,
-  
-  
-  
-  
-  
+
   wiederholungen: (p) => (p.wiederholteLiegeplaetze ?? 0) + (p.selbstkreuzungen ?? 0) + (p.rueckschritte ?? 0),
   kurze_tage: (p) => p.kurzeTage ?? 0,
-  
+
   kreuzungsfrei: (p) => p.selbstkreuzungen ?? 0,
   ankunft: (p) => p.ankunftsTag ?? 0,
   huelle: (p) => -(p.huellenumfangSm ?? 0),
@@ -498,55 +420,44 @@ const WERT_FUER: Record<ReihungsSchritt, (p: PlanKennzahlen) => number> = {
   laengster_tag: (p) => p.laengsterTagHrs ?? 0,
   kreuzanteil: (p) => p.kreuzanteilHrs,
   motoranteil: (p) => p.motoranteilHrs,
-  
-  
-  
+
   fahrzeit: (p) => p.gesamtFahrzeitHrs + p.gesamtFahrzeitGeruestHrs,
   lange_tage: (p) => p.tageUeberRegelmass ?? 0,
   lange_folge: (p) => p.langeTageAmStueck ?? 0,
-  
-  
+
   ausrichtung: (p) => p.ausrichtung ?? 0,
   saatplan: (p) => p.saatplanAbweichung ?? 0,
 };
 
-
 export const REIHUNGS_TOLERANZ: Record<ReihungsSchritt, number> = {
   gedeckte_naechte: 0,
-  
-  
+
   buchten: 0,
-  
+
   hafentage: 0,
   wiederholungen: 0,
   kurze_tage: 0,
-  
-  
-  
+
   kreuzungsfrei: 0,
-  
+
   ankunft: 0,
   huelle: 5,
   segelmeilen: 5,
   meilen: 5,
   heimathafen: 0,
   rundreise: 0,
-  
-  
+
   laengster_tag: 0.5,
   kreuzanteil: 0.25,
   motoranteil: 0.25,
   fahrzeit: 0.25,
-  
+
   lange_tage: 0,
   lange_folge: 0,
-  
-  
-  
+
   ausrichtung: 0,
   saatplan: 0,
 };
-
 
 export function vergleichePlaene(
   a: PlanKennzahlen, b: PlanKennzahlen, reihenfolge: readonly ReihungsSchritt[],
@@ -558,7 +469,6 @@ export function vergleichePlaene(
   return a.tieBreakSchluessel - b.tieBreakSchluessel;
 }
 
-
 export function entscheidenderSchritt(
   a: PlanKennzahlen, b: PlanKennzahlen, reihenfolge: readonly ReihungsSchritt[],
 ): ReihungsSchritt | null {
@@ -569,18 +479,17 @@ export function entscheidenderSchritt(
 }
 
 export interface ZielfunktionErgebnis {
-  
+
   ueberlebende: readonly WochenplanErgebnis[];
-  
+
   gereiht: readonly WochenplanErgebnis[];
-  
+
   reihenfolge: readonly ReihungsSchritt[];
-  
+
   entscheidend: ReihungsSchritt | null;
-  
+
   zweitbester: WochenplanErgebnis | null;
 }
-
 
 export function waehlePlaene(
   kandidaten: readonly WochenplanErgebnis[], praeferenzen: ErklaertePraeferenzen = {},

@@ -3,8 +3,6 @@ import { aktuelleSprache, aufSprachwechsel } from '@/shell/sprache';
 import { icon } from '@/shell/icons';
 import { startAusPosition } from '@/data/navroute';
 
-
-
 const TEXT = {
   de: {
     titel: 'Start auf meine Position setzen',
@@ -22,7 +20,6 @@ const TEXT = {
   },
 } as const;
 
-
 const MAX_ALTER_MS = 10_000;
 const TIMEOUT_MS = 20_000;
 
@@ -30,8 +27,7 @@ export function addStandortStart(karte: L.Map, setzeStart: (lat: number, lon: nu
   const Knopf = L.Control.extend({
     onAdd(): HTMLElement {
       const behaelter = L.DomUtil.create('div', 'leaflet-bar standort-start');
-      
-      
+
       L.DomEvent.disableClickPropagation(behaelter);
       L.DomEvent.disableScrollPropagation(behaelter);
 
@@ -60,11 +56,7 @@ export function addStandortStart(karte: L.Map, setzeStart: (lat: number, lon: nu
         if (!('geolocation' in navigator)) { zeige('keinGeo'); return; }
         knopf.disabled = true;
         zeige('laeuft');
-        
-        
-        
-        
-        
+
         const frist = setTimeout(() => {
           knopf.disabled = false;
           zeige('fehlschlag');
@@ -73,8 +65,7 @@ export function addStandortStart(karte: L.Map, setzeStart: (lat: number, lon: nu
           (pos) => {
             clearTimeout(frist);
             const { latitude: lat, longitude: lon } = pos.coords;
-            
-            
+
             void startAusPosition({ lat, lon }).catch(() => null).then((r) => {
               knopf.disabled = false;
               zeige(null);
@@ -98,7 +89,6 @@ export function addStandortStart(karte: L.Map, setzeStart: (lat: number, lon: nu
 
   new Knopf({ position: 'bottomleft' }).addTo(karte);
 }
-
 
 export function startBeimOeffnen(
   istLeer: () => boolean,

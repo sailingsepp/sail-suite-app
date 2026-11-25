@@ -2,9 +2,6 @@ import type { Punkt } from './types';
 import { distNM, kreuzungsZahl } from './geo';
 import { baueWassergitter, boxUm, liegtAnLand, wegImGitter, type Wassergitter } from './landumfahrung';
 
-
-
-
 export const MOLE_HALB_SM = 0.002;
 
 export const HAFEN_STRECKE_SM = 2;
@@ -18,7 +15,6 @@ export const MOLE_ABSTAND_SM = 0.01;
 const HINTER_MOLE_SM = 0.05;
 
 const HAFEN_RAENDER_SM = [0.15, 0.5, 1] as const;
-
 
 export interface MoleRoh { flaeche: boolean; p: ArrayLike<number> }
 
@@ -36,7 +32,6 @@ function alsRingKanten(ring: Punkt[]): [Punkt, Punkt][] {
   return r.map((p, i) => [p, r[(i + 1) % r.length]!] as [Punkt, Punkt]);
 }
 
-
 function linieAlsRing(pk: readonly Punkt[]): Punkt[] | null {
   const pts = pk.filter((p, i) => i === 0 || p.lat !== pk[i - 1]!.lat || p.lon !== pk[i - 1]!.lon);
   if (pts.length < 2) return null;
@@ -51,7 +46,7 @@ function linieAlsRing(pk: readonly Punkt[]): Punkt[] | null {
   const links: [number, number][] = [], rechts: [number, number][] = [];
   for (let i = 0; i < xy.length; i++) {
     const vor = richt[Math.max(0, i - 1)]!, nach = richt[Math.min(richt.length - 1, i)]!;
-    
+
     let nx = -(vor[1] + nach[1]), ny = vor[0] + nach[0];
     const nl = Math.hypot(nx, ny) || 1;
     nx /= nl; ny /= nl;
@@ -65,7 +60,6 @@ function linieAlsRing(pk: readonly Punkt[]): Punkt[] | null {
   const zurueck = ([x, y]: [number, number]): Punkt => ({ lat: pts[0]!.lat + y / 60, lon: pts[0]!.lon + x / (60 * cos) });
   return [...links.map(zurueck), ...rechts.reverse().map(zurueck)];
 }
-
 
 export function molenAlsKueste(molen: readonly MoleRoh[]): [Punkt, Punkt][] {
   const aus: [Punkt, Punkt][] = [];
@@ -83,7 +77,6 @@ export function molenAlsKueste(molen: readonly MoleRoh[]): [Punkt, Punkt][] {
   return aus;
 }
 
-
 function verdichtet(punkte: readonly Punkt[], bisSm: number, schritt: number): Punkt[] {
   const aus: Punkt[] = [punkte[0]!];
   let weg = 0;
@@ -99,7 +92,6 @@ function verdichtet(punkte: readonly Punkt[], bisSm: number, schritt: number): P
   return aus;
 }
 
-
 function restAb(punkte: readonly Punkt[], abSm: number, z: Punkt): Punkt[] {
   let weg = 0;
   for (let i = 1; i < punkte.length; i++) {
@@ -110,9 +102,7 @@ function restAb(punkte: readonly Punkt[], abSm: number, z: Punkt): Punkt[] {
   return [z];
 }
 
-
 export const HAFEN_ANSCHLUSS_SM = 0.04;
-
 
 function freiImWasser(g: Wassergitter, p: Punkt, kueste: readonly [Punkt, Punkt][]): Punkt | null {
   const x0 = Math.floor((p.lon - g.swLon) / g.dLon), y0 = Math.floor((p.lat - g.swLat) / g.dLat);
@@ -132,19 +122,17 @@ function freiImWasser(g: Wassergitter, p: Punkt, kueste: readonly [Punkt, Punkt]
   return null;
 }
 
-
 function feinerWeg(a: Punkt, z: Punkt, kueste: readonly [Punkt, Punkt][], molen: readonly [Punkt, Punkt][]): Punkt[] | null {
   for (const rand of HAFEN_RAENDER_SM) {
     const box = boxUm([a, z], rand);
     const lokal = [...kueste, ...molen].filter(([p, q]) => Math.max(p.lat, q.lat) >= box.swLat && Math.min(p.lat, q.lat) <= box.neLat
       && Math.max(p.lon, q.lon) >= box.swLon && Math.min(p.lon, q.lon) <= box.neLon) as [Punkt, Punkt][];
-    
+
     for (const abstand of [HAFEN_ABSTAND_ZELLEN, 0]) {
       const g = baueWassergitter(box, lokal, HAFEN_ZELLE_SM, abstand);
-      
+
       if (g.zelleSm > HAFEN_ZELLE_SM * 1.5) return null;
-      
-      
+
       const ab = freiImWasser(g, a, lokal);
       if (!ab) continue;
       const weg = wegImGitter(g, ab, z, lokal, undefined, 0);
@@ -154,14 +142,12 @@ function feinerWeg(a: Punkt, z: Punkt, kueste: readonly [Punkt, Punkt][], molen:
   return null;
 }
 
-
 function anfangOhneMolen(
   punkte: readonly Punkt[], kueste: readonly [Punkt, Punkt][], molen: readonly [Punkt, Punkt][], bisSm = HAFEN_STRECKE_SM,
 ): { punkte: Punkt[]; neuBis: Punkt } | null {
   if (punkte.length < 2 || bisSm <= 0) return null;
   const dicht = verdichtet(punkte, bisSm, 0.01);
-  
-  
+
   const sperre = [...molen, ...kueste] as [Punkt, Punkt][];
   let letzte = -1;
   for (let k = 1; k < dicht.length; k++) if (kreuzungsZahl(dicht[k - 1]!, dicht[k]!, sperre) > 0) letzte = k;
@@ -174,7 +160,6 @@ function anfangOhneMolen(
   for (let k = 1; k <= zi; k++) zuZ += distNM(dicht[k - 1]!.lat, dicht[k - 1]!.lon, dicht[k]!.lat, dicht[k]!.lon);
   return { punkte: [...aus, ...restAb(punkte, zuZ, z).slice(1)], neuBis: z };
 }
-
 
 function streckenAbstandSm(a: Punkt, b: Punkt, c: Punkt, d: Punkt): number {
   const cos = Math.cos((a.lat * Math.PI) / 180);
@@ -190,15 +175,13 @@ function streckenAbstandSm(a: Punkt, b: Punkt, c: Punkt, d: Punkt): number {
   return Math.min(zuStrecke(A, C, D), zuStrecke(B, C, D), zuStrecke(C, A, B), zuStrecke(D, A, B));
 }
 
-
 const STRAFFEN_DANACH_SM = 2;
 
 const STRAFFEN_SCHRITT_SM = 0.05;
 
-
 function straffeAnfang(punkte: readonly Punkt[], bis: number, kueste: readonly [Punkt, Punkt][], molen: readonly [Punkt, Punkt][]): Punkt[] {
   if (bis < 1) return [...punkte];
-  
+
   const kand: Punkt[] = punkte.slice(0, bis + 1);
   let rest = STRAFFEN_DANACH_SM, i = bis, ende = punkte.length - 1;
   for (; i < punkte.length - 1 && rest > 0; i++) {
@@ -213,14 +196,13 @@ function straffeAnfang(punkte: readonly Punkt[], bis: number, kueste: readonly [
     if (rest < 0) break;
   }
   if (rest >= 0) ende = punkte.length - 1;
-  
+
   let s = 90, w = 180, n = -90, o = -180;
   for (const p of kand) { s = Math.min(s, p.lat); n = Math.max(n, p.lat); w = Math.min(w, p.lon); o = Math.max(o, p.lon); }
   const nah = [...kueste, ...molen].filter(([p, q]) => Math.max(p.lat, q.lat) >= s && Math.min(p.lat, q.lat) <= n
     && Math.max(p.lon, q.lon) >= w && Math.min(p.lon, q.lon) <= o) as [Punkt, Punkt][];
   const molenNah = nah.filter((k) => molen.includes(k));
-  
-  
+
   const quert = (p: Punkt, q: Punkt) => kreuzungsZahl(p, q, nah) > 0 || molenNah.some(([u, v]) => streckenAbstandSm(p, q, u, v) < MOLE_ABSTAND_SM);
   const aus: Punkt[] = [kand[0]!];
   let k = 0;
@@ -231,22 +213,19 @@ function straffeAnfang(punkte: readonly Punkt[], bis: number, kueste: readonly [
     aus.push(kand[j]!);
     k = j;
   }
-  
+
   const letzter = kand[kand.length - 1]!;
   const ab = punkte.indexOf(letzter);
   return [...aus, ...punkte.slice(ab >= 0 ? ab + 1 : ende + 1)];
 }
 
-
 export const HAFEN_KUESTE_SM = 5;
-
 
 export function ohneMolen(punkte: readonly Punkt[], kueste: readonly [Punkt, Punkt][], molen: readonly [Punkt, Punkt][]): Punkt[] {
   if ((!molen.length && !kueste.length) || punkte.length < 2) return [...punkte];
   const v = anfangOhneMolen(punkte, kueste, molen);
   const vorn = v?.punkte ?? [...punkte];
-  
-  
+
   const laenge = (p: readonly Punkt[]) => p.slice(1).reduce((s, q, i) => s + distNM(p[i]!.lat, p[i]!.lon, q.lat, q.lon), 0);
   let bis = HAFEN_STRECKE_SM;
   if (v) {

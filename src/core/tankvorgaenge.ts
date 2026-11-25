@@ -1,19 +1,16 @@
-
-
 export interface Tankvorgang {
-  
+
   datum: string | null;
   liter: number;
-  
+
   ort: string | null;
-  
+
   motorstand?: number | null;
 }
 
 export const MAX_TANKVORGAENGE = 100;
 export const ORT_MAX = 100;
 const DATUM = /^\d{4}-\d{2}-\d{2}$/;
-
 
 export function tankvorgangGueltig(x: unknown): x is Tankvorgang {
   if (typeof x !== 'object' || x === null) return false;
@@ -28,13 +25,11 @@ export function tankvorgangGueltig(x: unknown): x is Tankvorgang {
     && (stand === undefined || stand === null || (typeof stand === 'number' && Number.isFinite(stand) && stand >= 0 && stand < 1_000_000));
 }
 
-
 export function summeLiter(vorgaenge: readonly Tankvorgang[]): number | null {
   if (!vorgaenge.length) return null;
-  
+
   return Math.round(vorgaenge.reduce((s, v) => s + v.liter, 0) * 10) / 10;
 }
-
 
 export function tankvorgaengeAus(t: { tankvorgaenge?: readonly Tankvorgang[] | null; dieselGetanktL?: number | null } | null | undefined): Tankvorgang[] {
   if (!t) return [];
@@ -46,12 +41,10 @@ export function tankvorgaengeAus(t: { tankvorgaenge?: readonly Tankvorgang[] | n
   return t.dieselGetanktL != null ? [{ datum: null, liter: t.dieselGetanktL, ort: null }] : [];
 }
 
-
 export function nurSumme(vorgaenge: readonly Tankvorgang[]): boolean {
   return vorgaenge.length === 0
     || (vorgaenge.length === 1 && vorgaenge[0]!.datum === null && vorgaenge[0]!.ort === null && vorgaenge[0]!.motorstand == null);
 }
-
 
 export function sortiereTankvorgaenge(vorgaenge: readonly Tankvorgang[]): Tankvorgang[] {
   return vorgaenge
@@ -64,7 +57,6 @@ export function sortiereTankvorgaenge(vorgaenge: readonly Tankvorgang[]): Tankvo
     })
     .map((x) => x.v);
 }
-
 
 export function verbrauchJeIntervall(
   vorgaenge: readonly Tankvorgang[], minStunden = 1,

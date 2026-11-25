@@ -2,7 +2,6 @@ import {
   bildMass, blitzeAusBild, neuesterSchritt, schritte, type Blitz, type BlitzBox,
 } from '@/core/blitze';
 
-
 const WMS = 'https://view.eumetsat.int/geoserver/ows';
 const CAPS = 'https://view.eumetsat.int/geoserver/mtg_fd/li_afa/ows?service=WMS&request=GetCapabilities&version=1.3.0';
 const EBENE = 'mtg_fd:li_afa';
@@ -16,7 +15,7 @@ const bilder = new Map<string, Blitz[]>();
 
 export function blitzBildUrl(b: BlitzBox, t: number): string {
   const { breite, hoehe } = bildMass(b);
-  
+
   return `${WMS}?service=WMS&version=1.3.0&request=GetMap&layers=${EBENE}&styles=&crs=EPSG:4326`
     + `&bbox=${b.s},${b.w},${b.n},${b.o}&width=${breite}&height=${hoehe}&format=image/png&transparent=true`
     + `&time=${new Date(t).toISOString().replace('.000Z', 'Z')}`;
@@ -30,7 +29,6 @@ async function holeNeuesten(jetzt: number): Promise<number | null> {
   if (t !== null) neuester = { t, geholt: jetzt };
   return t;
 }
-
 
 export type Entpacker = (blob: Blob, breite: number, hoehe: number) => Promise<ArrayLike<number>>;
 const canvasEntpacker: Entpacker = async (blob, breite, hoehe) => {
@@ -58,7 +56,6 @@ async function holeSchritt(b: BlitzBox, t: number, entpacke: Entpacker): Promise
 
 export type BlitzStand = { blitze: Blitz[]; neuester: number; fehlend: number };
 
-
 export async function holeBlitze(b: BlitzBox, fensterMin: number, jetzt = Date.now(), entpacke: Entpacker = canvasEntpacker): Promise<BlitzStand> {
   const t = await holeNeuesten(jetzt);
   if (t === null) throw new Error('kein Zeitschritt');
@@ -67,7 +64,5 @@ export async function holeBlitze(b: BlitzBox, fensterMin: number, jetzt = Date.n
   if (fehlend === alle.length) throw new Error('keine Bilder');
   return { blitze: alle.flat(), neuester: t, fehlend };
 }
-
-
 
 export function _vergessen(): void { neuester = null; bilder.clear(); }

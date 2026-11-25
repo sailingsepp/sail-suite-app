@@ -3,8 +3,6 @@ import { initModal, type ModalHandle } from '@/shell/modal';
 import { HALT_MAX_MIN } from '@/core/halt';
 import type { Sprache } from '@/core/types';
 
-
-
 export interface HaltEingabe { min: number; text: string }
 
 const TEXTE: Record<Sprache, Record<string, string>> = {
@@ -122,7 +120,6 @@ function ende(e: HaltEingabe | null): void {
   fertig = null;
   f?.(e);
 }
-
 
 export function frageHalt(nr: number, vorher: HaltEingabe | null | undefined, sprache: Sprache): Promise<HaltEingabe | null> {
   const b = baue();

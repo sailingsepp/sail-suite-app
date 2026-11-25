@@ -1,38 +1,31 @@
 import { distNM, bearingDeg, toRad, destPoint } from './geo';
 
-
-
-
 export interface AisZiel {
-  
+
   mmsi: number;
-  
+
   name?: string;
   lat: number;
   lon: number;
-  
+
   sog?: number;
-  
+
   cog?: number;
-  
+
   typ?: number;
-  
+
   ziel?: string;
-  
+
   gemeldet: number;
-  
+
   alterS?: number;
 }
 
-
 export const AIS_FAHRT_AB_KN = 1;
-
 
 export const AIS_MAX_ALTER_FAHRT_S = 180;
 
-
 export const AIS_ALTER_ZEIGEN_AB_S = 60;
-
 
 export function fortgeschrieben(z: AisZiel, alterS: number): AisZiel | null {
   const faehrt = z.sog !== undefined && z.sog >= AIS_FAHRT_AB_KN;
@@ -43,43 +36,40 @@ export function fortgeschrieben(z: AisZiel, alterS: number): AisZiel | null {
   return { ...z, lat, lon };
 }
 
-
 export interface AisNaeherung {
   ziel: AisZiel;
-  
+
   abstandNM: number;
-  
+
   peilung: number;
-  
+
   cpaNM: number | null;
-  
+
   tcpaMin: number | null;
-  
+
   alterS?: number;
   stufe: Naeherungsstufe;
 }
 
-
 export type Naeherungsstufe =
-  
+
   | 'fern'
-  
+
   | 'nah'
-  
+
   | 'eng';
 
-
 export interface AisSchwellen {
-  
+
   cpaEngNM: number;
-  
+
   tcpaEngMin: number;
-  
+
   cpaNahNM: number;
   tcpaNahMin: number;
-  
+
   sofortEngNM: number;
-  
+
   minRelKn: number;
 }
 
@@ -92,22 +82,19 @@ export const SCHWELLEN: AisSchwellen = {
   minRelKn: 0.5,
 };
 
-
 export interface EigeneLage {
   lat: number;
   lon: number;
-  
+
   sog: number;
-  
+
   cog: number;
 }
-
 
 function vektor(sog: number, cog: number): { n: number; e: number } {
   const r = toRad(cog);
   return { n: sog * Math.cos(r), e: sog * Math.sin(r) };
 }
-
 
 export function relativFahrtKn(
   eigen: EigeneLage, ziel: { sog?: number; cog?: number },
@@ -118,7 +105,6 @@ export function relativFahrtKn(
   return Math.hypot(ve.n - vo.n, ve.e - vo.e);
 }
 
-
 export function cpaTcpa(
   eigen: EigeneLage, ziel: { lat: number; lon: number; sog?: number; cog?: number },
   s: AisSchwellen = SCHWELLEN,
@@ -126,7 +112,7 @@ export function cpaTcpa(
   if (ziel.sog === undefined || ziel.cog === undefined) return { cpaNM: null, tcpaMin: null };
 
   const k = Math.cos(toRad(eigen.lat));
-  
+
   const rN = (ziel.lat - eigen.lat) * 60;
   const rE = (ziel.lon - eigen.lon) * 60 * k;
 
@@ -136,10 +122,7 @@ export function cpaTcpa(
   const vE = ve.e - vo.e;
 
   const vQuadrat = vN * vN + vE * vE;
-  
-  
-  
-  
+
   if (vQuadrat < s.minRelKn * s.minRelKn) return { cpaNM: null, tcpaMin: null };
 
   const tcpaH = -(rN * vN + rE * vE) / vQuadrat;
@@ -148,22 +131,13 @@ export function cpaTcpa(
   return { cpaNM: Math.hypot(cN, cE), tcpaMin: tcpaH * 60 };
 }
 
-
 export function naeherungsstufe(
   abstandNM: number, cpaNM: number | null, tcpaMin: number | null,
   s: AisSchwellen = SCHWELLEN,
-  
+
   relKn?: number,
 ): Naeherungsstufe {
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
   const bewegt = relKn === undefined || relKn >= s.minRelKn;
   const laeuftWeg = tcpaMin !== null && tcpaMin < 0;
   if (abstandNM <= s.sofortEngNM && bewegt && !laeuftWeg) return 'eng';
@@ -173,13 +147,11 @@ export function naeherungsstufe(
   return 'fern';
 }
 
-
 const anzeigeZehntel = (nm: number): number => Math.round(nm * 10) / 10;
-
 
 export function naeherungen(
   eigen: EigeneLage, ziele: AisZiel[], radiusNM = 3, s: AisSchwellen = SCHWELLEN,
-  
+
   seitAbrufS = 0,
 ): AisNaeherung[] {
   const raus: AisNaeherung[] = [];
@@ -196,8 +168,7 @@ export function naeherungen(
       peilung: bearingDeg(eigen.lat, eigen.lon, z.lat, z.lon),
       cpaNM,
       tcpaMin,
-      
-      
+
       stufe: naeherungsstufe(anzeigeZehntel(abstandNM), cpaNM === null ? null : anzeigeZehntel(cpaNM),
         tcpaMin === null ? null : (tcpaMin < 0 ? tcpaMin : Math.round(tcpaMin)), s, relativFahrtKn(eigen, z)),
     };
@@ -207,7 +178,6 @@ export function naeherungen(
   const rang: Record<Naeherungsstufe, number> = { eng: 0, nah: 1, fern: 2 };
   return raus.sort((a, b) => rang[a.stufe] - rang[b.stufe] || a.abstandNM - b.abstandNM);
 }
-
 
 export function schiffstyp(typ: number | undefined, sprache: 'de' | 'en' = 'de'): string | null {
   if (typ === undefined || !Number.isFinite(typ) || typ <= 0 || typ > 99) return null;
@@ -234,9 +204,7 @@ export function schiffstyp(typ: number | undefined, sprache: 'de' | 'en' = 'de')
   return null;
 }
 
-
 export const VORSCHLAG_MAX = 3;
-
 
 export function vorschlagsZiele(alle: AisNaeherung[], max = VORSCHLAG_MAX): AisNaeherung[] {
   return alle.slice(0, max);

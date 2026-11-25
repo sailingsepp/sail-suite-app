@@ -16,8 +16,6 @@ import type { ToernZeile } from '@/data/toernApi';
 import { spurPositionUm, revierZone, tagIn } from './statistik';
 import { STRINGS } from './strings';
 
-
-
 const wort = (s: string, e: Record<string, string> = {}): string =>
   (STRINGS[aktuelleSprache()][s] ?? s).replace(/\{(\w+)\}/g, (_, k: string) => e[k] ?? '');
 const $ = (id: string) => document.getElementById(id);
@@ -29,11 +27,10 @@ interface Entwurf {
   hoehe: number;
   t: number;
   zeitQuelle: ZeitQuelle;
-  
+
   ort: { lat: number; lon: number; quelle: OrtQuelle; name?: string; endgueltig?: boolean } | null;
   text: string;
 }
-
 
 const angefragt = new WeakSet<object>();
 
@@ -48,7 +45,6 @@ function geraetePosition(): Promise<{ lat: number; lon: number } | null> {
   ));
 }
 
-
 function zeitText(t: number): string {
   try {
     return datumUhrLtVon(t, aktuelleSprache() === 'de' ? 'de' : 'en', { weekday: 'short', day: 'numeric', month: 'numeric' }, revierZone());
@@ -56,7 +52,6 @@ function zeitText(t: number): string {
     return new Date(t).toLocaleString();
   }
 }
-
 
 function alsEingabe(t: number): string {
   const d = new Date(t);
@@ -108,7 +103,7 @@ function zeigeEntwuerfe(): void {
       if (!Number.isFinite(neu)) return;
       e.t = neu;
       e.zeitQuelle = 'hand';
-      
+
       if (!e.ort || e.ort.quelle === 'spur') {
         const p = spurPositionUm(neu);
         e.ort = p ? { ...p, quelle: 'spur' } : null;
@@ -120,7 +115,7 @@ function zeigeEntwuerfe(): void {
     const ort = document.createElement('p');
     ort.className = 'vb-foto-ort';
     ort.textContent = `${wort('fotos.ort')}: ${e.ort ? `${e.ort.name || positionText(e.ort.lat, e.ort.lon, sprache)} (${wort(`fotos.quelle.${e.ort.quelle}`)})` : wort('fotos.ortKeiner')}`;
-    
+
     const o = e.ort;
     if (o && o.name === undefined && !angefragt.has(o)) {
       angefragt.add(o);
@@ -175,7 +170,6 @@ function zeigeEntwuerfe(): void {
   if (hoch) hoch.disabled = entwuerfe.length === 0;
 }
 
-
 async function zeigeGalerie(token: string, toern: ToernZeile): Promise<void> {
   const ziel = $('vb-fotos');
   if (!ziel) return;
@@ -225,7 +219,7 @@ async function zeigeGalerie(token: string, toern: ToernZeile): Promise<void> {
         unter.textContent = [zeitText(f.t), fotoOrtText(f, sprache) ?? wort('fotos.ortKeiner'), name, f.text ?? ''].filter(Boolean).join(' · ');
       };
       beschrifte();
-      
+
       if (f.lat !== null && f.lon !== null && f.ort === undefined) {
         void fotoOrt(f.lat, f.lon).then((r) => {
           if (!r) return;
@@ -274,8 +268,6 @@ export function initCrewFotos(holeToken: () => string | null, holeToern: () => T
   };
   const modal = initModal(modalEl, schliesse);
 
-  
-  
   const kameraKnopf = $('btn-foto-kamera');
   if (kameraKnopf && window.matchMedia('(pointer: coarse)').matches && navigator.mediaDevices?.enumerateDevices) {
     void navigator.mediaDevices.enumerateDevices()
@@ -312,7 +304,7 @@ export function initCrewFotos(holeToken: () => string | null, holeToern: () => T
     let n = 0;
     for (const e of entwuerfe) {
       if (dialogStatus) dialogStatus.textContent = wort('fotos.laedtHoch', { n: String(n + 1), m: String(entwuerfe.length) });
-      
+
       const ort = e.ort
         ? { lat: e.ort.lat, lon: e.ort.lon, quelle: e.ort.quelle, ...(e.ort.endgueltig && e.ort.name !== undefined ? { name: e.ort.name } : {}) }
         : null;

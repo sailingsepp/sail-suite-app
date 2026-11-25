@@ -12,8 +12,6 @@ import { ladeUmgebungFuer, umgebungLokal } from '@/data/umgebung';
 import { gefahrenImGebiet } from '@/data/navroute';
 import type { Punkt, Sprache } from '@/core/types';
 
-
-
 const TEXTE: Record<Sprache, Record<string, string>> = {
   de: {
     schliessen: 'Schließen', quelle: 'Quelle: OpenStreetMap (OpenSeaMap)', sektor: 'Sektor',
@@ -29,7 +27,6 @@ const TEXTE: Record<Sprache, Record<string, string>> = {
 const tx = (k: string): string => TEXTE[aktuelleSprache()][k] ?? k;
 const esc = escapeHtml;
 
-
 const TREFFER_PX = 24;
 
 const DIENSTE_M = 500;
@@ -37,21 +34,21 @@ const PAKET_AB_ZOOM = 11;
 const GEFAHREN_AB_ZOOM = 12;
 
 export interface ObjektFensterOptionen {
-  
+
   aus?: () => boolean;
-  
+
   aktion?: { text: () => string; beimKlick: (p: Punkt) => void };
 }
 
 export interface ObjektFenster {
-  
+
   tipp: (e: L.LeafletMouseEvent) => Promise<boolean>;
 }
 
 type Elemente = readonly (readonly [number, number, Readonly<Record<string, string>>])[];
 
 export function objektFensterAuf(k: L.Map, o: ObjektFensterOptionen = {}): ObjektFenster {
-  
+
   let nachgeladen = '';
   const nachladen = (): void => {
     if (!navigator.onLine) return;
@@ -77,7 +74,7 @@ export function objektFensterAuf(k: L.Map, o: ObjektFensterOptionen = {}): Objek
     const z = k.getZoom();
     if (z < PAKET_AB_ZOOM) return false;
     let ll = e.latlng;
-    
+
     const ev = e.originalEvent as MouseEvent | undefined;
     if (ev && typeof ev.clientX === 'number') {
       const trifft = (r: DOMRect) => r.width > 0 && ev.clientX >= r.left - 6 && ev.clientX <= r.right + 6 && ev.clientY >= r.top - 6 && ev.clientY <= r.bottom + 6;
@@ -104,8 +101,6 @@ export function objektFensterAuf(k: L.Map, o: ObjektFensterOptionen = {}): Objek
 
   return { tipp };
 }
-
-
 
 interface Bausatz { overlay: HTMLDivElement; titel: HTMLHeadingElement; inhalt: HTMLDivElement; x: HTMLButtonElement; handle: ModalHandle }
 let bausatz: Bausatz | null = null;
@@ -147,7 +142,7 @@ function oeffne(t: KartenTreffer, elemente: Elemente, getippt: Punkt, o: ObjektF
   if (tags && (t.art === 'feuer' || (t.art === 'tonne' && mitFeuer))) {
     const f = feuerSteckbrief(tags, s, null);
     titel = f.titel; art = f.art;
-    
+
     if (t.art === 'tonne') html += liste(tonneSteckbrief(tags, s).zeilen.filter((z) => z.titel !== (s === 'de' ? 'Hinweis' : 'Note')));
     for (const sek of f.sektoren) {
       if (sek.nr !== null && f.sektoren.length > 1) html += `<p class="of-sektor">${esc(`${tx('sektor')} ${sek.nr}`)}</p>`;
@@ -179,8 +174,6 @@ function oeffne(t: KartenTreffer, elemente: Elemente, getippt: Punkt, o: ObjektF
   if (lb) zeigeLuftbild(lb, t.lat, t.lon, titel);
   if (b.overlay.hidden) { b.overlay.hidden = false; b.handle.beimOeffnen(document.activeElement as HTMLElement | null, b.x); }
 }
-
-
 
 function beruehrung(): boolean {
   try { return window.matchMedia('(pointer: coarse)').matches; } catch { return 'ontouchstart' in window; }

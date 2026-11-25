@@ -11,22 +11,20 @@ import './liegeplatzWahl.css';
 
 import { lateinisch } from '@/core/umschrift';
 
-
-
 export interface LiegeplatzErgebnis {
   name: string;
   lat: number;
   lon: number;
-  
+
   land: string | null;
 }
 
 export interface LiegeplatzWahlOptionen {
   titel: string;
   sprache: Sprache;
-  
+
   vorbelegung?: { name: string; lat: number; lon: number } | null;
-  
+
   mitte?: { lat: number; lon: number } | null;
 }
 
@@ -123,7 +121,6 @@ function el<K extends keyof HTMLElementTagNameMap>(
   return e;
 }
 
-
 function baue(): Bausatz {
   if (bausatz) return bausatz;
 
@@ -154,16 +151,14 @@ function baue(): Bausatz {
   const linkeSpalte = el('div');
   const listenTitel = el('p', 'lpw-hinweis');
   const liste = el('ul', 'lpw-liste');
-  
-  
+
   liste.setAttribute('aria-live', 'polite');
   linkeSpalte.append(listenTitel, liste);
 
   const rechteSpalte = el('div');
   const karteEl = el('div', 'lpw-karte');
   const karteHinweis = el('p', 'lpw-hinweis');
-  
-  
+
   karteHinweis.setAttribute('aria-live', 'polite');
   rechteSpalte.append(karteEl, karteHinweis);
   spalten.append(linkeSpalte, rechteSpalte);
@@ -180,13 +175,6 @@ function baue(): Bausatz {
 
   const gewaehlt = el('p', 'lpw-gewaehlt');
 
-  
-  
-  
-  
-  
-  
-  
   bindeOrtsAutocomplete(suchfeld, (v) => aufOrtsAuswahl?.(v), () => wahlSprache);
 
   const aktionen = el('div', 'lpw-aktionen');
@@ -196,7 +184,6 @@ function baue(): Bausatz {
   abbrechen.type = 'button';
   aktionen.append(uebernehmen, abbrechen);
 
-  
   const fuss = el('div', 'lpw-fuss');
   fuss.append(gewaehlt, aktionen);
   modal.append(kopf, suche, hinweis, spalten, freiFeld, fuss);
@@ -212,7 +199,6 @@ function baue(): Bausatz {
   return bausatz;
 }
 
-
 let aktuellSchliessen: ((ergebnis: LiegeplatzErgebnis | null) => void) | null = null;
 
 let aufOrtsAuswahl: ((v: OrtsVorschlag) => void) | null = null;
@@ -220,7 +206,6 @@ let wahlSprache: Sprache = 'de';
 function schliesse(ergebnis: LiegeplatzErgebnis | null): void {
   aktuellSchliessen?.(ergebnis);
 }
-
 
 function mitZeitschranke<T>(zusage: Promise<T>, ms: number): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -230,11 +215,9 @@ function mitZeitschranke<T>(zusage: Promise<T>, ms: number): Promise<T> {
 }
 
 async function ladeKarte(behaelter: HTMLElement): Promise<void> {
-  
-  
+
   if (!L) L = (await mitZeitschranke(import('leaflet'), 15_000)).default;
-  
-  
+
   const [{ seekarteAuf }, { seekartenNamen }] = await mitZeitschranke(
     Promise.all([import('@/map/seekarte'), import('@/map/seekartenNamen')]), 15_000);
   if (!karte) {
@@ -244,8 +227,7 @@ async function ladeKarte(behaelter: HTMLElement): Promise<void> {
     seekartenNamen(karte, sk, { netz: () => navigator.onLine });
     markenEbene = L.layerGroup().addTo(karte);
   }
-  
-  
+
   karte.invalidateSize();
 }
 
@@ -256,7 +238,7 @@ export function oeffneLiegeplatzWahl(opts: LiegeplatzWahlOptionen): Promise<Lieg
   let land: string | null = null;
   let gewaehlt: { name: string; lat: number; lon: number } | null = opts.vorbelegung ?? null;
   let freiGesetzt = false;
-  
+
   let pruefLauf = 0;
   let pruefungLaeuft = false;
 
@@ -283,9 +265,7 @@ export function oeffneLiegeplatzWahl(opts: LiegeplatzWahlOptionen): Promise<Lieg
       b.uebernehmen.disabled = true;
       return;
     }
-    
-    
-    
+
     b.gewaehlt.append(`${t.gewaehlt}: `, el('strong', undefined, lateinisch(gewaehlt.name) || t.frei));
     b.uebernehmen.disabled = pruefungLaeuft || !gewaehlt.name;
   }
@@ -339,8 +319,7 @@ export function oeffneLiegeplatzWahl(opts: LiegeplatzWahlOptionen): Promise<Lieg
       const knopf = el('button', 'lpw-treffer');
       knopf.type = 'button';
       knopf.dataset.name = platz.name;
-      
-      
+
       knopf.setAttribute('aria-pressed', String(gewaehlt?.name === platz.name));
       const links = el('span');
       links.append(el('span', 'lpw-name', lateinisch(platz.name)), document.createTextNode(' '), el('span', 'lpw-art', t[platz.art]));
@@ -371,16 +350,12 @@ export function oeffneLiegeplatzWahl(opts: LiegeplatzWahlOptionen): Promise<Lieg
       if (lauf !== suchLauf) return;
       karte?.setView([mitte.lat, mitte.lon], zoom);
       const treffer = await liegeplaetzeUmOrt({ lat: mitte.lat, lon: mitte.lon });
-      
-      
+
       if (lauf !== suchLauf) return;
       zeigeTreffer(treffer);
       setzeMarken(treffer);
     } catch {
-      
-      
-      
-      
+
       if (lauf !== suchLauf) return;
       zeigeFehler(mitte, zoom);
     }
@@ -389,8 +364,7 @@ export function oeffneLiegeplatzWahl(opts: LiegeplatzWahlOptionen): Promise<Lieg
   wahlSprache = opts.sprache;
   aufOrtsAuswahl = (v: OrtsVorschlag) => {
     land = v.land;
-    
-    
+
     void zeigeGegend({ lat: v.lat, lon: v.lon }, v.istOrt ? 12 : 14);
   };
 
@@ -400,7 +374,6 @@ export function oeffneLiegeplatzWahl(opts: LiegeplatzWahlOptionen): Promise<Lieg
     zeigeGewaehlt();
   };
 
-  
   async function setzeFreienPunkt(lat: number, lon: number): Promise<void> {
     const lauf = ++pruefLauf;
     pruefungLaeuft = true;
@@ -431,8 +404,8 @@ export function oeffneLiegeplatzWahl(opts: LiegeplatzWahlOptionen): Promise<Lieg
     aktuellSchliessen = (ergebnis) => {
       if (erledigt) return;
       erledigt = true;
-      suchLauf++;             
-      pruefLauf++;            
+      suchLauf++;
+      pruefLauf++;
       pruefungLaeuft = false;
       aktuellSchliessen = null;
       aufOrtsAuswahl = null;
@@ -458,19 +431,11 @@ export function oeffneLiegeplatzWahl(opts: LiegeplatzWahlOptionen): Promise<Lieg
     b.handle.beimOeffnen(undefined, b.suchfeld);
 
     void (async () => {
-      
-      
-      
-      
-      
-      
-      
-      
+
       try {
         await ladeKarte(b.karte);
       } catch {
-        
-        
+
       }
       karte?.on('click', (e: import('leaflet').LeafletMouseEvent) => {
         void setzeFreienPunkt(e.latlng.lat, e.latlng.lng);
@@ -480,8 +445,7 @@ export function oeffneLiegeplatzWahl(opts: LiegeplatzWahlOptionen): Promise<Lieg
       } else if (opts.mitte) {
         await zeigeGegend(opts.mitte, 11);
       } else {
-        
-        
+
         karte?.setView([40.0, 17.0], 5);
       }
     })();

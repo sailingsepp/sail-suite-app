@@ -1,4 +1,3 @@
-
 import type { WochenplanErgebnis } from '@/core/wochenplan';
 import { kantenWeg, type Kandidatennetz } from '@/core/hafennetz';
 import { schreibeEtappen, type NeueEtappeDaten } from '@/data/toernApi';
@@ -19,7 +18,6 @@ function oeffneRechner(): Worker {
   return rechner;
 }
 
-
 function mitLateinischenNamen(a: RechnerAntwort): RechnerAntwort {
   if (a.lage !== 'gefunden') return a;
   return {
@@ -31,15 +29,13 @@ function mitLateinischenNamen(a: RechnerAntwort): RechnerAntwort {
   };
 }
 
-
 export function schlagePlanVor(
   anfrage: RechnerAnfrage,
-  
+
   beiFortschritt: (f: RechnerFortschritt) => void = () => {},
 ): Promise<RechnerAntwort> {
   if (anfrageLaeuft) {
-    
-    
+
     return Promise.resolve({ lage: 'fehler', text: englisch() ? 'A calculation is already running.' : 'Es läuft bereits eine Berechnung.' });
   }
   anfrageLaeuft = true;
@@ -57,18 +53,13 @@ export function schlagePlanVor(
       if (istFortschritt(e.data)) { beiFortschritt(e.data); return; }
       fertig(mitLateinischenNamen(e.data));
     };
-    
-    
-    
-    
-    
+
     const aufFehler = (e: ErrorEvent): void => {
       rechner?.terminate();
       rechner = null;
       fertig({
         lage: 'fehler',
-        
-        
+
         text: e.message || (document.documentElement.lang === 'en'
           ? 'The calculation could not be started. The page is probably from before an update: please reload it.'
           : 'Die Rechnung ließ sich nicht starten. Die Seite stammt vermutlich noch von vor einem Update: bitte neu laden.'),
@@ -80,9 +71,7 @@ export function schlagePlanVor(
   });
 }
 
-
 let laufenderAbbruch: (() => void) | null = null;
-
 
 export function brichPlanVorschlagAb(): void {
   if (!laufenderAbbruch) return;
@@ -101,7 +90,6 @@ function neueEtappeId(): string {
   return `automatik-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-
 export function baueEtappenDaten(
   ergebnis: WochenplanErgebnis, netz: Kandidatennetz, startDatum: Date,
 ): NeueEtappeDaten[] {
@@ -111,14 +99,13 @@ export function baueEtappenDaten(
       id: neueEtappeId(), nummer: i, gewaehlt: false,
       datum: alsDatumStr(startDatum, e.tag - 1),
       vonName: von.name, nachName: nach.name,
-      
+
       wegpunkte: e.istHafentag ? [von.ort] : kantenWeg(netz, e.vonIndex, e.nachIndex),
       fixiert: false, notiz: null,
       art: e.istHafentag ? 'hafentag' : 'fahrt',
     };
   });
 }
-
 
 export function baueHandplanEtappen(
   ergebnis: WochenplanErgebnis, netz: Kandidatennetz, startDatum: Date,
@@ -130,7 +117,6 @@ export function baueHandplanEtappen(
     return { ...d, id, datum: alsDatumStr(startDatum, e.tag - 2), ankunftDatum: d.datum ?? null };
   });
 }
-
 
 export async function speicherePlanAlsEtappen(
   token: string, toernId: string, ergebnis: WochenplanErgebnis, netz: Kandidatennetz, startDatum: Date,
