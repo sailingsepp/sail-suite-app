@@ -356,7 +356,8 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
  <b>Polardiagramme</b>: Farr Yacht Design (Bavaria 50, VPP 2011) und ORC-Messpolaren über <a href="https://www.seapilot.com/features/polars/" target="_blank" rel="noopener">seapilot.com</a>.<br>
  <b>Kompendium</b>: alle Zeichnungen eigene Arbeit; Weltkarte der Betonnungsregionen aus <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a> 1:110m (gemeinfrei) über das Paket <a href="https://github.com/topojson/world-atlas" target="_blank" rel="noopener">world-atlas</a> (ISC). Die Quellen der Inhalte nennt jeder Abschnitt, vollständig im Abschnitt „Quellen".<br>
  <b>PDF-Erzeugung</b>: <a href="https://github.com/parallax/jsPDF" target="_blank" rel="noopener">jsPDF</a> (MIT). <b>Kartenbibliothek</b>: <a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet</a>.<br>
- <b>Gerätehandbücher („Technik an Bord“)</b>: Anzeige und Textauszug mit <a href="https://mozilla.github.io/pdf.js/" target="_blank" rel="noopener">PDF.js</a> (Mozilla, Apache-2.0), am Gerät.
+ <b>Gerätehandbücher („Technik an Bord“)</b>: Anzeige und Textauszug mit <a href="https://mozilla.github.io/pdf.js/" target="_blank" rel="noopener">PDF.js</a> (Mozilla, Apache-2.0), am Gerät.<br>
+ <b>Lizenztexte der Bibliotheken</b>: <a href="/THIRD-PARTY-LICENSES.txt" target="_blank" rel="noopener">THIRD-PARTY-LICENSES.txt</a>.
  `,
     'footer.disclaimerBody': `
  Die Törnplanung ist ein <b>Vorschlag</b> auf Grundlage von Wettervorhersagen. Über den Vorhersagezeitraum hinaus sind die Tage geschätzt, und je weiter ein Tag in der Zukunft liegt, desto unsicherer wird er.
@@ -787,7 +788,8 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
  <b>Polar diagrams</b>: Farr Yacht Design (Bavaria 50, VPP 2011) and ORC measurement polars via <a href="https://www.seapilot.com/features/polars/" target="_blank" rel="noopener">seapilot.com</a>.<br>
  <b>Compendium</b>: all drawings are original work; world map of the buoyage regions from <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a> 1:110m (public domain) via the <a href="https://github.com/topojson/world-atlas" target="_blank" rel="noopener">world-atlas</a> package (ISC). Each section names the sources of its content; the full list is in the "Sources" section.<br>
  <b>PDF output</b>: <a href="https://github.com/parallax/jsPDF" target="_blank" rel="noopener">jsPDF</a> (MIT). <b>Map library</b>: <a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet</a>.<br>
- <b>Equipment manuals ("Equipment on board")</b>: display and text extraction with <a href="https://mozilla.github.io/pdf.js/" target="_blank" rel="noopener">PDF.js</a> (Mozilla, Apache-2.0), on the device.
+ <b>Equipment manuals ("Equipment on board")</b>: display and text extraction with <a href="https://mozilla.github.io/pdf.js/" target="_blank" rel="noopener">PDF.js</a> (Mozilla, Apache-2.0), on the device.<br>
+ <b>Licence texts of the libraries</b>: <a href="/THIRD-PARTY-LICENSES.txt" target="_blank" rel="noopener">THIRD-PARTY-LICENSES.txt</a>.
  `,
     'footer.disclaimerBody': `
  The voyage plan is a <b>suggestion</b> based on weather forecasts. Beyond the forecast range the days are estimated, and the further ahead a day lies, the less certain it becomes.

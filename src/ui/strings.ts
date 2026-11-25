@@ -286,7 +286,8 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
  <b>Kompendium</b>: alle Zeichnungen eigene Arbeit; Weltkarte der Betonnungsregionen aus <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a> 1:110m (gemeinfrei) über das Paket <a href="https://github.com/topojson/world-atlas" target="_blank" rel="noopener">world-atlas</a> (ISC). Die Quellen der Inhalte nennt jeder Abschnitt, vollständig im Abschnitt „Quellen".<br>
  <b>Kartenbibliothek</b>: <a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet</a>.<br>
  <b>Ohne externe Quelle</b>: Dämmerungszeiten und Sonnenhöhe (Sunrise Equation), Mondphase und Mondzeiten (Niedrigpräzisions-Reihe nach Meeus, <i>Astronomical Algorithms</i>), Wellenanlauf aus Luv und die Land-/Wasser-Prüfung werden lokal im Browser gerechnet. Die Mondrechnung ist gegen den Sonnen-/Mond-Dienst von <a href="https://api.met.no/weatherapi/sunrise/3.0/documentation" target="_blank" rel="noopener">MET Norway</a> verifiziert, verwendet ihn im Betrieb aber nicht. Die Angaben zu Engstellen und zu den kroatischen Schutzgebieten sind fest hinterlegter Recherchestand und stammen aus keiner Schnittstelle.<br>
- <b>Gerätehandbücher („Technik an Bord“)</b>: Anzeige und Textauszug mit <a href="https://mozilla.github.io/pdf.js/" target="_blank" rel="noopener">PDF.js</a> (Mozilla, Apache-2.0), am Gerät.
+ <b>Gerätehandbücher („Technik an Bord“)</b>: Anzeige und Textauszug mit <a href="https://mozilla.github.io/pdf.js/" target="_blank" rel="noopener">PDF.js</a> (Mozilla, Apache-2.0), am Gerät.<br>
+ <b>Lizenztexte der Bibliotheken</b>: <a href="/THIRD-PARTY-LICENSES.txt" target="_blank" rel="noopener">THIRD-PARTY-LICENSES.txt</a>.
  `,
 
     'footer.disclaimerBody': `
@@ -592,7 +593,8 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
  <b>Compendium</b>: all drawings are original work; world map of the buoyage regions from <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a> 1:110m (public domain) via the <a href="https://github.com/topojson/world-atlas" target="_blank" rel="noopener">world-atlas</a> package (ISC). Each section names the sources of its content; the full list is in the "Sources" section.<br>
  <b>Map library</b>: <a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet</a>.<br>
  <b>Without an external source</b>: twilight times and sun altitude (sunrise equation), moon phase and moon times (low-precision series after Meeus, <i>Astronomical Algorithms</i>), windward fetch and the land/water check are all computed locally in the browser. The moon calculation is verified against the sun/moon service of <a href="https://api.met.no/weatherapi/sunrise/3.0/documentation" target="_blank" rel="noopener">MET Norway</a>, but does not use it in production. The details on choke points and the Croatian protected areas reflect a hard-coded state of research and come from no interface.<br>
- <b>Equipment manuals ("Equipment on board")</b>: display and text extraction with <a href="https://mozilla.github.io/pdf.js/" target="_blank" rel="noopener">PDF.js</a> (Mozilla, Apache-2.0), on the device.
+ <b>Equipment manuals ("Equipment on board")</b>: display and text extraction with <a href="https://mozilla.github.io/pdf.js/" target="_blank" rel="noopener">PDF.js</a> (Mozilla, Apache-2.0), on the device.<br>
+ <b>Licence texts of the libraries</b>: <a href="/THIRD-PARTY-LICENSES.txt" target="_blank" rel="noopener">THIRD-PARTY-LICENSES.txt</a>.
  `,
 
     'footer.disclaimerBody': `
