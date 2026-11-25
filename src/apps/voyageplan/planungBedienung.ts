@@ -115,12 +115,14 @@ export function zeigePlanung(): void {
     const z = (n: number, d: number): string => n.toLocaleString(sp === 'en' ? 'en-GB' : 'de-AT', { maximumFractionDigits: d });
     tankHerkunft.textContent = !vorschlag ? ''
       : p.tankReichweiteSm != null
-        ? wort('planung.uebTankEigen', { n: String(vorschlag.reichweiteSm) })
+        ? wort('planung.uebTankEigen', { n: String(vorschlag.reichweiteSm), kn: z(fahrtKn, 1) })
         : wort('planung.uebTankHerkunft', { tank: z(vorschlag.angabe.tankL, 0), lh: z(vorschlag.angabe.verbrauchLh, 1), kn: z(fahrtKn, 1) });
   }
   setze('in-ueb-naechte', p.maxHafennaechte ?? '');
   const ueb = p.planungsart === 'ueberstellung';
   for (const id of ['vp-ueberstellung-felder', 'vp-ueberstellung-hinweis']) { const el = $(id); if (el) el.hidden = !ueb; }
+
+  for (const el of document.querySelectorAll<HTMLElement>('#vp-planung [data-nur-woche]')) el.hidden = ueb;
 
   zeigeStufen('fs-ablegen-dunkel', p.ablegenBeiDunkelheit);
   zeigeStufen('fs-anlegen-dunkel', p.anlegenBeiDunkelheit);
@@ -158,12 +160,18 @@ export function initPlanung(): void {
   art?.addEventListener('change', () => {
     void speicherePlanung({ planungsart: art.value === 'ueberstellung' ? 'ueberstellung' : 'woche' }).then(() => zeigePlanung());
   });
-  zahlenfeld('in-ueb-fahrt', (n) => ({ ueberstellungFahrtKn: n }));
+
+  const fahrt = $('in-ueb-fahrt') as HTMLInputElement | null;
+  fahrt?.addEventListener('change', () => {
+    const n = Number(fahrt.value);
+    if (fahrt.value === '' || !Number.isFinite(n)) return;
+    void speicherePlanung({ ueberstellungFahrtKn: n }).then(() => zeigePlanung());
+  });
   for (const [id, feld] of [['in-ueb-tank', 'tankReichweiteSm'], ['in-ueb-naechte', 'maxHafennaechte']] as const) {
     const el = $(id) as HTMLInputElement | null;
     el?.addEventListener('change', () => {
       const n = Number(el.value);
-      void speicherePlanung({ [feld]: el.value === '' || !Number.isFinite(n) ? null : n });
+      void speicherePlanung({ [feld]: el.value === '' || !Number.isFinite(n) ? null : n }).then(() => { if (feld === 'tankReichweiteSm') zeigePlanung(); });
     });
   }
   const amStueck = $('in-lange-tage-am-stueck') as HTMLInputElement | null;

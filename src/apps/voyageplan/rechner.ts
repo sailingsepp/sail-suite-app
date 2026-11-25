@@ -5,7 +5,7 @@ import type { Hafenknoten } from '@/core/hafennetz';
 import { holeWindgitter } from '@/data/revierwind';
 import { findInselnFuerPunkte, istGolfName } from '@/data/overpass';
 import {
-  filtereSuchraum, filtereAnkerbuchten, baueKandidatennetz, begrenzeKandidaten, verbindeTeilnetze, ergaenzeNachtkanten, nachtBonusTage, NACHTSCHLAG_MAX_STUNDEN, korridorWege,
+  filtereSuchraum, filtereAnkerbuchten, baueKandidatennetz, begrenzeKandidaten, verbindeTeilnetze, ergaenzeNachtkanten, nachtBonusTage, NACHTSCHLAG_MAX_STUNDEN, korridorWege, etappenKetten, kantePasst, KANTEN_AUFSCHLAG,
   MAX_KANDIDATEN, MAX_NACHBARN, KANDIDATEN_ZELLE_SM, kantenOhneVtg, type Kandidatennetz, type Hafenkante,
 } from '@/core/hafennetz';
 import {
@@ -157,6 +157,26 @@ const GITTER_RAND_GRAD = 0.1;
 const ORT_BASIS_MAX_SM = 20;
 
 const ZUFAHRT_ERSATZ_MAX_SM = 5;
+
+const KETTEN_RESERVE = 0.85;
+
+function kettenStationen(
+  start: { ort: Punkt; name: string }, wunschziele: readonly Wunschziel[], ziel: { ort: Punkt; name: string },
+): Hafenknoten[] {
+  const offen = wunschziele.filter((w) => w.art !== 'poi' && !w.ungenauerOrt);
+  const folge: Hafenknoten[] = [{ name: start.name, ort: start.ort, art: 'hafen' }];
+  while (offen.length > 0) {
+    const von = folge[folge.length - 1]!.ort;
+    let bester = 0;
+    for (let i = 1; i < offen.length; i++) {
+      if (distNM(von.lat, von.lon, offen[i]!.ort.lat, offen[i]!.ort.lon) < distNM(von.lat, von.lon, offen[bester]!.ort.lat, offen[bester]!.ort.lon)) bester = i;
+    }
+    const w = offen.splice(bester, 1)[0]!;
+    folge.push({ name: w.name, ort: w.ort, art: 'hafen' });
+  }
+  folge.push({ name: ziel.name, ort: ziel.ort, art: 'hafen' });
+  return folge;
+}
 
 const FREIE_RUNDE_MAX_KANDIDATEN = 60;
 
@@ -346,6 +366,44 @@ export async function rechne(
   const haefenUnbekannt = !paketDecktGanz && live.length === 0 && ausPaket.length === 0;
 
   const erlaubt = filtereAnkerbuchten(rohKandidaten, planung.ankerbuchtenGleichwertig);
+  melde({ art: 'fortschritt', phase: 'haefen', schritt: 'kueste' });
+
+  const kuesteErgebnis = await gemerkt(speicher, 'kueste', box, async () => {
+    const ergebnis = await holeKuestenlinienFuerNetz(box.swLat, box.swLon, box.neLat, box.neLon);
+    if (!ergebnis) throw new Error('Kuestenlinien nicht verfuegbar');
+    return ergebnis;
+  }).catch(() => null);
+  const kueste = kuesteErgebnis?.linien ?? null;
+  const kuesteRueckfall = kuesteErgebnis?.rueckfall ?? false;
+
+  const revier: RevierRandbedingungen = {
+    boat: anfrage.cfg.boat, crewFactor: anfrage.cfg.crewFactor, motorSpeedKn: anfrage.cfg.motorSpeed,
+
+    vorherrschenderWindDeg: windrichtung(anfrage.start.ort, anfrage.wunschziele, anfrage.endziel),
+    vorherrschenderWindKn: NORMALWIND_KN,
+  };
+
+  const naechteErlaubt = (anfrage.nachtVorgaben ?? nachtVorgabenAus(planung)).nachtfahrtBudget;
+
+  const kettenTagSm = (KETTEN_RESERVE * planung.maxStundenProTag * anfrage.cfg.motorSpeed) / KANTEN_AUFSCHLAG;
+  const ketten = anfrage.offenesEnde && rueckgabehafen
+    ? etappenKetten(
+      kettenStationen(anfrage.start, optionEingaben[0]?.wunschziele ?? [], rueckgabehafen),
+      erlaubt.filter((k) => k.art !== 'bucht'), kettenTagSm,
+      (KETTEN_RESERVE * NACHTSCHLAG_MAX_STUNDEN * anfrage.cfg.motorSpeed) / KANTEN_AUFSCHLAG, naechteErlaubt,
+      {
+        kueste: kueste ?? [],
+
+        pruefe: (a, b, nacht) => kantePasst(a, b, revier, nacht ? NACHTSCHLAG_MAX_STUNDEN : planung.maxStundenProTag, kueste ?? []),
+      },
+    ) : [];
+  const kettenKnoten = [...new Set(ketten.flatMap((k) => k.knoten.slice(1, -1)))].filter((k) => erlaubt.includes(k));
+  const kettenSm = Math.max(0, ...ketten.map((k) => k.sm));
+
+  for (const k of kettenKnoten) {
+    halbachseSm = Math.max(halbachseSm, (distNM(k.ort.lat, k.ort.lon, anfrage.start.ort.lat, anfrage.start.ort.lon)
+      + distNM(k.ort.lat, k.ort.lon, zielOrt.lat, zielOrt.lon)) / 2 + 10);
+  }
   const imRaum = filtereSuchraum(erlaubt, anfrage.start.ort, zielOrt, halbachseSm);
 
   const alleWunschzielArtige = alleWunschzielArtigeListe(optionEingaben);
@@ -358,23 +416,15 @@ export async function rechne(
     ortsbasisVorab.set(i + 1, { ...w, ort: basis.ort, ungenauerOrt: false });
   });
 
-  melde({ art: 'fortschritt', phase: 'haefen', schritt: 'kueste' });
-
-  const kuesteErgebnis = await gemerkt(speicher, 'kueste', box, async () => {
-    const ergebnis = await holeKuestenlinienFuerNetz(box.swLat, box.swLon, box.neLat, box.neLon);
-    if (!ergebnis) throw new Error('Kuestenlinien nicht verfuegbar');
-    return ergebnis;
-  }).catch(() => null);
-  const kueste = kuesteErgebnis?.linien ?? null;
-  const kuesteRueckfall = kuesteErgebnis?.rueckfall ?? false;
-
   const bezugspunkte = [anfrage.start.ort, zielOrt, ...pflichtKnoten.map((k) => k.ort)];
-  const korridor = [...korridorWege(bezugspunkte, kueste ?? []), ...(seewegPunkte ? [seewegPunkte] : [])];
+
+  const korridor = ketten.length > 0 ? ketten.map((k) => k.knoten.map((x) => x.ort))
+    : [...korridorWege(bezugspunkte, kueste ?? []), ...(seewegPunkte ? [seewegPunkte] : [])];
 
   const zelleSm = nurFreieRunde ? Math.max(KANDIDATEN_ZELLE_SM, planung.regelmassSm / 3) : KANDIDATEN_ZELLE_SM;
 
   const maxKandidaten = nurFreieRunde ? FREIE_RUNDE_MAX_KANDIDATEN
-    : Math.min(FREIE_RUNDE_MAX_KANDIDATEN, Math.max(MAX_KANDIDATEN, Math.ceil(seewegSm / 15)));
+    : Math.min(FREIE_RUNDE_MAX_KANDIDATEN, Math.max(MAX_KANDIDATEN, Math.ceil(seewegSm / 15), Math.ceil(kettenSm / 10)));
 
   const saatRevier = revierVonPunkt(anfrage.start.ort.lat, anfrage.start.ort.lon);
   const saatVorschlaege = saatRevier === 'adria' || saatRevier === 'aegaeis' || saatRevier === 'ionisch'
@@ -389,18 +439,13 @@ export async function rechne(
     if (bester && !saatKnoten.includes(bester)) saatKnoten.push(bester);
   }
   const gedeckelt = begrenzeKandidaten(imRaum, bezugspunkte, maxKandidaten, korridor, zelleSm);
-  const kandidaten = [...gedeckelt, ...saatKnoten.filter((k) => !gedeckelt.includes(k))];
+
+  const kandidaten = [...gedeckelt, ...[...saatKnoten, ...kettenKnoten].filter((k, i, alle) => !gedeckelt.includes(k) && alle.indexOf(k) === i)];
   const kandidatenGedeckelt = kandidaten.length < imRaum.length
     ? { vorher: imRaum.length, behalten: kandidaten.length } : null;
 
-  const revier: RevierRandbedingungen = {
-    boat: anfrage.cfg.boat, crewFactor: anfrage.cfg.crewFactor, motorSpeedKn: anfrage.cfg.motorSpeed,
-
-    vorherrschenderWindDeg: windrichtung(anfrage.start.ort, anfrage.wunschziele, anfrage.endziel),
-    vorherrschenderWindKn: NORMALWIND_KN,
-  };
-
-  const netzOsm = baueKandidatennetz(pflichtKnoten, kandidaten, revier, planung.maxStundenProTag, kueste ?? [], MAX_NACHBARN);
+  const kettenPaare = ketten.flatMap((k) => k.knoten.slice(1).map((x, i) => [k.knoten[i]!.ort, x.ort] as const));
+  const netzOsm = baueKandidatennetz(pflichtKnoten, kandidaten, revier, planung.maxStundenProTag, kueste ?? [], MAX_NACHBARN, kettenPaare);
   melde({ art: 'fortschritt', phase: 'haefen', schritt: 'inseln' });
 
   const inselnBekannt = inselnAusPaket(paket, netzOsm.knoten.map((k) => k.ort));
@@ -435,8 +480,8 @@ export async function rechne(
   const netzRoh = sgKnoten.length === 0 ? netzOsm : baueKandidatennetz(
     pflichtKnoten,
 
-    dedupliziereHafenknoten([...begrenzeKandidaten(dedupliziereHafenknoten([...kandidaten, ...sgKnoten]), bezugspunkte, maxKandidaten, korridor, zelleSm), ...saatKnoten]),
-    revier, planung.maxStundenProTag, kueste ?? [], MAX_NACHBARN,
+    dedupliziereHafenknoten([...begrenzeKandidaten(dedupliziereHafenknoten([...kandidaten, ...sgKnoten]), bezugspunkte, maxKandidaten, korridor, zelleSm), ...saatKnoten, ...kettenKnoten]),
+    revier, planung.maxStundenProTag, kueste ?? [], MAX_NACHBARN, kettenPaare,
   );
 
   const poiBasis = ordnePoiBasen(
@@ -538,6 +583,12 @@ export async function rechne(
     ? ergaenzeNachtkanten(netzTag, {
       revier, maxStundenProTag: planung.maxStundenProTag, kuestenlinien: kueste ?? [], erlaubt: kanteErlaubt,
       ausgeschlossen: ohneKanten, immer: new Set(pflichtKnoten.map((_, i) => i)),
+
+      zuerst: kettenPaare.flatMap(([x, y]) => {
+        const i = netzTag.knoten.findIndex((k) => distNM(k.ort.lat, k.ort.lon, x.lat, x.lon) < 0.05);
+        const j = netzTag.knoten.findIndex((k) => distNM(k.ort.lat, k.ort.lon, y.lat, y.lon) < 0.05);
+        return i >= 0 && j >= 0 && distNM(x.lat, x.lon, y.lat, y.lon) > kettenTagSm ? [[i, j] as const] : [];
+      }),
     })
     : netzTag, kueste ?? []);
 

@@ -7,7 +7,7 @@
 <meta name="author" content="Sepp">
 <meta name="description" content="Törnplanung: schlägt die Etappenkette eines Törns vor, speichert sie und teilt sie mit der Crew. Teil der Segler-Suite &quot;Sail-Suite&quot;. © 2026 by Sepp.">
 <meta name="application-name" content="Sail-Suite">
-<meta name="app-version" content="5.1.12">
+<meta name="app-version" content="5.2.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -544,7 +544,7 @@
                 </div>
                 <p class="vp-hinweis" id="vp-ueberstellung-hinweis" data-i18n="planung.uebHinweis" hidden>Die Überstellung fährt durch, auch über mehrere Nächte. Gehalten wird zum Tanken (in Marina oder Hafen), über Nacht, wenn die Tankstelle beim Einlaufen geschlossen ist, und für die Ruhetage unten. Auf den Tank gehen die Meilen unter Motor: Wo die Windvorhersage Segelwind mit mindestens 50° zum Kurs meldet, zählt die Strecke als gesegelt, jenseits der Vorhersage als Motor. Ein Schlag darf die Reichweite um bis zu 10 % überschreiten, wenn das einen Halt spart. Die Zeiten sind eine Schätzung mit der Durchschnittsfahrt; den Wind je Schlag prüft die Tagesplanung.</p>
 
-                <div class="vp-gruppe">
+                <div class="vp-gruppe" data-nur-woche>
                   <h4 data-i18n="ansicht.gruppeTag">Tagesrahmen</h4>
                   <div class="vp-zahl">
                     <label class="vp-zahl-text" for="in-max-stunden"><span data-i18n="planung.maxStunden">Stunden unterwegs je Tag</span><span class="vp-zahl-hinweis" data-i18n="ansicht.hoechstens">höchstens</span></label>
@@ -556,7 +556,7 @@
                   </div>
                 </div>
 
-                <div class="vp-gruppe">
+                <div class="vp-gruppe" data-nur-woche>
                   <h4 data-i18n="ansicht.gruppeNacht">Nacht und Dunkelheit</h4>
                   <div class="vp-zahl">
                     <label class="vp-zahl-text" for="in-nachtfahrt-budget"><span data-i18n="planung.nachtfahrtBudget">Nachtfahrten im Törn</span><span class="vp-zahl-hinweis" data-i18n="ansicht.hoechstens">höchstens</span></label>
@@ -572,7 +572,7 @@
 
                 <div class="vp-gruppe">
                   <h4 data-i18n="ansicht.gruppePuffer">Puffer</h4>
-                  <div class="vp-zahl">
+                  <div class="vp-zahl" data-nur-woche>
                     <label class="vp-zahl-text" for="in-reserve-tage"><span data-i18n="planung.reserveTage">Reservetage</span><span class="vp-zahl-hinweis" data-i18n="ansicht.reserveHinweis">bleiben am Ende frei</span></label>
                     <span class="vp-stepper"><button type="button" data-schritt="-1" aria-label="weniger" data-i18n-aria-label="ansicht.weniger">−</button><input type="number" id="in-reserve-tage" min="0" max="7" step="1" inputmode="numeric"><button type="button" data-schritt="1" aria-label="mehr" data-i18n-aria-label="ansicht.mehr">+</button></span>
                   </div>
@@ -582,7 +582,7 @@
                   </div>
                 </div>
 
-                <details class="vp-fein" id="vp-fein">
+                <details class="vp-fein" id="vp-fein" data-nur-woche>
                   <summary>
                     <span data-i18n="planung.fein">Feineinstellungen</span>
                     <span class="vp-fein-kurz" data-i18n="ansicht.feinKurz">Fahrstil, Wetter, Liegeplätze</span>
@@ -646,7 +646,7 @@
                   </div>
                 </details>
 
-                <p class="vp-hinweis" id="vp-reserve-hinweis"></p>
+                <p class="vp-hinweis" id="vp-reserve-hinweis" data-nur-woche></p>
                 <p class="vp-status" id="vp-planung-status" role="status" aria-live="polite"></p>
               </section>
             </div>

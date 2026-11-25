@@ -240,6 +240,170 @@ export function begrenzeKandidaten(
   return kandidaten.filter((_, i) => behalten.has(i));
 }
 
+function umfahreBeide(a: Punkt, b: Punkt, kueste: readonly [Punkt, Punkt][]): Punkt[] | null {
+  const hin = umfahreLand(a, b, kueste)?.punkte;
+  if (hin) return hin;
+  const her = umfahreLand(b, a, kueste)?.punkte;
+  return her ? [...her].reverse() : null;
+}
+
+export const KETTE_LAND_MAX_SM = 5;
+
+export function laengstesLandstueckSm(a: Punkt, b: Punkt, kueste: readonly [Punkt, Punkt][]): number {
+  const sm = distNM(a.lat, a.lon, b.lat, b.lon);
+  if (kueste.length === 0 || sm < 0.1) return 0;
+  const cos = Math.cos((((a.lat + b.lat) / 2) * Math.PI) / 180);
+  const ax = a.lon * cos, ay = a.lat, dx = b.lon * cos - ax, dy = b.lat - ay;
+  const s = Math.min(a.lat, b.lat), n = Math.max(a.lat, b.lat), w = Math.min(a.lon, b.lon), o = Math.max(a.lon, b.lon);
+  const schnitte: number[] = [0, 1];
+  for (const [p, q] of kueste) {
+    if (Math.max(p.lat, q.lat) < s || Math.min(p.lat, q.lat) > n || Math.max(p.lon, q.lon) < w || Math.min(p.lon, q.lon) > o) continue;
+    const px = p.lon * cos - ax, py = p.lat - ay, ex = (q.lon - p.lon) * cos, ey = q.lat - p.lat;
+    const nenner = dx * ey - dy * ex;
+    if (nenner === 0) continue;
+    const t = (px * ey - py * ex) / nenner, u = (px * dy - py * dx) / nenner;
+    if (t > 0 && t < 1 && u >= 0 && u <= 1) schnitte.push(t);
+  }
+
+  if (schnitte.length === 2) return 0;
+  schnitte.sort((x, y) => x - y);
+  let laengstes = 0;
+  for (let i = 1; i < schnitte.length; i++) {
+    const von = schnitte[i - 1]!, bis = schnitte[i]!, lang = (bis - von) * sm;
+    if (lang <= laengstes) continue;
+
+    const mitte = (von + bis) / 2;
+    const anLand = (t: number): boolean => liegtAnLand({ lat: a.lat + t * (b.lat - a.lat), lon: a.lon + t * (b.lon - a.lon) }, kueste);
+    const vorn = i === 1 ? true : anLand(Math.min(mitte, von + 0.2 / sm));
+    const hinten = i === schnitte.length - 1 ? true : anLand(Math.max(mitte, bis - 0.2 / sm));
+    if (vorn && hinten) laengstes = lang;
+  }
+  return laengstes;
+}
+
+const KETTE_VERSUCHE = 40;
+
+export const KETTE_FRIST_MS = 30_000;
+
+export interface Etappenkette {
+
+  knoten: Hafenknoten[];
+  sm: number;
+
+  naechte: number;
+}
+
+export function etappenKetten(
+  stationen: readonly Hafenknoten[], kandidaten: readonly Hafenknoten[], tagSm: number, nachtSm: number, naechte: number,
+  opt: {
+    kueste?: readonly [Punkt, Punkt][];
+
+    pruefe?: (a: Punkt, b: Punkt, nacht: boolean) => boolean;
+
+    fristMs?: number;
+  } = {},
+): Etappenkette[] {
+  const kueste = opt.kueste ?? [];
+  const beginn = Date.now();
+  if (stationen.length < 2 || !(tagSm > 0)) return [];
+  const S = stationen.length;
+
+  const frei = kandidaten.filter((k) => !stationen.some((s) => distNM(s.ort.lat, s.ort.lon, k.ort.lat, k.ort.lon) < 0.05));
+  const knoten = [...stationen, ...frei];
+  const N = knoten.length, K = Math.max(0, Math.floor(naechte));
+  const weit = Math.max(tagSm, K > 0 ? nachtSm : 0);
+
+  const nachbarn: { j: number; sm: number }[][] = knoten.map(() => []);
+  for (let i = 0; i < N; i++) {
+    for (let j = i + 1; j < N; j++) {
+      const sm = distNM(knoten[i]!.ort.lat, knoten[i]!.ort.lon, knoten[j]!.ort.lat, knoten[j]!.ort.lon);
+      if (sm > weit || sm < 0.05) continue;
+      nachbarn[i]!.push({ j, sm }); nachbarn[j]!.push({ j: i, sm });
+    }
+  }
+  const gesperrt = new Set<string>();
+
+  const geprueft = new Map<string, boolean>();
+  const ueberLand = (a: Punkt, b: Punkt): boolean => {
+    const schluessel = `${a.lat},${a.lon}|${b.lat},${b.lon}`;
+    let u = geprueft.get(schluessel);
+    if (u == null) {
+
+      u = opt.pruefe != null ? !opt.pruefe(a, b, distNM(a.lat, a.lon, b.lat, b.lon) > tagSm)
+        : laengstesLandstueckSm(a, b, kueste) > KETTE_LAND_MAX_SM;
+      geprueft.set(schluessel, u);
+    }
+    return u;
+  };
+
+  const id = (n: number, g: number, k: number): number => (n * (S + 1) + g) * (K + 1) + k;
+  const suche = (): { dist: Float64Array; vor: Int32Array } => {
+    const dist = new Float64Array(N * (S + 1) * (K + 1)).fill(Infinity);
+    const vor = new Int32Array(dist.length).fill(-1);
+    const fertig = new Uint8Array(dist.length);
+    dist[id(0, 1, 0)] = 0;
+    for (;;) {
+      let u = -1, best = Infinity;
+      for (let x = 0; x < dist.length; x++) if (!fertig[x] && dist[x]! < best) { best = dist[x]!; u = x; }
+      if (u < 0) break;
+      fertig[u] = 1;
+      const k = u % (K + 1), g = Math.floor(u / (K + 1)) % (S + 1), n = Math.floor(u / ((K + 1) * (S + 1)));
+      if (g >= S) continue;
+      for (const { j, sm } of nachbarn[n]!) {
+
+        if (j < S && j !== g) continue;
+        if (gesperrt.has(`${Math.min(n, j)}|${Math.max(n, j)}`)) continue;
+        const k2 = k + (sm > tagSm ? 1 : 0);
+        if (k2 > K) continue;
+        const v = id(j, j === g ? g + 1 : g, k2);
+        if (best + sm < dist[v]!) { dist[v] = best + sm; vor[v] = u; }
+      }
+    }
+    return { dist, vor };
+  };
+  const ketten: Etappenkette[] = [];
+
+  let ungeprueft: Etappenkette[] = [];
+  for (let versuch = 0; versuch < KETTE_VERSUCHE; versuch++) {
+    const { dist, vor } = suche();
+    ketten.length = 0;
+    let neuGesperrt = false, kuerzeste = Infinity;
+    for (let k = 0; k <= K; k++) {
+      const ziel = id(S - 1, S, k);
+      if (!(dist[ziel]! < kuerzeste - 0.5)) continue;
+      const folge: number[] = [];
+      for (let x = ziel; x >= 0; x = vor[x]!) folge.push(Math.floor(x / ((K + 1) * (S + 1))));
+      folge.reverse();
+      for (let q = 1; q < folge.length; q++) {
+        const a = knoten[folge[q - 1]!]!.ort, b = knoten[folge[q]!]!.ort;
+        if (ueberLand(a, b)) {
+          gesperrt.add(`${Math.min(folge[q - 1]!, folge[q]!)}|${Math.max(folge[q - 1]!, folge[q]!)}`);
+          neuGesperrt = true;
+        }
+      }
+      kuerzeste = dist[ziel]!;
+      ketten.push({ knoten: folge.map((n) => knoten[n]!), sm: dist[ziel]!, naechte: k });
+    }
+    if (versuch === 0) ungeprueft = [...ketten];
+    if (ketten.length === 0) return ungeprueft;
+    if (!neuGesperrt) return ketten;
+
+    if (Date.now() - beginn > (opt.fristMs ?? KETTE_FRIST_MS)) return [...ketten];
+  }
+  return ungeprueft;
+}
+
+export function kantePasst(
+  a: Punkt, b: Punkt, revier: RevierRandbedingungen, maxStunden: number, kueste: readonly [Punkt, Punkt][],
+): boolean {
+  const stunden = (sm: number): number => (sm * KANTEN_AUFSCHLAG) / referenzfahrtKn(bearingDeg(a.lat, a.lon, b.lat, b.lon), revier);
+  const luft = distNM(a.lat, a.lon, b.lat, b.lon);
+  if (stunden(luft) > maxStunden) return false;
+  if (kueste.length === 0 || geradeUeberWasser(a, b, kueste)) return true;
+  const weg = umfahreBeide(a, b, kueste);
+  return weg != null && stunden(weglaenge(weg)) <= maxStunden;
+}
+
 export function filtereSuchraum(
   kandidaten: readonly Hafenknoten[], start: Punkt, ziel: Punkt, halbachseSm: number,
 ): Hafenknoten[] {
@@ -275,6 +439,8 @@ export function baueKandidatennetz(
   kuestenlinien: [Punkt, Punkt][],
 
   maxNachbarn: number | null = null,
+
+  vorrangPaare: readonly (readonly [Punkt, Punkt])[] = [],
 ): Kandidatennetz {
 
   const alle: Hafenknoten[] = [...pflichtKnoten, ...ohnePflichtZwillinge(pflichtKnoten, kandidaten)];
@@ -307,6 +473,12 @@ export function baueKandidatennetz(
   if (kuestenlinien.length > 0 && alle.length > 1) {
     const istPflicht = (i: number) => i < pflichtKnoten.length;
     const vorhanden = new Set(kanten.map((k) => `${k.von}>${k.nach}`));
+    const indexVon = (q: Punkt): number => alle.findIndex((k) => distNM(k.ort.lat, k.ort.lon, q.lat, q.lon) < 0.05);
+    const vorrang = new Set<string>();
+    for (const [x, y] of vorrangPaare) {
+      const i = indexVon(x), j = indexVon(y);
+      if (i >= 0 && j >= 0 && i !== j) vorrang.add(`${Math.min(i, j)}|${Math.max(i, j)}`);
+    }
     const paare: { i: number; j: number; sm: number; pflicht: boolean }[] = [];
     for (let i = 0; i < alle.length; i++) {
       for (let j = i + 1; j < alle.length; j++) {
@@ -315,7 +487,7 @@ export function baueKandidatennetz(
         const sm = distNM(a.lat, a.lon, b.lat, b.lon);
 
         if (zuWeit(a, b, sm) && zuWeit(b, a, sm)) continue;
-        paare.push({ i, j, sm, pflicht: istPflicht(i) || istPflicht(j) });
+        paare.push({ i, j, sm, pflicht: istPflicht(i) || istPflicht(j) || vorrang.has(`${i}|${j}`) });
       }
     }
 
@@ -350,7 +522,15 @@ export function baueKandidatennetz(
       };
       for (const p of auswahl) {
         if (!p.pflicht && Date.now() - beginn > UMFAHRUNG_BUDGET_MS) continue;
-        const weg = wegImGitter(g, alle[p.i]!.ort, alle[p.j]!.ort, kuestenlinien, speicher);
+        let weg = wegImGitter(g, alle[p.i]!.ort, alle[p.j]!.ort, kuestenlinien, speicher);
+
+        if (vorrang.has(`${p.i}|${p.j}`)) {
+          const a = alle[p.i]!.ort, b = alle[p.j]!.ort;
+          if (!weg || (zuWeit(a, b, weglaenge(weg)) && zuWeit(b, a, weglaenge(weg)))) {
+            const fein = umfahreBeide(a, b, kuestenlinien);
+            if (fein && (!weg || weglaenge(fein) < weglaenge(weg))) weg = fein;
+          }
+        }
         if (weg) trage(p, weg);
       }
 
@@ -533,7 +713,7 @@ export function verbindeTeilnetze(
   return { knoten: netz.knoten, kanten };
 }
 
-export const NACHTSCHLAG_MAX_STUNDEN = 24;
+export const NACHTSCHLAG_MAX_STUNDEN = 36;
 
 export const NACHT_NACHBARN = 3;
 
@@ -563,6 +743,8 @@ export function ergaenzeNachtkanten(
     art?: 'nacht' | 'lang';
 
     immer?: ReadonlySet<number>;
+
+    zuerst?: readonly (readonly [number, number])[];
   },
 ): Kandidatennetz {
   const bis = opt.bisStunden ?? NACHTSCHLAG_MAX_STUNDEN;
@@ -575,6 +757,24 @@ export function ergaenzeNachtkanten(
   const neu: Hafenkante[] = [];
   let gitter: Wassergitter | null = null;
   const speicher: AnschlussSpeicher = new Map();
+  const holeGitter = (): Wassergitter => (gitter ??= baueWassergitter(boxUm(netz.knoten.map((k) => k.ort), 4), opt.kuestenlinien, STUFEN[0]!.zelleSm, STUFEN[0]!.abstandZellen));
+  for (const [i, j] of opt.zuerst ?? []) {
+    if (i === j || ausgeschlossen.has(i) || ausgeschlossen.has(j) || vorhanden.has(`${i}>${j}`)) continue;
+    const a = netz.knoten[i]?.ort, b = netz.knoten[j]?.ort;
+    if (!a || !b) continue;
+    const luft = distNM(a.lat, a.lon, b.lat, b.lon);
+    if (stunden(a, b, luft) > bis) continue;
+    let kante: Hafenkante | null = null;
+    if (geradeUeberWasser(a, b, opt.kuestenlinien)) kante = { von: i, nach: j, sm: luft, ...marke };
+    else if (opt.kuestenlinien.length > 0) {
+
+      const weg = wegImGitter(holeGitter(), a, b, opt.kuestenlinien, speicher) ?? umfahreBeide(a, b, opt.kuestenlinien);
+      if (weg && stunden(a, b, weglaenge(weg)) <= bis) kante = { von: i, nach: j, sm: weglaenge(weg), ueber: weg.slice(1, -1), ...marke };
+    }
+    if (!kante || (opt.erlaubt && !opt.erlaubt(kante))) continue;
+    neu.push(kante);
+    vorhanden.add(`${i}>${j}`);
+  }
   const beginn = Date.now();
   const budget = opt.budgetMs ?? NACHT_UMFAHRUNG_BUDGET_MS;
   for (let i = 0; i < netz.knoten.length; i++) {
@@ -607,8 +807,7 @@ export function ergaenzeNachtkanten(
       if (geradeUeberWasser(a, b, opt.kuestenlinien)) {
         kante = { von: i, nach: p.j, sm: p.sm, ...marke };
       } else if (opt.kuestenlinien.length > 0 && Date.now() - beginn <= budget) {
-        gitter ??= baueWassergitter(boxUm(netz.knoten.map((k) => k.ort), 4), opt.kuestenlinien, STUFEN[0]!.zelleSm, STUFEN[0]!.abstandZellen);
-        const weg = wegImGitter(gitter, a, b, opt.kuestenlinien, speicher);
+        const weg = wegImGitter(holeGitter(), a, b, opt.kuestenlinien, speicher);
         if (weg) {
           const sm = weglaenge(weg);
           if (stunden(a, b, sm) <= bis) kante = { von: i, nach: p.j, sm, ueber: weg.slice(1, -1), ...marke };

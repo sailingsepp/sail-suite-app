@@ -53,6 +53,17 @@ export interface EngenDurchfahrt {
 
 export const TANK_SPIELRAUM = 0.1;
 
+export function laengsteStreckeOhneHafenSm(halte: readonly UeberstellungsHalt[], i: number, j: number): number {
+  const von = Math.min(i, j), bis = Math.max(i, j);
+  let zuletzt = halte[von]!.s, laengste = 0;
+  for (let k = von + 1; k <= bis; k++) {
+    if (k < bis && halte[k]!.art === 'bucht') continue;
+    laengste = Math.max(laengste, halte[k]!.s - zuletzt);
+    zuletzt = halte[k]!.s;
+  }
+  return laengste;
+}
+
 export type HaltArt = 'tanken' | 'nacht' | 'ruhetag' | 'ziel';
 
 export interface UeberstellungsSchlag {
@@ -138,9 +149,11 @@ export function planeUeberstellung(
       const stopps = stoppsBis.get(`${i}|${k}`) ?? 0;
       for (let j = i + 1; j <= ziel; j++) {
         const sm = schlagSm(halte, i, j);
-        if (grenze != null && schlagMotorSm(halte, i, j, e.weiter, v) > grenze) {
 
-          if (!v.motoranteil && halte[j]!.s - halte[i]!.s > grenze) break;
+        const hier = v.tankReichweiteSm != null && laengsteStreckeOhneHafenSm(halte, i, j) > v.tankReichweiteSm ? v.tankReichweiteSm : grenze;
+        if (hier != null && schlagMotorSm(halte, i, j, e.weiter, v) > hier) {
+
+          if (!v.motoranteil && grenze != null && halte[j]!.s - halte[i]!.s > grenze) break;
           continue;
         }
 

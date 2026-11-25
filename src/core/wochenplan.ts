@@ -697,9 +697,35 @@ export function ankunftsKandidaten(
     ...eingabe, kBeste: K_JE_RANDLAUF,
     hafentagScore: (knoten) => (knoten === zielIndex ? 0 : 2 * aufschlag),
   };
+
+  const schutz = schutzJeOrtUndNacht(eingabe.netz, eingabe.kosten);
+  const liegtOffen = (knoten: number, tag: number): boolean => {
+    const heute = eingabe.liegeschutz?.get(`${knoten}|${tag}`);
+    const q = heute && (heute.schutzWellenanlaufNM != null || heute.revierSchutzhafen) ? heute : schutz.get(`${knoten}|${tag}`);
+    return !!q && !q.revierSchutzhafen && q.schutzWellenanlaufNM != null && schutzStufe(q.schutzWellenanlaufNM) === 'offen';
+  };
+  const sperre = 2 * aufschlag * 1000 * Math.max(1, eingabe.gesamtFahrtage);
+  const gedeckt: WochenplanEingabe = {
+    ...basis, kosten: ohneOffeneNaechte(teuer),
+    hafentagScore: (knoten, tag) => (knoten === zielIndex ? 0 : liegtOffen(knoten, tag) ? sperre : 2 * aufschlag),
+  };
+
+  const budget = eingabe.nachtfahrtBudget;
+  const naechte = budget != null && Number.isFinite(budget) && budget > 0
+    ? Array.from({ length: Math.floor(budget) + 1 }, (_, i) => i) : [undefined];
   const out: WochenplanErgebnis[] = [];
-  for (const kosten of [teuer, ohneOffeneNaechte(teuer)]) {
-    for (const p of rechneWochenplaene({ ...basis, kosten })) out.push(mitHauptScore(p, hauptScore));
+  const gesehen = new Set<string>();
+  for (const n of naechte) {
+    for (const lauf of [{ ...basis, kosten: teuer }, gedeckt]) {
+      for (const p of rechneWochenplaene(n == null ? lauf : { ...lauf, nachtfahrtBudget: n })) {
+
+        if (lauf === gedeckt && p.gesamtScore >= sperre) continue;
+        const schluessel = p.etappen.map((e) => `${e.tag}:${e.vonIndex}>${e.nachIndex}${e.istHafentag ? 'h' : ''}`).join('|');
+        if (gesehen.has(schluessel)) continue;
+        gesehen.add(schluessel);
+        out.push(mitHauptScore(p, hauptScore));
+      }
+    }
   }
   return out;
 }

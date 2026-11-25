@@ -4,6 +4,13 @@ import {
 import { toernBilanz, type FahrtMitSpur, type Etappe as GefahreneEtappe } from '@/core/toernbilanz';
 import type { Punkt } from '@/core/types';
 
+export type GefahrenArt = 'ohneOrt' | 'amOrt' | 'nach' | 'vonNach';
+export function gefahrenArt(g: { von: string | null; nach: string | null; nm: number }): GefahrenArt {
+  if (!g.nach) return 'ohneOrt';
+  if (g.nm < 0.05) return 'amOrt';
+  return g.von ? 'vonNach' : 'nach';
+}
+
 export interface GefahrenerTag {
   tag: number;
   vonOrt: string | null;

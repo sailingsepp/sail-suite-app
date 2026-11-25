@@ -6,7 +6,7 @@ use at sea without a connection.
 
 | App | Version | Purpose |
 |---|---|---|
-| **VoyagePlan** · Törnplanung | 5.1.12 | Plans the whole voyage: which harbour on which day |
+| **VoyagePlan** · Törnplanung | 5.2.0 | Plans the whole voyage: which harbour on which day |
 | **CourseCast** · Tagesplanung | 5.7.2 | Daily weather briefing for a fixed route: when to cast off, what to expect on the way |
 | **SailPilot** · TörnNavLog | 6.3.0 | Automatic logbook and backup navigation on the phone already on board |
 | **VoyageBook** · TörnBuch | 5.1.10 | Voyage, crew list, crew kitty, statistics and PDFs |
@@ -978,15 +978,30 @@ The formulas and methods behind the suite's figures, kept current with the code.
 - **Candidate network**: 40 to 60 berths depending on the route and the 12
   nearest neighbours per harbour, edges filtered by distance and coastline; a
   hard time budget. When night passages are allowed, every harbour also gets up to 3 **night edges**
-  beyond the daily hours and at most 24 h long (a day and a night), spread
+  beyond the daily hours and at most 36 h long (one night at sea), spread
   over different courses; whether such a leg becomes a night passage on a
   given day is decided with that day's wind (longer than daylight). The
   return-point bound then credits each allowed night with the days it can
-  save, ⌈(24 − 2·h_day) / h_day⌉, rounded up. A leg longer than daylight is a night passage only if it arrives the
+  save, ⌈(36 − 2·h_day) / h_day⌉, rounded up. A leg longer than daylight is a night passage only if it arrives the
   next calendar day; leaving in the dark and arriving the same day is a long
   day.
+- **Leg chain for a one-way trip with an open end**: the shortest sequences
+  of harbours from the start via the wish targets (nearest next) to the
+  destination, by Dijkstra over the state *harbour × targets reached × night
+  legs used*, every edge at most 0.85 × the daily range of the network, up
+  to the allowed number of night legs of at most 0.85 × the 36 h range; one
+  chain per number of night legs if it is shorter than every chain with
+  fewer. Each edge of a found chain is checked with its route on the water
+  (straight where free, otherwise around land) against the hours it may
+  take; an edge that fails is barred and the chain searched again. The
+  chains are the corridor of the candidate selection, their harbours stay
+  beyond the cap of 40 to 60 (one per 10 NM of chain), and their edges are
+  built before the time budget. For the early arrival the plan search runs
+  once per number of night legs from 0 to the allowed number, each also
+  without open nights; a harbour day at a place whose night is open counts
+  as an open night there.
 - **"No plan" relaxation probe**: when no plan is found, the search is rerun
-  on an extended network (night edges up to 24 h, long day edges up to 12 h
+  on an extended network (night edges up to 36 h, long day edges up to 12 h
   with leaving in the dark allowed, mandatory targets always connected),
   stepping the daily hours up one hour at a time and the night budget up to
   2, and the first setting that yields a plan is named; the plan found during
@@ -1019,7 +1034,8 @@ The formulas and methods behind the suite's figures, kept current with the code.
   route between plus both offsets). Time-dependent waits: a stop outside the
   fuel dock's hours becomes a harbour night. Constraints: fuel range per leg,
   maximum harbour nights, rest days of 24 h. The range counts **engine miles**
-  only and allows 10 % over when that saves a stop: the wind forecast at
+  only and allows 10 % over when that saves a stop, except on a leg with a
+  stretch between two fuel harbours that is longer than the range: the wind forecast at
   points every 30 NM along the route, at the estimated passing time, marks a
   stretch as sailed when the wind reaches the minimum sailing wind at 50° or
   more to the course; beyond the forecast, and on the approach to each stop,

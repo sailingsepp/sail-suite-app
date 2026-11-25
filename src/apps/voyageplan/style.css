@@ -452,3 +452,5 @@ footer { padding: 16px 16px 4px; }
 
 .vp-anspruch-toern { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
 .vp-anspruch-toern b { color: var(--text); }
+
+#vp-planung [data-nur-woche][hidden] { display: none; }

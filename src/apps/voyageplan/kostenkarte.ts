@@ -118,7 +118,9 @@ export interface KostenkartenErgebnis {
 export function nachtOderLangerTag(f: Tagesfenster, dateStr: string, nachtfahrtBudget: number): Tagesfenster {
   if (!f.istNachtschlag) return f;
   const amTag = f.results.filter((r) => r.arrival.toISOString().slice(0, 10) === dateStr);
-  const nachts = f.results.filter((r) => r.arrival.toISOString().slice(0, 10) > dateStr);
+
+  const folgetag = new Date(Date.parse(`${dateStr}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
+  const nachts = f.results.filter((r) => r.arrival.toISOString().slice(0, 10) === folgetag);
   if (nachtfahrtBudget > 0 && nachts.length > 0) return { ...f, results: nachts, best: nachts[0]! };
   return { ...f, results: amTag, best: amTag[0] ?? null, istNachtschlag: false };
 }

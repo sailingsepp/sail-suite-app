@@ -1,13 +1,21 @@
 import { nf } from '@/core/time';
 import { verfuegbareFahrtage, type WunschlisteKontext } from './wunschliste';
 import {
-  holeGefahreneTage, tagAusPlanDatum, vergleichePlanMitWirklichkeit, neuerStartpunkt,
+  holeGefahreneTage, tagAusPlanDatum, vergleichePlanMitWirklichkeit, neuerStartpunkt, gefahrenArt,
   type GefahrenerTag, type GeplanteZeile, type VergleichsZeile,
 } from './rollierend';
 import { planVorschlagenKlick } from './automatik';
 import { app, wort, $, datumIso, standardSchiffConfig, type EtappeEntwurf } from './kontext';
 
 let rollierendGefahren: GefahrenerTag[] = [];
+
+function gefahrenText(g: { von: string | null; nach: string | null; nm: number }): string {
+  const nm = nf(g.nm, 1);
+  const art = gefahrenArt(g);
+  if (art === 'ohneOrt') return wort('rollierend.gefahrenOhneOrt', { nm });
+  if (art === 'amOrt') return wort('rollierend.amOrt', { nach: g.nach! });
+  return art === 'vonNach' ? wort('rollierend.gefahren', { von: g.von!, nach: g.nach!, nm }) : wort('rollierend.gefahrenNach', { nach: g.nach!, nm });
+}
 
 function renderRollierendListe(zeilen: readonly VergleichsZeile[]): void {
   const liste = $('vp-rollierend-liste');
@@ -27,9 +35,7 @@ function renderRollierendListe(zeilen: readonly VergleichsZeile[]): void {
     }
     if (z.gefahren) {
       const f = document.createElement('div');
-      f.textContent = z.gefahren.nach
-        ? wort('rollierend.gefahren', { von: z.gefahren.von ?? '?', nach: z.gefahren.nach, nm: nf(z.gefahren.nm, 1) })
-        : wort('rollierend.gefahrenOhneOrt', { nm: nf(z.gefahren.nm, 1) });
+      f.textContent = gefahrenText(z.gefahren);
       li.appendChild(f);
     } else if (z.geplant) {
       const n = document.createElement('div');
