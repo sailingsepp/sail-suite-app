@@ -44,7 +44,9 @@ const SCHRITT_MS = 1500;
 
 const STROM_STUNDEN = 12;
 
-const letzteStunde = () => (feld ? (ebene === 'strom' ? Math.min(feld.zeiten.length - 1, ersteIdx + STROM_STUNDEN) : feld.zeiten.length - 1) : 0);
+const WETTER_STUNDEN = 24;
+const letzteStunde = () => (feld
+  ? Math.min(feld.zeiten.length - 1, ersteIdx + (ebene === 'strom' ? STROM_STUNDEN : WETTER_STUNDEN)) : 0);
 const FAHNE_PX = 52;
 
 type Merker = { ebene: WetterEbene; flaeche: boolean };

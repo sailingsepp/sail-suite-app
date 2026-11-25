@@ -1,8 +1,8 @@
 import { nDate } from '@/core/time';
 import type { Punkt } from '@/core/types';
-import { feldDeckt, wetterGitter, WETTER_NEU_MS, type WetterFeld } from '@/core/wetterkarte';
+import { feldDeckt, wetterGitter, WETTER_NEU_MS, WETTER_TAGE, type WetterFeld } from '@/core/wetterkarte';
 import { holeOpenMeteoJson, OpenMeteoKontingent } from './openMeteoNetz';
-import { FORECAST_DAYS, RECHENMODELL, VERGLEICHSMODELL } from './openMeteo';
+import { RECHENMODELL, VERGLEICHSMODELL } from './openMeteo';
 
 const DB_NAME = 'sail-suite-wetter';
 const STORE = 'felder';
@@ -90,7 +90,7 @@ export function wetterUrl(lats: readonly number[], lons: readonly number[]): str
   return 'https://api.open-meteo.com/v1/forecast'
     + `?latitude=${la.join(',')}&longitude=${lo.join(',')}`
     + `&models=${RECHENMODELL},${VERGLEICHSMODELL}&hourly=${FELDER.join(',')}`
-    + `&wind_speed_unit=kn&timezone=UTC&forecast_days=${FORECAST_DAYS}&cell_selection=sea`;
+    + `&wind_speed_unit=kn&timezone=UTC&forecast_days=${WETTER_TAGE}&cell_selection=sea`;
 }
 
 export function stromUrl(lats: readonly number[], lons: readonly number[]): string {
@@ -98,7 +98,7 @@ export function stromUrl(lats: readonly number[], lons: readonly number[]): stri
   for (const a of lats) for (const b of lons) { la.push(a.toFixed(2)); lo.push(b.toFixed(2)); }
   return 'https://marine-api.open-meteo.com/v1/marine'
     + `?latitude=${la.join(',')}&longitude=${lo.join(',')}`
-    + `&hourly=ocean_current_velocity,ocean_current_direction&timezone=UTC&forecast_days=${FORECAST_DAYS}&cell_selection=sea`;
+    + `&hourly=ocean_current_velocity,ocean_current_direction&timezone=UTC&forecast_days=${WETTER_TAGE}&cell_selection=sea`;
 }
 
 const KMH_KN = 1 / 1.852;

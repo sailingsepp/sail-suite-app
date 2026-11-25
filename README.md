@@ -8,7 +8,7 @@ use at sea without a connection.
 |---|---|---|
 | **VoyagePlan** · Törnplanung | 5.3.0 | Plans the whole voyage: which harbour on which day |
 | **CourseCast** · Tagesplanung | 5.7.3 | Daily weather briefing for a fixed route: when to cast off, what to expect on the way |
-| **SailPilot** · TörnNavLog | 6.3.1 | Automatic logbook and backup navigation on the phone already on board |
+| **SailPilot** · TörnNavLog | 6.4.0 | Automatic logbook and backup navigation on the phone already on board |
 | **VoyageBook** · TörnBuch | 5.1.10 | Voyage, crew list, crew kitty, statistics and PDFs |
 
 A fifth page, `stream/`, lets people at home follow a shared voyage read-only.
@@ -687,8 +687,9 @@ The formulas and methods behind the suite's figures, kept current with the code.
   number of the displayed, rounded value; every figure in a sentence is
   judged on the value that is shown.
 - **Weather map (SailPilot)**: a regular grid of 0.25° over route and yacht
-  with a margin of 0.75° (1.5° around the yacht without a route), doubled in
-  spacing until it holds at most 200 points; one model per quantity for all
+  with a margin of 1.5° (2.5° around the yacht without a route), doubled in
+  spacing until it holds at most 600 points, two calendar days (UTC) fetched
+  and the time slider limited to the next 24 hours; one model per quantity for all
   grid points. Values between grid points by bilinear interpolation; wind
   direction via speed-weighted unit vectors; thunderstorm category of the
   nearest grid point (weather code 95 or above: thunderstorm; CAPE at least

@@ -4,10 +4,12 @@ import { bearingDeg, distNM } from './geo';
 
 export const WETTER_SCHRITT_GRAD = 0.25;
 
-export const WETTER_RAND_GRAD = 0.75;
-export const WETTER_RAND_OHNE_ROUTE_GRAD = 1.5;
+export const WETTER_RAND_GRAD = 1.5;
+export const WETTER_RAND_OHNE_ROUTE_GRAD = 2.5;
 
-export const WETTER_MAX_PUNKTE = 200;
+export const WETTER_MAX_PUNKTE = 600;
+
+export const WETTER_TAGE = 2;
 
 export const WETTER_NEU_MS = 3 * 3600_000;
 
