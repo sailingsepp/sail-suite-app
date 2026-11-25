@@ -1,9 +1,9 @@
 import L from 'leaflet';
 import { aktuelleSprache, aufSprachwechsel } from '@/shell/sprache';
-import { STRINGS } from './strings';
+import { STRINGS } from './strings';
+
 import { holeUeberServer } from '@/data/fremdProxy';
 import { escapeHtml } from '@/core/html';
-
 
 interface NominatimTreffer {
   display_name: string;
@@ -23,9 +23,7 @@ export function addLocationSearch(map: L.Map): void {
         <input type="text" class="search-input" placeholder="" aria-label="">
         <ul class="search-results" role="listbox" hidden></ul>
       `;
-      
-      
-      
+
       L.DomEvent.disableClickPropagation(container);
       L.DomEvent.disableScrollPropagation(container);
 
@@ -60,7 +58,7 @@ export function addLocationSearch(map: L.Map): void {
 
       function render(): void {
         if (!treffer.length) { schliessen(); return; }
-        
+
         list.innerHTML = treffer.map((t, i) =>
           `<li role="option" aria-selected="${i === aktiv}" class="${i === aktiv ? 'active' : ''}">${escapeHtml(t.display_name)}</li>`,
         ).join('');
@@ -81,8 +79,7 @@ export function addLocationSearch(map: L.Map): void {
           aktiv = -1;
           render();
         } catch {
-          
-          
+
         }
       }
 
@@ -102,8 +99,7 @@ export function addLocationSearch(map: L.Map): void {
       });
 
       input.addEventListener('blur', () => {
-        
-        
+
         setTimeout(schliessen, 150);
       });
 

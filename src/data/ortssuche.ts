@@ -1,16 +1,15 @@
-import { ohneVerwaltungswort } from './geocode';
+import { ohneVerwaltungswort } from './geocode';
+
 import { holeUeberServer } from './fremdProxy';
 
-
-
 export interface OrtsVorschlag {
-  
+
   anzeige: string;
   lat: number;
   lon: number;
-  
+
   istOrt: boolean;
-  
+
   land: string | null;
 }
 
@@ -34,7 +33,6 @@ interface NominatimVorwaertsTreffer {
   address?: NominatimAdresse;
 }
 
-
 const ORT_ADRESSTYPEN = new Set([
   'city', 'town', 'village', 'hamlet', 'island', 'suburb', 'city_district', 'municipality', 'county', 'state',
 ]);
@@ -53,19 +51,12 @@ function eigenerName(t: NominatimVorwaertsTreffer): string {
 
 const MIN_ZEICHEN = 3;
 
-
 export async function sucheOrtsvorschlaege(
   query: string, signal?: AbortSignal, limit = 8, sprache: 'de' | 'en' = 'de',
 ): Promise<OrtsVorschlag[]> {
   if (query.trim().length < MIN_ZEICHEN) return [];
   try {
-    
-    
-    
-    
-    
-    
-    
+
     const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1`
       + `&accept-language=${sprache}`
       + `&q=${encodeURIComponent(query)}&limit=${limit}`;
@@ -91,6 +82,6 @@ export async function sucheOrtsvorschlaege(
         };
       });
   } catch {
-    return []; 
+    return [];
   }
 }
