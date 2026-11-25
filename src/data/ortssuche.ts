@@ -1,5 +1,4 @@
 import { ohneVerwaltungswort } from './geocode';
-
 import { holeUeberServer } from './fremdProxy';
 
 export interface OrtsVorschlag {

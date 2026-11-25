@@ -1,7 +1,6 @@
 import L from 'leaflet';
 import { aktuelleSprache, aufSprachwechsel } from '@/shell/sprache';
 import { STRINGS } from './strings';
-
 import { holeUeberServer } from '@/data/fremdProxy';
 import { escapeHtml } from '@/core/html';
 

@@ -12,7 +12,7 @@ import { naechsteAusrichtung, drehweg } from '@/core/kursoben';
 import { macheDrehbar, type Drehung } from '@/map/drehung';
 import { aktuelleSprache, aufSprachwechsel } from '@/shell/sprache';
 import { STRINGS } from './strings';
-import { seekarteAuf, type Seekarte } from '@/map/seekarte';
+import { seekarteAuf, type KartenStil, type Seekarte } from '@/map/seekarte';
 import { bereiteZellen, kartenIndexJetzt } from '@/data/landKacheln';
 import { einFingerScrollt } from '@/map/einFinger';
 import { vorauslinie, landquerung, VORAUS_MIN } from '@/core/vorauslinie';
@@ -52,7 +52,7 @@ export function initKarte(behaelter: HTMLElement, meldeFolge: (folgt: boolean) =
 
   regelZiehen = einFingerScrollt(karte, () => !document.documentElement.classList.contains('nav-an'));
 
-  seekarte = seekarteAuf(karte, () => navigator.onLine, () => drehung?.winkel() ?? 0);
+  seekarte = seekarteAuf(karte, () => navigator.onLine, () => drehung?.winkel() ?? 0, kartenStil);
   seekarte.ebene.on('load', keineKarteAnzeigen(karte, behaelter));
 
   if (!karte.getPane('tbSeezeichen')) karte.createPane('tbSeezeichen').style.zIndex = '250';
@@ -381,6 +381,21 @@ export function karteObjekt(): L.Map | null {
 let seekarte: Seekarte | null = null;
 export function seekarteObjekt(): Seekarte | null {
   return seekarte;
+}
+
+const STIL_KEY = 'sail-suite:nav-kartenstil';
+let stil: KartenStil | null = null;
+export function kartenStil(): KartenStil {
+  if (!stil) {
+    try { stil = localStorage.getItem(STIL_KEY) === 'basis' ? 'basis' : 'topo'; } catch { stil = 'topo'; }
+  }
+  return stil;
+}
+export function setzeKartenStil(neu: KartenStil): void {
+  if (neu === kartenStil()) return;
+  stil = neu;
+  try { localStorage.setItem(STIL_KEY, neu); } catch {  }
+  seekarte?.neuZeichnen();
 }
 
 const SEEZEICHEN_KEY = 'sail-suite:nav-seezeichen';

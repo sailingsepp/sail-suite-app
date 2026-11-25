@@ -141,8 +141,8 @@ body.trackbook {
 }
 .tb-ausrichtung[aria-pressed="true"] { border-color: var(--amber); color: var(--amber); }
 
-.tb-nav-wz-luftbild[data-stand="laedt"] { color: var(--muted); }
-.tb-nav-wz-luftbild[data-stand="fehlt"] span { text-decoration: line-through; }
+.tb-nav-wz[data-stand="laedt"], .tb-nav-log-k[data-stand="laedt"] { color: var(--muted); }
+.tb-nav-log-k[data-stand="fehlt"] span { text-decoration: line-through; }
 .tb-nordnadel { width: 22px; height: 22px; flex: 0 0 auto; color: var(--red); }
 .tb-ausrichtung[aria-pressed="true"] .tb-nordnadel { color: inherit; }
 
@@ -1794,14 +1794,14 @@ html.ein-an.nav-an[data-eb-stufe="3"] .tb-kopf-griff { visibility: hidden; }
 .tb-nav-log-k .icon { width: 18px; height: 18px; flex: none; }
 .tb-nav-log-k:disabled { color: var(--muted); color: color-mix(in srgb, var(--text) 40%, var(--panel)); cursor: not-allowed; }
 
-.ein-an .tb-nav-wz[data-werkzeug="log"], .ein-an .tb-nav-wz[data-werkzeug="chrono"], .ein-an .tb-nav-wz[data-werkzeug="wetter"] { position: relative; }
+.ein-an .tb-nav-wz[data-werkzeug="log"], .ein-an .tb-nav-wz[data-werkzeug="chrono"], .ein-an .tb-nav-wz[data-werkzeug="wetter"], .ein-an .tb-nav-wz[data-werkzeug="karte"] { position: relative; }
 
-.ein-an .tb-nav-wz[data-werkzeug="log"]::before, .ein-an .tb-nav-wz[data-werkzeug="chrono"]::before, .ein-an .tb-nav-wz[data-werkzeug="wetter"]::before {
+.ein-an .tb-nav-wz[data-werkzeug="log"]::before, .ein-an .tb-nav-wz[data-werkzeug="chrono"]::before, .ein-an .tb-nav-wz[data-werkzeug="wetter"]::before, .ein-an .tb-nav-wz[data-werkzeug="karte"]::before {
   content: ''; position: absolute; left: 3px; top: 50%; margin-top: -5px; width: 0; height: 0;
   border-style: solid; border-width: 5px 6px 5px 0; border-color: transparent currentColor transparent transparent;
 }
 @media (min-width: 900px), (max-width: 899px) and (max-height: 500px) {
-  .ein-an .tb-nav-wz[data-werkzeug="log"]::before, .ein-an .tb-nav-wz[data-werkzeug="chrono"]::before, .ein-an .tb-nav-wz[data-werkzeug="wetter"]::before {
+  .ein-an .tb-nav-wz[data-werkzeug="log"]::before, .ein-an .tb-nav-wz[data-werkzeug="chrono"]::before, .ein-an .tb-nav-wz[data-werkzeug="wetter"]::before, .ein-an .tb-nav-wz[data-werkzeug="karte"]::before {
     left: 50%; top: auto; bottom: 1px; margin: 0 0 0 -5px; border-width: 6px 5px 0 5px;
     border-color: currentColor transparent transparent transparent;
   }

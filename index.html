@@ -757,7 +757,7 @@
         </span>
         <span class="marke-block">
           <span class="marke" data-de="Prod 6" data-en="Prod 6">Prod 6</span>
-          <span class="app-version" data-app="trackbook" title="Version 6.2.1">v6.2.1</span>
+          <span class="app-version" data-app="trackbook" title="Version 6.3.0">v6.3.0</span>
         </span>
       </a>
     </li>
@@ -1774,7 +1774,7 @@
   var lies = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
   var schreib = function (k, v) { try { localStorage.setItem(k, v); } catch (e) {  } };
 
-  ['merken', 'sprache', 'theme', 'tour-gesehen', 'einstieg-gesehen', 'sidebar-width', 'map-height', 'plan-map-height', 'plan-sidebar-width', 'plan-sidebar-left', 'plan-seamarks', 'book-list', 'routes', 'stream-name', 'stopp-gemeldet', 'tankstelle', 'seegrenze-zuletzt', 'seegrenze-verlassen', 'anker-drossel', 'ziel-namen', 'theme-ort', 'nav-wetter', 'blitz-radius', 'blitz-gewarnt', 'laufband-aus', 'ein-bildschirm-stufe', 'nav-kopf-klein', 'meeresgebiet', 'meerengen', 'bordkasse-ausstand', 'bordkasse-waehrung', 'wechselkurse', 'fehlstart-bereinigt', 'live-ersetzen']
+  ['merken', 'sprache', 'theme', 'tour-gesehen', 'einstieg-gesehen', 'sidebar-width', 'map-height', 'plan-map-height', 'plan-sidebar-width', 'plan-sidebar-left', 'plan-seamarks', 'book-list', 'routes', 'stream-name', 'stopp-gemeldet', 'tankstelle', 'seegrenze-zuletzt', 'seegrenze-verlassen', 'anker-drossel', 'ziel-namen', 'theme-ort', 'nav-wetter', 'nav-kartenstil', 'blitz-radius', 'blitz-gewarnt', 'laufband-aus', 'ein-bildschirm-stufe', 'nav-kopf-klein', 'meeresgebiet', 'meerengen', 'bordkasse-ausstand', 'bordkasse-waehrung', 'wechselkurse', 'fehlstart-bereinigt', 'live-ersetzen']
     .forEach(function (n) {
       var alt = lies('leinen-los:' + n);
       if (alt === null) return;

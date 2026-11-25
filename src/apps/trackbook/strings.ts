@@ -325,7 +325,6 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'menu.karten': 'Karten und Seezeichen',
     'menu.wetter': 'Wind & See beobachtet',
     'menu.ais': 'Schiffe in meiner Nähe',
-    'menu.seewetter': 'Seewetterbericht',
     'seewetter.titel': 'Seewetterbericht',
     'seewetter.warnTitel': 'Warnungen für die Küste (MeteoAlarm)',
     'seewetter.warnUnter': 'Bezirke an Land bis 12 sm um die Position, nächste 24 Stunden; zusätzlich zum Seewetterbericht.',
@@ -509,7 +508,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
  <b>Backup-Navigation</b>: Küstenlinie aus <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL), Gefahrenstellen (Fels, Wrack, Hindernis) aus <a href="https://www.openseamap.org/" target="_blank" rel="noopener">OpenSeaMap</a> über die Overpass-Schnittstelle, Tiefenmodell <a href="https://emodnet.ec.europa.eu/en/bathymetry" target="_blank" rel="noopener">EMODnet Bathymetry</a> (CC&nbsp;BY) als Hinweis.<br>
  <b>Tonnen, Baken, Gefahrenstellen, Häfen, Marinas und Tankstellen</b> (Symbole und Fenster beim Antippen): <a href="https://www.openseamap.org/" target="_blank" rel="noopener">OpenSeaMap</a> und <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL); Tonnen, Häfen und Tankstellen einmal die Woche je Revier vorgerechnet, Gefahrenstellen wie in der Backup-Navigation. Bedeutung der Tonnen nach dem IALA-Betonnungssystem, Region A.<br>
  <b>Luftbild einer Marina</b> (im Hafenfenster): <a href="https://developers.arcgis.com/documentation/mapping-and-location-services/mapping/static-maps/" target="_blank" rel="noopener">ArcGIS Static Maps</a>, Powered by Esri; Bildlieferanten und Nennung stehen im Bild. Abgerufen über den eigenen Server, nur mit Netz, nicht gespeichert.<br>
- <b>Luftbild als Kartenebene</b> (runder Knopf mit dem Bildsymbol auf der Karte): <a href="https://developers.arcgis.com/rest/basemap-styles/" target="_blank" rel="noopener">Esri World Imagery</a> über den ArcGIS Basemap styles service, Powered by Esri; die Bildlieferanten stehen in der Namensnennung auf der Karte. Die Kacheln lädt die App mit Netz direkt bei Esri; sie werden nicht gespeichert und nicht für den Betrieb ohne Netz vorgeladen.<br>
+ <b>Luftbild als Kartenebene</b> (Werkzeug „Karte“ → „Luftbild“): <a href="https://developers.arcgis.com/rest/basemap-styles/" target="_blank" rel="noopener">Esri World Imagery</a> über den ArcGIS Basemap styles service, Powered by Esri; die Bildlieferanten stehen in der Namensnennung auf der Karte. Die Kacheln lädt die App mit Netz direkt bei Esri; sie werden nicht gespeichert und nicht für den Betrieb ohne Netz vorgeladen.<br>
  <b>Gezeiten</b>: harmonische Konstanten aus <a href="https://doi.org/10.17882/109129" target="_blank" rel="noopener">TICON-4</a> (Hart-Davis, Dettmering, Seitz 2025, DGFI-TUM; aus GESLA-4-Pegelreihen), je Pegel <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC&nbsp;BY&nbsp;4.0</a> oder CC&nbsp;BY-NC&nbsp;4.0, aufbereitet in der <a href="https://github.com/openwatersio/slackwater-database" target="_blank" rel="noopener">Slackwater-Datenbank</a>; gerechnet mit <a href="https://github.com/openwatersio/neaps" target="_blank" rel="noopener">@neaps/tide-predictor</a> (MIT). Wetteranteil: <a href="https://marine.copernicus.eu/" target="_blank" rel="noopener">Copernicus Marine Service</a> (Mittelmeermodell, Wasserstand ohne Gezeit als Tagesmittel). Monatlich abgeglichen mit den gemessenen Pegeln der <a href="https://www.ioc-sealevelmonitoring.org/" target="_blank" rel="noopener">IOC Sea Level Station Monitoring Facility</a>; Berichtigungen je Pegel gehen in die Rechnung ein.<br>
  <b>AIS</b>: <a href="https://aisstream.io/" target="_blank" rel="noopener">aisstream.io</a>, Meldungen von Landstationen, über den eigenen Server abgerufen.<br>
  <b>Kompendium</b>: alle Zeichnungen eigene Arbeit; Weltkarte der Betonnungsregionen aus <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a> 1:110m (gemeinfrei) über das Paket <a href="https://github.com/topojson/world-atlas" target="_blank" rel="noopener">world-atlas</a> (ISC). Die Quellen der Inhalte nennt jeder Abschnitt, vollständig im Abschnitt „Quellen".<br>
@@ -617,8 +616,9 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'nav.w.wetter': 'Wetter',
     'nav.wetter.karte': 'Wetterkarte', 'nav.wetter.wx': 'WX', 'nav.wetter.wxLang': 'WX: Regenradar auf der Karte',
     'nav.wetter.seewetter': 'Seewetterbericht',
-    'nav.w.luftbild': 'Luftbild', 'nav.w.luftbildKarte': 'Karte',
-    'nav.w.luftbildLang': 'Luftbild über der Karte', 'nav.w.luftbildKarteLang': 'Zurück zur Seekarte',
+    'nav.w.karte': 'Karte',
+    'nav.karte.basis': 'Basiskarte', 'nav.karte.topo': 'Topographische Karte', 'nav.karte.luftbild': 'Luftbild',
+    'nav.karte.luftbildFehlt': 'Luftbild nicht verfügbar',
     'nav.kueg': 'KüG',
     'nav.t.wetter': 'Wetterkarte',
     'wk.ebenen': 'Ebene',
@@ -1155,7 +1155,6 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'menu.karten': 'Charts and sea marks',
     'menu.wetter': 'Wind & sea observed',
     'menu.ais': 'Ships near me',
-    'menu.seewetter': 'Marine forecast',
     'seewetter.titel': 'Marine forecast',
     'seewetter.warnTitel': 'Warnings for the coast (MeteoAlarm)',
     'seewetter.warnUnter': 'Districts ashore within 12 NM of the position, next 24 hours; in addition to the marine forecast.',
@@ -1362,7 +1361,7 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
  <b>Backup navigation</b>: coastline from <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL), hazards (rock, wreck, obstruction) from <a href="https://www.openseamap.org/" target="_blank" rel="noopener">OpenSeaMap</a> via the Overpass API, depth model <a href="https://emodnet.ec.europa.eu/en/bathymetry" target="_blank" rel="noopener">EMODnet Bathymetry</a> (CC&nbsp;BY) as a hint.<br>
  <b>Buoys, beacons, hazards, harbours, marinas and fuel stations</b> (symbols and windows on tap): <a href="https://www.openseamap.org/" target="_blank" rel="noopener">OpenSeaMap</a> and <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL); buoys, harbours and fuel stations precomputed weekly per region, hazards as in the backup navigation. Meaning of buoys after the IALA Maritime Buoyage System, Region A.<br>
  <b>Aerial view of a marina</b> (in the harbour window): <a href="https://developers.arcgis.com/documentation/mapping-and-location-services/mapping/static-maps/" target="_blank" rel="noopener">ArcGIS Static Maps</a>, Powered by Esri; image providers and attribution are shown in the image. Fetched through our own server, only with a connection, not stored.<br>
- <b>Aerial imagery as a map layer</b> (round button with the picture symbol on the map): <a href="https://developers.arcgis.com/rest/basemap-styles/" target="_blank" rel="noopener">Esri World Imagery</a> via the ArcGIS Basemap styles service, Powered by Esri; the image providers appear in the attribution on the map. The app loads the tiles directly from Esri with a connection; they are not stored and not preloaded for offline use.<br>
+ <b>Aerial imagery as a map layer</b> (Map tool → Aerial imagery): <a href="https://developers.arcgis.com/rest/basemap-styles/" target="_blank" rel="noopener">Esri World Imagery</a> via the ArcGIS Basemap styles service, Powered by Esri; the image providers appear in the attribution on the map. The app loads the tiles directly from Esri with a connection; they are not stored and not preloaded for offline use.<br>
  <b>Tides</b>: harmonic constants from <a href="https://doi.org/10.17882/109129" target="_blank" rel="noopener">TICON-4</a> (Hart-Davis, Dettmering, Seitz 2025, DGFI-TUM; from GESLA-4 tide-gauge records), per gauge <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC&nbsp;BY&nbsp;4.0</a> or CC&nbsp;BY-NC&nbsp;4.0, compiled in the <a href="https://github.com/openwatersio/slackwater-database" target="_blank" rel="noopener">Slackwater database</a>; computed with <a href="https://github.com/openwatersio/neaps" target="_blank" rel="noopener">@neaps/tide-predictor</a> (MIT). Weather-driven part: <a href="https://marine.copernicus.eu/" target="_blank" rel="noopener">Copernicus Marine Service</a> (Mediterranean model, de-tided water level as daily mean). Checked monthly against the measured gauges of the <a href="https://www.ioc-sealevelmonitoring.org/" target="_blank" rel="noopener">IOC Sea Level Station Monitoring Facility</a>; corrections per gauge enter the calculation.<br>
  <b>AIS</b>: <a href="https://aisstream.io/" target="_blank" rel="noopener">aisstream.io</a>, reports from shore stations, fetched through our own server.<br>
  <b>Compendium</b>: all drawings are original work; world map of the buoyage regions from <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a> 1:110m (public domain) via the <a href="https://github.com/topojson/world-atlas" target="_blank" rel="noopener">world-atlas</a> package (ISC). Each section names the sources of its content; the full list is in the "Sources" section.<br>
@@ -1470,8 +1469,9 @@ export const STRINGS: Record<Sprache, Record<string, string>> = {
     'nav.w.wetter': 'Weather',
     'nav.wetter.karte': 'Weather map', 'nav.wetter.wx': 'WX', 'nav.wetter.wxLang': 'WX: rain radar on the map',
     'nav.wetter.seewetter': 'Marine forecast',
-    'nav.w.luftbild': 'Aerial', 'nav.w.luftbildKarte': 'Chart',
-    'nav.w.luftbildLang': 'Aerial imagery over the chart', 'nav.w.luftbildKarteLang': 'Back to the chart',
+    'nav.w.karte': 'Map',
+    'nav.karte.basis': 'Base map', 'nav.karte.topo': 'Topographic map', 'nav.karte.luftbild': 'Aerial imagery',
+    'nav.karte.luftbildFehlt': 'Aerial imagery unavailable',
     'nav.kueg': 'COG',
     'nav.t.wetter': 'Weather map',
     'wk.ebenen': 'Layer',

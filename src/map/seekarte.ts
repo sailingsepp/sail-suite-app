@@ -15,11 +15,20 @@ import {
 import { ladeTiefenImGebiet, tiefenJetzt } from '@/data/tiefenKacheln';
 import './seekarte.css';
 
-export interface KartenFarben { wasser: string; land: string; kueste: string }
+export interface KartenFarben { wasser: string; land: string; kueste: string; nacht?: boolean; basis?: boolean }
 
 export const FARBEN_TAG: KartenFarben = { wasser: '#B3D7F0', land: '#D3DDE2', kueste: '#0F2839' };
 
-export const FARBEN_NACHT: KartenFarben = { wasser: '#030000', land: '#3A1009', kueste: '#C4442C' };
+export const FARBEN_NACHT: KartenFarben = { wasser: '#030000', land: '#3A1009', kueste: '#C4442C', nacht: true };
+
+export type KartenStil = 'topo' | 'basis';
+export const FARBEN_BASIS_TAG: KartenFarben = { ...FARBEN_TAG, land: '#F6EBB8', basis: true };
+export const FARBEN_BASIS_NACHT: KartenFarben = { ...FARBEN_NACHT, basis: true };
+
+export function kartenFarben(nacht: boolean, stil: KartenStil = 'topo'): KartenFarben {
+  if (stil === 'basis') return nacht ? FARBEN_BASIS_NACHT : FARBEN_BASIS_TAG;
+  return nacht ? FARBEN_NACHT : FARBEN_TAG;
+}
 
 const KACHEL_PX = 256;
 
@@ -478,7 +487,7 @@ function zeichne(ctx: CanvasRenderingContext2D, x0: number, y0: number, z: numbe
   ctx.clip();
   ctx.fillStyle = f.wasser;
   ctx.fillRect(-RAND_PX, -RAND_PX, KACHEL_PX + 2 * RAND_PX, KACHEL_PX + 2 * RAND_PX);
-  if (z >= TIEFEN_AB_ZOOM) zeichneTiefen(ctx, x0, y0, z, box, f === FARBEN_NACHT, drehungRad);
+  if (z >= TIEFEN_AB_ZOOM) zeichneTiefen(ctx, x0, y0, z, box, !!f.nacht, drehungRad);
   if (z >= STEGE_AB_ZOOM) zeichneStege(ctx, x0, y0, z, box, f);
   const stufe = stufeFuerZoom(z);
   const ringe: Float64Array[] = [];
@@ -503,11 +512,14 @@ function zeichne(ctx: CanvasRenderingContext2D, x0: number, y0: number, z: numbe
   ctx.stroke(land);
 
   if (z >= Math.min(RELIEF_AB_ZOOM, ORTE_AB_ZOOM)) {
-    const nacht = f === FARBEN_NACHT;
+    const nacht = !!f.nacht;
     ctx.save();
     ctx.clip(land, 'evenodd');
-    zeichneRelief(ctx, x0, y0, z, box, nacht, skala);
-    zeichneHoehenlinien(ctx, x0, y0, z, box, nacht);
+
+    if (!f.basis) {
+      zeichneRelief(ctx, x0, y0, z, box, nacht, skala);
+      zeichneHoehenlinien(ctx, x0, y0, z, box, nacht);
+    }
     zeichneOrte(ctx, x0, y0, z, box, nacht);
     zeichneStrassen(ctx, x0, y0, z, box, nacht);
     if (z >= PISTEN_AB_ZOOM) zeichnePisten(ctx, x0, y0, z, box, nacht);
@@ -575,7 +587,7 @@ export function seekartenEbene(farben: () => KartenFarben, pane: string, netz: (
         male();
         if (ausschnittStand(box) !== 'fehlt') this.fire('load');
 
-        if (z >= RELIEF_AB_ZOOM && ausschnittStand(box) !== 'aussen') {
+        if (z >= RELIEF_AB_ZOOM && !farben().basis && ausschnittStand(box) !== 'aussen') {
           const neu = await ladeHoehenImGebiet(box, netz()).catch(() => false);
           const bilder = await bereiteHoehenBilder(box, reliefStufe(z)).catch(() => false);
           if ((neu || bilder) && leinwand.width) male();
@@ -633,10 +645,11 @@ export const SEEKARTEN_NAMEN_PANE = 'seekartenNamen';
 
 export const istNacht = (): boolean => document.documentElement.getAttribute('data-theme') === 'nacht';
 
-export function seekarteAuf(karte: L.Map, netz: () => boolean = () => navigator.onLine, winkel?: () => number): Seekarte {
+export function seekarteAuf(karte: L.Map, netz: () => boolean = () => navigator.onLine, winkel?: () => number,
+  stil: () => KartenStil = () => 'topo'): Seekarte {
   if (!karte.getPane(SEEKARTE_PANE)) karte.createPane(SEEKARTE_PANE).style.zIndex = '210';
   karte.getContainer().classList.add('sk-karte');
-  const sk = seekartenEbene(() => (istNacht() ? FARBEN_NACHT : FARBEN_TAG), SEEKARTE_PANE, netz, winkel);
+  const sk = seekartenEbene(() => kartenFarben(istNacht(), stil()), SEEKARTE_PANE, netz, winkel);
   sk.ebene.addTo(karte);
   new MutationObserver(() => sk.neuZeichnen())
     .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });

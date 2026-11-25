@@ -33,6 +33,8 @@ export const SCHLUESSEL = {
 
   navWetter: 'sail-suite:nav-wetter',
 
+  navKartenstil: 'sail-suite:nav-kartenstil',
+
   blitzRadius: 'sail-suite:blitz-radius',
 
   blitzGewarnt: 'sail-suite:blitz-gewarnt',

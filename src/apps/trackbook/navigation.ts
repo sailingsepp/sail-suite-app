@@ -42,7 +42,7 @@ import { grenzenEntlang, fortschrittSm, grenzStand, type Grenzuebergang } from '
 import { zoneAn, warneGrenzeVoraus, loggeGrenze } from './seegrenze';
 import { istOnline } from './netz';
 import { seekartenNamen } from '@/map/seekartenNamen';
-import { zentriere, seezeichenAn, setzeSeezeichen, sichtbarerAusschnitt, karteZiehenNeu, karteObjekt, seekarteObjekt, kartenWinkel, radarObjekt, luftbildObjekt } from './karte';
+import { zentriere, seezeichenAn, setzeSeezeichen, sichtbarerAusschnitt, karteZiehenNeu, karteObjekt, seekarteObjekt, kartenWinkel, radarObjekt, luftbildObjekt, kartenStil, setzeKartenStil } from './karte';
 import { oeffneSeewetter } from './seewetter';
 import { stoppeTon } from './ton';
 import { sage, verwirf } from './ansage';
@@ -74,10 +74,10 @@ export interface NavAnbindung {
 }
 
 type Modus = 'log' | 'nav';
-type Werkzeug = 'route' | 'gehezu' | 'messen' | 'anker' | 'rueckweg' | 'wetter' | 'karten' | 'log' | 'chrono' | 'luftbild';
+type Werkzeug = 'route' | 'gehezu' | 'messen' | 'anker' | 'rueckweg' | 'wetter' | 'karten' | 'log' | 'chrono' | 'karte';
 const WERKZEUGE: { w: Werkzeug; icon: IconName }[] = [
 
-  { w: 'route', icon: 'route' }, { w: 'gehezu', icon: 'zielpunkt' }, { w: 'wetter', icon: 'wind' }, { w: 'luftbild', icon: 'luftbild' },
+  { w: 'route', icon: 'route' }, { w: 'gehezu', icon: 'zielpunkt' }, { w: 'wetter', icon: 'wind' }, { w: 'karte', icon: 'karten' },
   { w: 'messen', icon: 'messen' }, { w: 'chrono', icon: 'stoppuhr' }, { w: 'anker', icon: 'anker' }, { w: 'rueckweg', icon: 'rueckweg' },
 ];
 
@@ -542,11 +542,12 @@ function zeichneLeisteWerkzeuge(): void {
   const html = klapp + (zu ? '' : werkzeugListe().map(({ w, icon: ic }) => {
 
     const aktiv = w === 'chrono' ? chronoBaum || timerOffen() || stoppuhrOffen()
-      : w === 'wetter' ? wetterBaum || werkzeug === 'wetter' || radarAn() : w === 'luftbild' ? luftbildAn() : werkzeug === w;
-    const auf = w === 'chrono' ? chronoBaum : w === 'wetter' ? wetterBaum : aktiv;
-    if (w === 'luftbild') return luftbildWerkzeug(ic);
+      : w === 'wetter' ? wetterBaum || werkzeug === 'wetter' || radarAn() : w === 'karte' ? kartenBaum : werkzeug === w;
+    const auf = w === 'chrono' ? chronoBaum : w === 'wetter' ? wetterBaum : w === 'karte' ? kartenBaum : aktiv;
     return `<button type="button" class="tb-nav-wz${aktiv ? ' aktiv' : ''}${w === 'anker' && ankerScharf ? ' scharf' : ''}" data-werkzeug="${w}" aria-pressed="${aktiv}"`
-      + `${w === 'log' || w === 'chrono' || w === 'wetter' ? ` aria-expanded="${auf}"` : ''}>${icon(ic)}<span>${esc(wort(`nav.w.${w}`))}</span></button>`;
+      + `${w === 'log' || w === 'chrono' || w === 'wetter' || w === 'karte' ? ` aria-expanded="${auf}"` : ''}`
+
+      + `${w === 'karte' ? ` data-stand="${luftbildObjekt()?.stand() ?? 'aus'}"` : ''}>${icon(ic)}<span>${esc(wort(`nav.w.${w}`))}</span></button>`;
   }).join(''));
 
   if (html !== letzteLeiste) {
@@ -556,6 +557,7 @@ function zeichneLeisteWerkzeuge(): void {
   zeichneBaum(box, !zu && werkzeug === 'log', 'log', logBaumInhalt);
   zeichneBaum(box, !zu && chronoBaum, 'chrono', chronoBaumInhalt);
   zeichneBaum(box, !zu && wetterBaum, 'wetter', wetterBaumInhalt);
+  zeichneBaum(box, !zu && kartenBaum, 'karte', kartenBaumInhalt);
   timerPlatzNeu();
   stoppuhrPlatzNeu();
 }
@@ -565,16 +567,23 @@ const letzterBaum = new Map<string, string>();
 let chronoBaum = false;
 
 let wetterBaum = false;
+
+let kartenBaum = false;
 const radarAn = (): boolean => radarObjekt()?.an() ?? false;
 const luftbildAn = (): boolean => luftbildObjekt()?.an() ?? false;
 
-function luftbildWerkzeug(ic: IconName): string {
+function kartenBaumInhalt(): string {
   const lb = luftbildObjekt();
   const stand = lb?.stand() ?? 'aus';
-  const an = stand === 'an';
-  const lang = wort(an ? 'nav.w.luftbildKarteLang' : 'nav.w.luftbildLang');
-  return `<button type="button" class="tb-nav-wz tb-nav-wz-luftbild${an ? ' aktiv' : ''}" data-werkzeug="luftbild" data-stand="${stand}" aria-pressed="${an}"`
-    + ` aria-label="${esc(lang)}" title="${esc(lang)}">${icon(an ? 'karten' : ic)}<span>${esc(wort(an ? 'nav.w.luftbildKarte' : 'nav.w.luftbild'))}</span></button>`;
+  const luft = luftbildAn();
+  const stil = kartenStil();
+  const eintrag = (a: 'basis' | 'topo' | 'luftbild', ic: IconName, an: boolean, extra = '') =>
+    `<button type="button" class="tb-nav-log-k${an ? ' an' : ''}" data-aktion="karte:${a}" aria-pressed="${an}"${extra}>`
+    + `${icon(ic)}<span>${esc(wort(`nav.karte.${a}`))}</span></button>`;
+  return eintrag('basis', 'karten', !luft && stil === 'basis')
+    + eintrag('topo', 'gelaende', !luft && stil === 'topo')
+    + eintrag('luftbild', 'luftbild', luft, ` data-stand="${stand}"`
+      + (stand === 'fehlt' ? ` title="${esc(wort('nav.karte.luftbildFehlt'))}"` : ''));
 }
 
 function wetterBaumInhalt(): string {
@@ -600,7 +609,7 @@ function logBaumInhalt(): string {
   }).join('');
 }
 
-function zeichneBaum(box: HTMLElement, offen: boolean, w: 'log' | 'chrono' | 'wetter', inhalt: () => string): void {
+function zeichneBaum(box: HTMLElement, offen: boolean, w: 'log' | 'chrono' | 'wetter' | 'karte', inhalt: () => string): void {
   const id = `tb-nav-${w}-baum`;
   let baum = $(id);
   const k = box.querySelector<HTMLElement>(`[data-werkzeug="${w}"]`);
@@ -647,15 +656,19 @@ function zeigeUeberPanel(punkte: readonly Punkt[]): void {
 
 function oeffneWerkzeug(w: Werkzeug): void {
 
-  if (w === 'luftbild') {
-    const lb = luftbildObjekt();
-    if (lb) void lb.setze(!lb.an());
+  if (w === 'karte') {
+    kartenBaum = !kartenBaum;
+    chronoBaum = false;
+    wetterBaum = false;
+    if (kartenBaum && werkzeug === 'log') { werkzeugZu(); return; }
+    zeichneLeisteWerkzeuge();
     return;
   }
 
   if (w === 'chrono') {
     chronoBaum = !chronoBaum;
     wetterBaum = false;
+    kartenBaum = false;
     if (chronoBaum && werkzeug === 'log') { werkzeugZu(); return; }
     zeichneLeisteWerkzeuge();
     return;
@@ -664,12 +677,14 @@ function oeffneWerkzeug(w: Werkzeug): void {
   if (w === 'wetter') {
     wetterBaum = !wetterBaum;
     chronoBaum = false;
+    kartenBaum = false;
     if (wetterBaum && werkzeug === 'log') { werkzeugZu(); return; }
     zeichneLeisteWerkzeuge();
     return;
   }
   chronoBaum = false;
   wetterBaum = false;
+  kartenBaum = false;
   if (werkzeug === w) { werkzeugZu(); return; }
   schliesseWerkzeug();
   werkzeug = w;
@@ -1889,6 +1904,18 @@ export function initNavigation(anbindung: NavAnbindung): void {
 }
 
 function aktion(a: string): void {
+
+  if (a.startsWith('karte:')) {
+    kartenBaum = false;
+    const lb = luftbildObjekt();
+    if (a === 'karte:luftbild') { if (lb && !lb.an()) void lb.setze(true); } else {
+      if (lb?.an()) void lb.setze(false);
+      setzeKartenStil(a === 'karte:basis' ? 'basis' : 'topo');
+    }
+    letzteLeiste = '';
+    zeichneLeisteWerkzeuge();
+    return;
+  }
   if (a === 'wetter:karte') {
     wetterBaum = false;
     if (werkzeug === 'wetter') { werkzeugZu(); return; }

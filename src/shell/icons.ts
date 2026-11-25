@@ -15,6 +15,8 @@ export type IconName =
 
   | 'luftbild'
 
+  | 'gelaende'
+
   | 'radar';
 
 const PFADE: Record<IconName, string> = {
@@ -191,6 +193,8 @@ const PFADE: Record<IconName, string> = {
   radar:
     '<circle cx="10" cy="10" r="7.5"/><circle cx="10" cy="10" r="3.8"/><path d="M10 10l5.3-5.3"/>'
     + '<circle cx="13.4" cy="12.8" r="1.1" fill="currentColor"/>',
+  gelaende:
+    '<path d="M2.5 16.5h15"/><path d="M3.5 16.5l5-9.5 3 5 2-2.8 3.5 7.3"/><path d="M6.4 11.3c1.3.6 2.7.6 4 0"/>',
   karten:
     '<path d="M2.5 5.2l5-2 5 2 5-2v11.6l-5 2-5-2-5 2z"/><path d="M7.5 3.2v11.6M12.5 5.2v11.6"/>',
   navigation:
