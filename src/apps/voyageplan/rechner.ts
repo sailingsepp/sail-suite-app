@@ -4,6 +4,7 @@ import { openMeteoKontingentErschoepft } from '@/data/openMeteoNetz';
 import { holeInselAbschnitteOderWirf, type InselAbschnitte } from '@/data/skipperguide';
 import type { Hafenknoten } from '@/core/hafennetz';
 import { holeWindgitter } from '@/data/revierwind';
+import { holeSeegangsgitter } from '@/data/revierseegang';
 import { findInselnFuerPunkte, istGolfName } from '@/data/overpass';
 import {
   filtereSuchraum, filtereAnkerbuchten, baueKandidatennetz, begrenzeKandidaten, verbindeTeilnetze, ergaenzeNachtkanten, nachtBonusTage, NACHTSCHLAG_MAX_STUNDEN, korridorWege, etappenKetten, kantePasst, KANTEN_AUFSCHLAG,
@@ -17,7 +18,7 @@ import { ausrichtungstermRundtoern, ausrichtungstermEinweg } from '@/core/ausric
 import { waehleToernvorschlag, waehleToernvorschlaege, bildeKetteAufNetzAb, SAATPLAN_SCHWELLE_NM } from '@/core/saatplan';
 import { huellenumfangSm, selbstkreuzungen, rueckschritte } from '@/core/gummiband';
 import { boxUm } from '@/core/landumfahrung';
-import { schutzStufe } from '@/core/shelter';
+import { schutzDerNacht } from '@/core/shelter';
 import { revierVonPunkt } from '@/core/revierzonen';
 import { bearingDeg } from '@/core/geo';
 import type { Punkt } from '@/core/types';
@@ -184,6 +185,8 @@ const FREIE_RUNDE_MAX_KANDIDATEN = 60;
 const LANGE_TAGE_MAX_STUNDEN = 12;
 
 const PROBE_NAECHTE = 2;
+
+const KORRIDOR_MEHR_NAECHTE = 3;
 
 const PROBE_BUDGET_MS = 60_000;
 
@@ -385,17 +388,20 @@ export async function rechne(
   const naechteErlaubt = (anfrage.nachtVorgaben ?? nachtVorgabenAus(planung)).nachtfahrtBudget;
 
   const kettenTagSm = (KETTEN_RESERVE * planung.maxStundenProTag * anfrage.cfg.motorSpeed) / KANTEN_AUFSCHLAG;
-  const ketten = anfrage.offenesEnde && rueckgabehafen && kueste != null
-    ? etappenKetten(
-      kettenStationen(anfrage.start, optionEingaben[0]?.wunschziele ?? [], rueckgabehafen),
-      erlaubt.filter((k) => k.art !== 'bucht'), kettenTagSm,
-      (KETTEN_RESERVE * NACHTSCHLAG_MAX_STUNDEN * anfrage.cfg.motorSpeed) / KANTEN_AUFSCHLAG, naechteErlaubt,
-      {
-        kueste: kueste ?? [],
+  const sucheKetten = (stunden: number, naechte: number) => etappenKetten(
+    kettenStationen(anfrage.start, optionEingaben[0]?.wunschziele ?? [], rueckgabehafen!),
+    erlaubt.filter((k) => k.art !== 'bucht'), (KETTEN_RESERVE * stunden * anfrage.cfg.motorSpeed) / KANTEN_AUFSCHLAG,
+    (KETTEN_RESERVE * NACHTSCHLAG_MAX_STUNDEN * anfrage.cfg.motorSpeed) / KANTEN_AUFSCHLAG, naechte,
+    {
+      kueste: kueste ?? [],
 
-        pruefe: (a, b, nacht) => kantePasst(a, b, revier, nacht ? NACHTSCHLAG_MAX_STUNDEN : planung.maxStundenProTag, kueste ?? []),
-      },
-    ) : [];
+      pruefe: (a, b, nacht, nah) => kantePasst(a, b, revier, nacht ? NACHTSCHLAG_MAX_STUNDEN : stunden, nah),
+    },
+  );
+  let ketten = anfrage.offenesEnde && rueckgabehafen && kueste != null ? sucheKetten(planung.maxStundenProTag, naechteErlaubt) : [];
+
+  const kettenNurKorridor = ketten.length === 0 && anfrage.offenesEnde && rueckgabehafen != null && kueste != null;
+  if (kettenNurKorridor) ketten = sucheKetten(LANGE_TAGE_MAX_STUNDEN, naechteErlaubt + KORRIDOR_MEHR_NAECHTE);
   const kettenKnoten = [...new Set(ketten.flatMap((k) => k.knoten.slice(1, -1)))].filter((k) => erlaubt.includes(k));
   const kettenSm = Math.max(0, ...ketten.map((k) => k.sm));
 
@@ -625,6 +631,12 @@ export async function rechne(
     return g;
   }).catch(() => null);
 
+  const seegang = await gemerkt(speicher, 'seegang', { gitterBox, gitterSchritt }, async () => {
+    const g = await holeSeegangsgitter(gitterBox, gitterSchritt);
+    if (!g) throw new Error('kein Seegangsgitter');
+    return g;
+  }).catch(() => null);
+
   melde({ art: 'fortschritt', phase: 'haefen', schritt: 'netz', knoten: netz.knoten.length, kanten: netz.kanten.length, zeitbudgetMs });
 
   const nachtVorgaben = anfrage.nachtVorgaben ?? nachtVorgabenAus(planung);
@@ -646,7 +658,7 @@ export async function rechne(
 
     laufSpeicher, mitGitter ? gitter : null,
     { kreuzen: planung.kreuzen, motoren: planung.motoren },
-    abbruch, zeitbudgetMs,
+    abbruch, zeitbudgetMs, seegang,
   );
   const { kosten: kostenStufe1, bericht: kartenBericht, vorherrschenderWindDeg, windproben } = await befuelle(netz, true, 'wetter');
 
@@ -730,6 +742,8 @@ export async function rechne(
     netz, startIndex: 0, zielIndex, gesamtFahrtage: anfrage.gesamtFahrtage,
     kosten, kBeste: K_BESTE, erreichbar, datumFuerTag,
 
+    ...(planung.freieRuhetage > 0 ? { erreichbarOhneRuhetage: baueErreichbar(planung.reserveTage) } : {}),
+
     nachtfahrtBudget,
     ruhetagKnoten,
     pflichtOrte,
@@ -747,7 +761,7 @@ export async function rechne(
     if (anfrage.ohneUmkehrpunkt) return null;
     return umkehrpunkt(
       baueTrajektorie(ergebnis, netz, 0, wunschzielKnoten, wunschzielJeKnoten),
-      zielOrt, anfrage.gesamtFahrtage, revier, planung.maxStundenProTag, reserve,
+      zielOrt, anfrage.gesamtFahrtage, revier, planung.maxStundenProTag, reserve, nachtTage,
     );
   };
 
@@ -758,7 +772,7 @@ export async function rechne(
     ...(anfrage.offenesEnde ? { ankunftsTag: (plan: WochenplanErgebnis) => plan.etappen[plan.etappen.length - 1]?.tag ?? null } : {}),
 
     ueberzaehligeHafentage: (plan: WochenplanErgebnis) => zaehleUeberzaehligeHafentage(
-      plan.etappen, planung.freieRuhetage + anfrage.wunschziele.filter((w) => w.art === 'ruhetag').length, ersterTagFrei,
+      plan.etappen, planung.freieRuhetage + anfrage.wunschziele.filter((w) => w.art === 'ruhetag').length, ersterTagFrei, true,
     ),
 
     tageAmHeimathafen: (plan: WochenplanErgebnis) => zaehleTageAmHeimathafen(
@@ -926,7 +940,8 @@ export async function rechne(
         let naechte: number | undefined;
         if (p.nacht.size > 0) {
           const k = probeKosten(p, planung.maxStundenProTag, true);
-          for (let n = nachtfahrtBudget + 1; n <= PROBE_NAECHTE && naechte == null; n++) {
+          const bisNaechte = anfrage.offenesEnde ? nachtfahrtBudget + KORRIDOR_MEHR_NAECHTE : PROBE_NAECHTE;
+          for (let n = nachtfahrtBudget + 1; n <= bisNaechte && naechte == null; n++) {
             const e = plan(basis(planung.maxStundenProTag, n, k));
             if (e) naechte = e.etappen.filter((x) => x.istNachtschlag).length || n;
           }
@@ -938,9 +953,23 @@ export async function rechne(
           const lange = e.etappen.filter((x) => !x.istHafentag && !x.istNachtschlag && (x.kennzahlen.totalHrs ?? 0) > planung.maxStundenProTag);
           lang = { tage: Math.max(1, lange.length), stunden: h, dunkel: lange.filter((x) => x.kennzahlen.ablegenImDunkeln).length };
         }
+
+        let beide = false;
+        if (naechte == null && !lang && anfrage.offenesEnde && planung.maxStundenProTag < LANGE_TAGE_MAX_STUNDEN) {
+          const h = LANGE_TAGE_MAX_STUNDEN;
+          const k = probeKosten(p, h, true);
+          for (let n = nachtfahrtBudget + 1; n <= nachtfahrtBudget + KORRIDOR_MEHR_NAECHTE && !beide; n++) {
+            const e = plan(basis(h, n, k));
+            if (!e) continue;
+            const lange = e.etappen.filter((x) => !x.istHafentag && !x.istNachtschlag && (x.kennzahlen.totalHrs ?? 0) > planung.maxStundenProTag);
+            naechte = Math.max(nachtfahrtBudget + 1, e.etappen.filter((x) => x.istNachtschlag).length);
+            lang = { tage: Math.max(1, lange.length), stunden: h, dunkel: lange.filter((x) => x.kennzahlen.ablegenImDunkeln).length };
+            beide = true;
+          }
+        }
         if (naechte == null && !lang) return null;
         return {
-          art: 'staerker', ...(naechte != null ? { naechte } : {}),
+          art: 'staerker', ...(beide ? { beide: true } : {}), ...(naechte != null ? { naechte } : {}),
           ...(lang ? {
             lang: {
               tage: lang.tage, stunden: lang.stunden, dunkelAblegen: lang.dunkel,
@@ -978,8 +1007,22 @@ export async function rechne(
         }
       }
 
+      if (lockerung.art === 'keine' && kettenNurKorridor && ketten.length > 0) {
+
+        const kette = ketten.reduce((a, b) => (b.naechte < a.naechte ? b : a));
+        const tagMax = (KETTEN_RESERVE * LANGE_TAGE_MAX_STUNDEN * anfrage.cfg.motorSpeed) / KANTEN_AUFSCHLAG;
+        const schlaege = kette.knoten.slice(1).map((k, i) => distNM(kette.knoten[i]!.ort.lat, kette.knoten[i]!.ort.lon, k.ort.lat, k.ort.lon));
+        const tage = schlaege.filter((sm) => sm <= tagMax);
+        const stunden = Math.min(LANGE_TAGE_MAX_STUNDEN, Math.max(planung.maxStundenProTag,
+          Math.ceil((Math.max(0, ...tage) * KANTEN_AUFSCHLAG) / (KETTEN_RESERVE * anfrage.cfg.motorSpeed))));
+        lockerung = { art: 'abstaende', stunden, naechte: Math.max(nachtfahrtBudget, schlaege.length - tage.length) };
+      }
+
       if (lockerung.art === 'keine' && planung.maxStundenProTag < LANGE_TAGE_MAX_STUNDEN) {
-        lockerung = { ...lockerung, geprueftBis: LANGE_TAGE_MAX_STUNDEN, geprueftNaechte: Math.max(nachtfahrtBudget, PROBE_NAECHTE) };
+        lockerung = {
+          ...lockerung, geprueftBis: LANGE_TAGE_MAX_STUNDEN,
+          geprueftNaechte: anfrage.offenesEnde ? nachtfahrtBudget + KORRIDOR_MEHR_NAECHTE : Math.max(nachtfahrtBudget, PROBE_NAECHTE),
+        };
       }
       return { ...grund, lockerung };
     }
@@ -1065,8 +1108,8 @@ export async function rechne(
     && !netz.kanten.some((k, i) => k.von === e.nachIndex && kosten.has(kostenSchluessel(i, e.tag))))
     .map((e) => {
       const s = liegeschutz.get(`${e.nachIndex}|${e.tag}`);
-      const schutz: 'revier' | 'geschuetzt' | 'teilweise' | 'offen' | null = s?.revierSchutzhafen ? 'revier'
-        : s?.schutzWellenanlaufNM != null ? schutzStufe(s.schutzWellenanlaufNM) : null;
+      const schutz: 'revier' | 'geschuetzt' | 'teilweise' | 'offen' | null = s?.revierSchutzhafen && !s.sturmAmAnker ? 'revier'
+        : s ? schutzDerNacht(s) : null;
       return {
         tag: e.tag, ort: netz.knoten[e.nachIndex]!.name,
         windKn: s ? Math.round(s.maxWindKn) : null, boeKn: s ? Math.round(s.maxGustKn) : null,

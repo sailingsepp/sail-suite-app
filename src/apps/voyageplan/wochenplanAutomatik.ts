@@ -1,4 +1,4 @@
-import { schutzStufe } from '@/core/shelter';
+import { schutzDerNacht } from '@/core/shelter';
 import { fmtDur, nf } from '@/core/time';
 import { smText } from './einheit';
 import { distNM } from '@/core/geo';
@@ -450,7 +450,7 @@ export function planZeilenHtml(
     if (istWunschziel) klassen.push('vp-woche-wunschziel');
     if (e.regime === 'geruest') klassen.push('vp-woche-geruest');
     if (k0(e).lage) klassen.push(`vp-lage-${k0(e).lage}`);
-    const anker = k.schutzWellenanlaufNM != null ? schutzStufe(k.schutzWellenanlaufNM) : null;
+    const anker = k.schutzWellenanlaufNM != null || k.sturmAmAnker ? schutzDerNacht({ ...k, revierSchutzhafen: false }) : null;
     const lage = e.regime === 'geruest'
       ? { klasse: 'geruest', text: GERUEST_KURZ[sprache] }
       : k.lage ? { klasse: k.lage, text: LAGE_TEXT[sprache][k.lage] } : null;

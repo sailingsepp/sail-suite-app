@@ -4,7 +4,7 @@ import type { BegruendungsSammler } from './begruendung';
 import { distNM } from './geo';
 import { RUNDREISE_NAEHE_SM, HEIMAT_NAEHE_SM, KURZER_FAHRTAG_SM, abstandZurLinieSm } from './zielfunktion';
 import type { Punkt } from './types';
-import { schutzStufe } from './shelter';
+import { schutzDerNacht, type NachtSchutzFelder } from './shelter';
 import { umlaufWinkel, fortschrittSm, RUECKSCHRITT_TOLERANZ_SM } from './gummiband';
 
 export interface EtappenKennzahlen {
@@ -22,6 +22,10 @@ export interface EtappenKennzahlen {
 
   revierSchutzhafen: boolean;
 
+  nachtwindKn?: number | null;
+
+  sturmAmAnker?: boolean;
+
   ablegeZeitIso: string | null;
 
   lage: 'guenstig' | 'brauchbar' | 'unfahrbar' | null;
@@ -35,30 +39,33 @@ export const HAFENTAG_KENNZAHLEN: EtappenKennzahlen = {
   totalHrs: 0, vmgShareAnteil: null, motorShareAnteil: null, dunkelShareAnteil: null,
   maxWindKn: null, maxGustKn: null, maxHsM: null, schutzWellenanlaufNM: null,
   andrang: null, modellUebereinstimmungProzent: null, revierSchutzhafen: false, ablegeZeitIso: null, lage: null,
+  nachtwindKn: null, sturmAmAnker: false,
 };
 
 export function hafentagKennzahlen(
   vorige: WochenplanEtappe | undefined, datum: Date | null,
-  amOrt: Pick<EtappenKennzahlen, 'schutzWellenanlaufNM' | 'revierSchutzhafen'> | null = null,
+  amOrt: NachtSchutzFelder | null = null,
 
-  dieseNacht: Pick<EtappenKennzahlen, 'schutzWellenanlaufNM' | 'revierSchutzhafen'> | null = null,
+  dieseNacht: NachtSchutzFelder | null = null,
 ): EtappenKennzahlen {
 
-  const quelle = dieseNacht && (dieseNacht.schutzWellenanlaufNM != null || dieseNacht.revierSchutzhafen) ? dieseNacht
+  const quelle = dieseNacht && (dieseNacht.schutzWellenanlaufNM != null || dieseNacht.revierSchutzhafen || dieseNacht.sturmAmAnker) ? dieseNacht
     : vorige?.kennzahlen.schutzWellenanlaufNM != null || vorige?.kennzahlen.revierSchutzhafen
       ? vorige.kennzahlen : amOrt ?? vorige?.kennzahlen ?? null;
   return {
     ...HAFENTAG_KENNZAHLEN,
     schutzWellenanlaufNM: quelle?.schutzWellenanlaufNM ?? null,
     revierSchutzhafen: quelle?.revierSchutzhafen ?? false,
+    nachtwindKn: quelle?.nachtwindKn ?? null,
+    sturmAmAnker: quelle?.sturmAmAnker ?? false,
     andrang: datum ? saisonLage(datum) : null,
   };
 }
 
 function schutzJeOrtUndNacht(
   netz: Kandidatennetz, kosten: Kostenkarte,
-): Map<string, Pick<EtappenKennzahlen, 'schutzWellenanlaufNM' | 'revierSchutzhafen'>> {
-  const karte = new Map<string, Pick<EtappenKennzahlen, 'schutzWellenanlaufNM' | 'revierSchutzhafen'>>();
+): Map<string, NachtSchutzFelder> {
+  const karte = new Map<string, NachtSchutzFelder>();
   for (const [schluessel, b] of kosten) {
     if (b.istNachtschlag || b.kennzahlen.schutzWellenanlaufNM == null) continue;
     const [kante, tag] = schluessel.split(':').map(Number) as [number, number];
@@ -105,6 +112,8 @@ export interface WochenplanEingabe {
 
   erreichbar?: (knotenIndex: number, tag: number, offeneWunschzielKnoten: readonly number[]) => boolean;
 
+  erreichbarOhneRuhetage?: (knotenIndex: number, tag: number, offeneWunschzielKnoten: readonly number[]) => boolean;
+
   datumFuerTag?: (tag: number) => Date | null;
 
   nachtfahrtBudget?: number;
@@ -117,7 +126,7 @@ export interface WochenplanEingabe {
 
   freieRunde?: { regelmassSm: number };
 
-  liegeschutz?: ReadonlyMap<string, Pick<EtappenKennzahlen, 'schutzWellenanlaufNM' | 'revierSchutzhafen'>>;
+  liegeschutz?: ReadonlyMap<string, NachtSchutzFelder>;
 
   saatplaene?: readonly (readonly number[])[];
 
@@ -303,7 +312,7 @@ const RAND_SKALARISIERUNGEN: ReadonlyArray<(e: EtappenBewertung) => number> = [
     return h != null && e.kennzahlen.vmgShareAnteil != null ? e.kennzahlen.vmgShareAnteil * h + 0.1 * h : e.score;
   },
 
-  (e) => Math.min(e.kennzahlen.schutzWellenanlaufNM ?? SCHUTZ_KAPPE_NM, SCHUTZ_KAPPE_NM)
+  (e) => (e.kennzahlen.sturmAmAnker ? SCHUTZ_KAPPE_NM : Math.min(e.kennzahlen.schutzWellenanlaufNM ?? SCHUTZ_KAPPE_NM, SCHUTZ_KAPPE_NM))
     + 0.1 * (e.kennzahlen.totalHrs ?? 0),
 ];
 
@@ -361,6 +370,15 @@ export function rechneVielfaeltigeWochenplaene(eingabe: WochenplanEingabe): Woch
     }
   }
 
+  for (const anteil of RUHETAG_ANTEILE) {
+    const ruhe = ruhetageUnterwegsEingabe(ohneSammler, anteil);
+    if (!ruhe) break;
+    for (const plan of rechneWochenplaene(ruhe)) {
+      const etappen = plan.etappen.map((e) => (e.istHafentag ? { ...e, score: 0 } : { ...e, score: hauptScore.get(e.kennzahlen) ?? e.score }));
+      alle.push({ etappen, gesamtScore: etappen.reduce((s, e) => s + e.score, 0) });
+    }
+  }
+
   if (eingabe.freieRunde) alle.push(...freieRundeKandidaten(ohneSammler, eingabe.freieRunde.regelmassSm));
 
   if (eingabe.offenesEnde) alle.push(...ankunftsKandidaten(ohneSammler, hauptScore));
@@ -378,9 +396,16 @@ export function rechneVielfaeltigeWochenplaene(eingabe: WochenplanEingabe): Woch
     for (let i = plan.etappen.length - 1; i >= 0; i--) if (!plan.etappen[i]!.istHafentag) return plan.etappen[i]!.tag;
     return 0;
   };
+
+  const amRand = (plan: WochenplanErgebnis): number => {
+    let n = 0;
+    for (let i = 0; i < plan.etappen.length && plan.etappen[i]!.istHafentag; i++) n++;
+    for (let i = plan.etappen.length - 1; i >= n && plan.etappen[i]!.istHafentag; i--) n++;
+    return n;
+  };
   for (const plan of alle) {
     const folge = plan.etappen.filter((e) => !e.istHafentag).map((e) => `${e.vonIndex}>${e.nachIndex}`).join(',')
-      + (eingabe.offenesEnde ? `|${ankunft(plan)}` : '');
+      + (eingabe.offenesEnde ? `|${ankunft(plan)}` : `|r${amRand(plan)}`);
     const bisher = besteJeFolge.get(folge);
     if (!bisher || plan.gesamtScore < bisher.gesamtScore) besteJeFolge.set(folge, plan);
   }
@@ -436,6 +461,24 @@ export function rundreiseKosten(eingabe: WochenplanEingabe, vorbild: WochenplanE
   return ergebnis.size < kosten.size ? ergebnis : null;
 }
 
+export function ruhetageUnterwegsEingabe(eingabe: WochenplanEingabe, anteil = 0): WochenplanEingabe | null {
+  if (eingabe.offenesEnde) return null;
+  const woche = wocheNutzenEingabe(eingabe);
+  if (!woche) return null;
+  const { netz, startIndex, zielIndex, kosten } = eingabe;
+  let aufschlag = 0;
+  for (const b of kosten.values()) aufschlag = Math.max(aufschlag, b.score);
+  const heimat = [netz.knoten[startIndex]?.ort, netz.knoten[zielIndex]?.ort].filter((o): o is Punkt => o != null);
+  const nahe = netz.knoten.map((k) => heimat.some((h) => distNM(k.ort.lat, k.ort.lon, h.lat, h.lon) < HEIMAT_NAEHE_SM));
+  return {
+    ...woche,
+    ...(eingabe.erreichbarOhneRuhetage ? { erreichbar: eingabe.erreichbarOhneRuhetage } : {}),
+    hafentagScore: (knoten, tag) => (tag === 1 && eingabe.ersterTagFrei ? 0 : nahe[knoten] ? 2 * aufschlag : anteil * aufschlag),
+  };
+}
+
+const RUHETAG_ANTEILE = [0, 0.3, 0.6] as const;
+
 export function wocheNutzenEingabe(eingabe: WochenplanEingabe): WochenplanEingabe | null {
   const { netz, startIndex, zielIndex, kosten, gesamtFahrtage } = eingabe;
   if (kosten.size === 0) return null;
@@ -452,8 +495,7 @@ export function wocheNutzenEingabe(eingabe: WochenplanEingabe): WochenplanEingab
 
     const kurz = b.sm < KURZER_FAHRTAG_SM && !(tag === 1 && eingabe.ersterTagFrei);
 
-    const s = b.kennzahlen.schutzWellenanlaufNM;
-    const offen = !b.istNachtschlag && !b.kennzahlen.revierSchutzhafen && s != null && schutzStufe(s) === 'offen';
+    const offen = !b.istNachtschlag && schutzDerNacht(b.kennzahlen) === 'offen';
     const extra = (zaehlt(nach, tag) ? aufschlag : 0) + (kurz ? aufschlag : 0) + (offen ? aufschlag : 0);
     teuer.set(schluessel, extra > 0 ? { ...b, score: b.score + extra } : b);
   }
@@ -466,8 +508,7 @@ export function wocheNutzenEingabe(eingabe: WochenplanEingabe): WochenplanEingab
 export function ohneOffeneNaechte(kosten: Kostenkarte): Map<string, EtappenBewertung> {
   const gedeckt = new Map<string, EtappenBewertung>();
   for (const [schluessel, b] of kosten) {
-    const s = b.kennzahlen.schutzWellenanlaufNM;
-    const offen = !b.istNachtschlag && !b.kennzahlen.revierSchutzhafen && s != null && schutzStufe(s) === 'offen';
+    const offen = !b.istNachtschlag && schutzDerNacht(b.kennzahlen) === 'offen';
     if (!offen) gedeckt.set(schluessel, b);
   }
   return gedeckt;
@@ -623,8 +664,8 @@ function mitHauptScore(plan: WochenplanErgebnis, hauptScore: ReadonlyMap<Etappen
 }
 
 function nachtGedeckt(k: EtappenKennzahlen): boolean {
-  if (k.revierSchutzhafen) return true;
-  return k.schutzWellenanlaufNM != null && schutzStufe(k.schutzWellenanlaufNM) !== 'offen';
+  const s = schutzDerNacht(k);
+  return s != null && s !== 'offen';
 }
 
 export function schutzTausch(e: WochenplanEingabe, plan: WochenplanErgebnis, naeheSm = SCHUTZ_TAUSCH_NAEHE_SM): WochenplanErgebnis | null {
@@ -707,8 +748,8 @@ export function ankunftsKandidaten(
   const schutz = schutzJeOrtUndNacht(eingabe.netz, eingabe.kosten);
   const liegtOffen = (knoten: number, tag: number): boolean => {
     const heute = eingabe.liegeschutz?.get(`${knoten}|${tag}`);
-    const q = heute && (heute.schutzWellenanlaufNM != null || heute.revierSchutzhafen) ? heute : schutz.get(`${knoten}|${tag}`);
-    return !!q && !q.revierSchutzhafen && q.schutzWellenanlaufNM != null && schutzStufe(q.schutzWellenanlaufNM) === 'offen';
+    const q = heute && (heute.schutzWellenanlaufNM != null || heute.revierSchutzhafen || heute.sturmAmAnker) ? heute : schutz.get(`${knoten}|${tag}`);
+    return !!q && schutzDerNacht(q) === 'offen';
   };
   const sperre = 2 * aufschlag * 1000 * Math.max(1, eingabe.gesamtFahrtage);
   const gedeckt: WochenplanEingabe = {

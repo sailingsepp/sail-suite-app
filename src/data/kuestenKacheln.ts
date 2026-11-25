@@ -1,6 +1,6 @@
 import type { Punkt } from '@/core/types';
 import {
-  decktBox, dekodiere, grobeKachel, kachelnFuerBox, streckenInBox,
+  dekodiere, fehlendeKacheln, grobeKachel, kachelnFuerBox, streckenInBox,
   type Box, type DekodierteKachel, type KuestenIndex, type KuestenKachel,
 } from '@/core/kuestenKacheln';
 import { API_BASIS } from '@/shell/api';
@@ -153,11 +153,20 @@ export interface KachelKueste {
   linien: [Punkt, Punkt][];
 
   toleranzM: number;
+
+  fehlend?: Box[];
 }
 
-export async function kuesteAusKachelnMitBudget(b: Box, maxStrecken = Infinity): Promise<KachelKueste | null> {
+export async function kuesteAusKachelnMitBudget(
+  b: Box, maxStrecken = Infinity,
+
+  teilweise = false,
+): Promise<KachelKueste | null> {
   const idx = await holeIndex();
-  if (!idx || !decktBox(idx, b)) return null;
+  if (!idx) return null;
+  const fehlend = fehlendeKacheln(idx, b);
+  if (fehlend.length > 0 && !teilweise) return null;
+  if (fehlend.length > 0 && fehlend.length === kachelnFuerBox(b, idx.kachelGrad).length) return null;
   const mitKueste = new Set(idx.kacheln);
   const noetig = kachelnFuerBox(b, idx.kachelGrad).filter((k) => mitKueste.has(k.name));
   const kacheln: DekodierteKachel[] = [];
@@ -174,7 +183,7 @@ export async function kuesteAusKachelnMitBudget(b: Box, maxStrecken = Infinity):
     linien = streckenInBox(kacheln.map((k) => grobeKachel(k, tol)), b);
     if (linien.length <= maxStrecken) break;
   }
-  return { linien, toleranzM };
+  return fehlend.length > 0 ? { linien, toleranzM, fehlend } : { linien, toleranzM };
 }
 
 export async function kuesteAusKacheln(b: Box): Promise<[Punkt, Punkt][] | null> {

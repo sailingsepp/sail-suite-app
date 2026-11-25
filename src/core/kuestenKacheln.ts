@@ -37,6 +37,14 @@ export function kachelnFuerBox(b: Box, g: number): { i: number; j: number; name:
   return out;
 }
 
+export function fehlendeKacheln(index: Pick<KuestenIndex, 'kachelGrad' | 'gebiete'>, b: Box): Box[] {
+  const g = index.kachelGrad;
+  return kachelnFuerBox(b, g).filter(({ i, j }) => {
+    const lat = (i + 0.5) * g, lon = (j + 0.5) * g;
+    return !index.gebiete.some(([w, s, o, n]) => lon > w && lon < o && lat > s && lat < n);
+  }).map(({ i, j }) => ({ swLat: i * g, swLon: j * g, neLat: (i + 1) * g, neLon: (j + 1) * g }));
+}
+
 export function decktBox(index: Pick<KuestenIndex, 'kachelGrad' | 'gebiete'>, b: Box): boolean {
   const g = index.kachelGrad;
   return kachelnFuerBox(b, g).every(({ i, j }) => {

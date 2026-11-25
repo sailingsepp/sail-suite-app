@@ -23,17 +23,19 @@ import {
   kostenSchluessel, type Kostenkarte, type EtappenBewertung, type EtappenKennzahlen,
 } from '@/core/wochenplan';
 import { saisonLage } from '@/core/season';
-import { luvFetchNM, type Kuestenlinie } from '@/core/shelter';
-import { nachtfenster, nachtwindRichtung } from '@/core/nachtwind';
+import { luvFetchNM, sturmAmAnker, type Kuestenlinie } from '@/core/shelter';
+import { nachtfenster, nachtwindRichtung, nachtwindStaerke } from '@/core/nachtwind';
 import { vorherrschendeWindrichtung, type Windprobe } from '@/core/ausrichtung';
 import { windAmPunkt } from '@/core/windgitter';
+import { seegangAmPunkt } from '@/core/seegangsgitter';
+import type { RevierseegangErgebnis } from '@/data/revierseegang';
 import type { RevierwindErgebnis } from '@/data/revierwind';
 import {
   BEWERTUNGSREGEL_VERSION, stabilerSchluessel, stundenSchluessel, gemerkt, type KostenkartenSpeicher,
 } from './zwischenspeicher';
 import { kantenWeg, type Hafenknoten, type Kandidatennetz } from '@/core/hafennetz';
 import type {
-  SchiffConfig, Grenzwerte, Sprache, AnkerplatzArt, StreckenPunkt, StundenWind, Tageslicht,
+  SchiffConfig, Grenzwerte, Sprache, AnkerplatzArt, StreckenPunkt, StundenWind, StundenMarine, Tageslicht,
   Ablegezeit,
 } from '@/core/types';
 import type { Daemmerungsstufe } from '@/core/sun';
@@ -170,6 +172,10 @@ export interface Liegeschutz {
   maxGustKn: number;
 
   windDeg: number;
+
+  nachtwindKn: number;
+
+  sturmAmAnker: boolean;
 }
 
 const LIEGE_TAG_VON = 8, LIEGE_TAG_BIS = 20, LIEGE_NACHT_BIS = 7;
@@ -203,14 +209,19 @@ export function liegeschutzJeOrtUndTag(
         avgWindDir: windDeg, maxWind, gustFactor, midLat: knoten.ort.lat, midLon: knoten.ort.lon,
         beatShare: 0, departure: nDate(`${tagStr}T12:00`),
       }, datum.getMonth() + 1);
-      const nachtwind = nachtwindRichtung(hourly, {
+      const fenster = {
         von: nDate(`${tagStr}T${String(LIEGE_TAG_BIS).padStart(2, '0')}:00`),
         bis: nDate(`${folgeStr}T${String(LIEGE_NACHT_BIS).padStart(2, '0')}:00`),
-      });
+      };
+      const nachtwind = nachtwindRichtung(hourly, fenster);
+
+      const nacht = nachtwindStaerke(hourly, fenster);
+      const windKn = Math.max(maxWind, nacht?.windKn ?? 0), boeKn = Math.max(maxGust, nacht?.boeKn ?? 0);
       out.set(`${i}|${t}`, {
         schutzWellenanlaufNM: nachtwind == null || kueste == null ? null : luvFetchNM(knoten.ort, nachtwind, kueste),
         revierSchutzhafen: eintraege.some((e) => wirktAlsSchutz(e, lokalwind, maxWind)),
         maxWindKn: maxWind, maxGustKn: maxGust, windDeg,
+        nachtwindKn: windKn, sturmAmAnker: sturmAmAnker(knoten.art === 'bucht', windKn, boeKn),
       });
     }
   });
@@ -277,6 +288,8 @@ interface Lauf {
   speicher: KostenkartenSpeicher | null;
   gitter: RevierwindErgebnis | null;
 
+  seegang: RevierseegangErgebnis | null;
+
   harteBereitschaften: HarteBereitschaften;
   raender: ToernRaender;
   startDatum: Date;
@@ -296,6 +309,8 @@ interface Streckenwetter {
   schluessel: string;
   punkte: StreckenPunkt[];
   windData: StundenWind[];
+
+  curData: (StundenMarine | null)[] | null;
   utcOffsetSeconds: number;
   forecastEnd: Date;
 }
@@ -304,7 +319,7 @@ function rechneKante(
   lauf: Lauf, kanteIndex: number, von: Hafenknoten, nach: Hafenknoten, nachIndex: number,
   wetter: Streckenwetter, daylight: Tageslicht,
 ): KantenAusgang {
-  const { punkte, windData, utcOffsetSeconds, forecastEnd } = wetter;
+  const { punkte, windData, curData, utcOffsetSeconds, forecastEnd } = wetter;
   const jetzt = nowInRevier(utcOffsetSeconds);
   let eingetragen = 0;
 
@@ -337,7 +352,7 @@ function rechneKante(
     const uebernahme = lauf.raender.uebernahme;
     const jetztHier = t === 1 && uebernahme && uebernahme > jetzt ? uebernahme : jetzt;
     const f = nachtOderLangerTag(berechneTagesfenster(
-      dateStr, lauf.daemmerung, lauf.stepMin, punkte[0]!, punkte, windData, null, lauf.cfg, lauf.limits,
+      dateStr, lauf.daemmerung, lauf.stepMin, punkte[0]!, punkte, windData, curData, lauf.cfg, lauf.limits,
       daylight, utcOffsetSeconds, forecastEnd, jetztHier, lauf.sprache,
     ), dateStr, lauf.vorgaben.nachtfahrtBudget);
 
@@ -381,7 +396,10 @@ function rechneKante(
     const score = modellBlindAktiv ? b.score * MODELL_BLIND_MALUS_FAKTOR : b.score;
 
     const zielWind = windData[windData.length - 1];
-    const nachtwind = zielWind ? nachtwindRichtung(zielWind, nachtfenster(b.arrival, daylight)) : null;
+    const fensterNacht = zielWind ? nachtfenster(b.arrival, daylight) : null;
+    const nachtwind = zielWind && fensterNacht ? nachtwindRichtung(zielWind, fensterNacht) : null;
+
+    const nachtStaerke = zielWind && fensterNacht ? nachtwindStaerke(zielWind, fensterNacht) : null;
 
     const schutzWellenanlaufNM = nachtwind == null || lauf.kueste == null
       ? null : luvFetchNM(nach.ort, nachtwind, lauf.kueste);
@@ -395,6 +413,8 @@ function rechneKante(
 
         maxHsM: b.seaValid ? b.maxHs : null,
         schutzWellenanlaufNM, revierSchutzhafen,
+        nachtwindKn: nachtStaerke?.windKn ?? null,
+        sturmAmAnker: f.istNachtschlag ? false : sturmAmAnker(nach.art === 'bucht', nachtStaerke?.windKn ?? null, nachtStaerke?.boeKn ?? null),
 
         modellUebereinstimmungProzent: lauf.modellJeTag.get(dateStr) ?? null,
 
@@ -463,6 +483,8 @@ export async function befuelleKostenkarte(
 
   abbruch: () => boolean = () => false,
   zeitbudgetMs = 0,
+
+  seegang: RevierseegangErgebnis | null = null,
 ): Promise<KostenkartenErgebnis> {
   const grenzTag = datumPlusTage(heute, GERECHNET_BIS_TAG);
 
@@ -479,7 +501,7 @@ export async function befuelleKostenkarte(
   if (gerechneteTage.length > 0) {
     const tageslichtJeKnoten = await holeTageslichtJeKnoten(netz, speicher, (e, g) => meldeFortschritt(e, g, 'tageslicht'));
     const lauf: Lauf = {
-      netz, kosten, gerechneteTage, gesamtFahrtage, modellJeTag, inselJeKnoten, windproben, speicher, gitter, harteBereitschaften, raender, startDatum, cfg, limits,
+      netz, kosten, gerechneteTage, gesamtFahrtage, modellJeTag, inselJeKnoten, windproben, speicher, gitter, seegang, harteBereitschaften, raender, startDatum, cfg, limits,
       daemmerung, stepMin, sprache, kueste, vorgaben, tageslichtJeKnoten,
     };
     const paare = ungerichtetePaare(netz);
@@ -582,7 +604,11 @@ async function rechnePaar(
     }
 
     const quelle = gitterDeckt ? 'gitter' : 'punkt';
-    const hin: Streckenwetter = { schluessel: `${wetterSchluessel}|${quelle}|hin`, punkte, windData, utcOffsetSeconds, forecastEnd };
+
+    const curData = lauf.seegang && lauf.seegang.utcOffsetSeconds === utcOffsetSeconds
+      ? punkte.map((p) => seegangAmPunkt(lauf.seegang!.gitter, p)) : null;
+    const see = curData ? '|see' : '';
+    const hin: Streckenwetter = { schluessel: `${wetterSchluessel}|${quelle}${see}|hin`, punkte, windData, curData, utcOffsetSeconds, forecastEnd };
 
     let zurueck: Streckenwetter | null = null;
 
@@ -594,8 +620,9 @@ async function rechnePaar(
       if (!daylight) { ergebnis[kante.index] = 'fehlgeschlagen'; continue; }
       if (!kante.vorwaerts && !zurueck) {
         zurueck = {
-          schluessel: `${wetterSchluessel}|${quelle}|zurueck`,
-          punkte: kehreStrecke(punkte), windData: [...windData].reverse(), utcOffsetSeconds, forecastEnd,
+          schluessel: `${wetterSchluessel}|${quelle}${see}|zurueck`,
+          punkte: kehreStrecke(punkte), windData: [...windData].reverse(), curData: curData ? [...curData].reverse() : null,
+          utcOffsetSeconds, forecastEnd,
         };
       }
       const wetter = kante.vorwaerts ? hin : zurueck!;

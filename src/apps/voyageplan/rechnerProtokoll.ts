@@ -112,9 +112,13 @@ export type Lockerung =
   | {
     art: 'staerker'; naechte?: number;
     lang?: { tage: number; stunden: number; dunkelAblegen: number; ablegenErlaubt: boolean };
+
+    beide?: boolean;
   }
 
-  | { art: 'keine'; stunden: number; geprueftBis?: number; geprueftNaechte?: number };
+  | { art: 'keine'; stunden: number; geprueftBis?: number; geprueftNaechte?: number }
+
+  | { art: 'abstaende'; stunden: number; naechte: number };
 
 export function lockerungTextSchluessel(
   grund: KeinPlanGrund,
@@ -139,11 +143,15 @@ export function lockerungTextSchluessel(
     case 'staerker': {
       const teile: string[] = [];
       const werte: Record<string, string> = {};
-      if (l.naechte != null) {
+      if (l.beide && l.naechte != null && l.lang) {
+        teile.push('automatik.lockerungNachtUndLang');
+        werte.n = String(l.naechte);
+        werte.h = String(l.lang.stunden);
+      } else if (l.naechte != null) {
         teile.push(l.naechte === 1 ? 'automatik.lockerungNacht1' : 'automatik.lockerungNacht');
         werte.n = String(l.naechte);
       }
-      if (l.lang) {
+      if (l.lang && !l.beide) {
         const oder = l.naechte != null ? 'Oder' : '';
         teile.push(l.lang.tage === 1 ? `automatik.lockerung${oder}Lang1` : `automatik.lockerung${oder}Lang`);
         werte.t = String(l.lang.tage);
@@ -155,8 +163,15 @@ export function lockerungTextSchluessel(
           werte.d = String(l.lang.dunkelAblegen);
         }
       }
+      if (l.lang && l.beide && l.lang.dunkelAblegen > 0) {
+        teile.push(l.lang.ablegenErlaubt
+          ? (l.lang.dunkelAblegen === 1 ? 'automatik.lockerungDunkel1' : 'automatik.lockerungDunkel')
+          : (l.lang.dunkelAblegen === 1 ? 'automatik.lockerungDunkelErlauben1' : 'automatik.lockerungDunkelErlauben'));
+        werte.d = String(l.lang.dunkelAblegen);
+      }
       return { schluessel: teile[0]!, werte, weitere: teile.slice(1) };
     }
+    case 'abstaende': return { schluessel: 'automatik.lockerungAbstaende', werte: { h: String(l.stunden), n: String(l.naechte) } };
     case 'keine': return l.geprueftBis != null
       ? { schluessel: 'automatik.lockerungKeineGeprueft', werte: { h: String(l.stunden), bis: String(l.geprueftBis), n: String(l.geprueftNaechte ?? 0) } }
       : { schluessel: 'automatik.lockerungKeine', werte: { h: String(l.stunden) } };

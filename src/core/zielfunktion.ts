@@ -1,6 +1,6 @@
 import type { WochenplanErgebnis } from './wochenplan';
 import { type Bereitschaft, wirkung } from './bereitschaft';
-import { schutzStufe } from './shelter';
+import { schutzDerNacht } from './shelter';
 import type { SaisonLage } from './season';
 import type { Punkt } from './types';
 import { distNM } from './geo';
@@ -71,10 +71,20 @@ export const KURZER_FAHRTAG_SM = 5;
 
 export function zaehleUeberzaehligeHafentage(
   etappen: readonly { tag: number; istHafentag: boolean; sm: number }[], erlaubt: number, ersterTagFrei: boolean,
+
+  mitRand = false,
 ): number {
-  const hafentage = etappen
-    .filter((e) => (e.istHafentag || e.sm < KURZER_FAHRTAG_SM) && !(e.tag === 1 && ersterTagFrei)).length;
-  return Math.max(0, hafentage - erlaubt);
+  const zaehlt = (e: { tag: number; istHafentag: boolean; sm: number }) =>
+    (e.istHafentag || e.sm < KURZER_FAHRTAG_SM) && !(e.tag === 1 && ersterTagFrei);
+  const hafentage = etappen.filter(zaehlt).length;
+  if (!mitRand) return Math.max(0, hafentage - erlaubt);
+
+  let vorn = 0;
+  while (vorn < etappen.length && etappen[vorn]!.istHafentag) vorn++;
+  let hinten = 0;
+  while (hinten < etappen.length - vorn && etappen[etappen.length - 1 - hinten]!.istHafentag) hinten++;
+  const amRand = [...etappen.slice(0, vorn), ...etappen.slice(etappen.length - hinten)].filter(zaehlt).length;
+  return amRand + Math.max(0, hafentage - amRand - erlaubt);
 }
 
 export function zaehleWiederholteLiegeplaetze(
@@ -204,9 +214,9 @@ export function planKennzahlen(plan: WochenplanErgebnis, kontext: ReihungsKontex
 
     if (k.andrang != null) { andrangSumme += ANDRANG_ORDINAL[k.andrang]; andrangBekannt = true; }
 
-    if (k.revierSchutzhafen) { gedeckteNaechte++; }
-    else if (k.schutzWellenanlaufNM == null) { ungeschuetzteNaechte++; }
-    else if (schutzStufe(k.schutzWellenanlaufNM) === 'offen') offeneNaechte++;
+    const schutz = schutzDerNacht(k);
+    if (schutz == null) ungeschuetzteNaechte++;
+    else if (schutz === 'offen') offeneNaechte++;
     else gedeckteNaechte++;
   }
 
@@ -408,7 +418,8 @@ const WERT_FUER: Record<ReihungsSchritt, (p: PlanKennzahlen) => number> = {
 
   hafentage: (p) => p.ueberzaehligeHafentage ?? 0,
 
-  wiederholungen: (p) => (p.wiederholteLiegeplaetze ?? 0) + (p.selbstkreuzungen ?? 0) + (p.rueckschritte ?? 0),
+  wiederholungen: (p) => (p.wiederholteLiegeplaetze ?? 0) + (p.selbstkreuzungen ?? 0) + (p.rueckschritte ?? 0)
+    + (p.ueberzaehligeHafentage ?? 0),
   kurze_tage: (p) => p.kurzeTage ?? 0,
 
   kreuzungsfrei: (p) => p.selbstkreuzungen ?? 0,

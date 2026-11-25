@@ -30,3 +30,15 @@ export function nachtwindRichtung(hourly: StundenWind, fenster: Nachtfenster): n
   if (proben.length < 2) return null;
   return vorherrschendeWindrichtung(proben);
 }
+
+export function nachtwindStaerke(hourly: StundenWind, fenster: Nachtfenster): { windKn: number; boeKn: number } | null {
+  let windKn = 0, boeKn = 0, n = 0;
+  hourly.time.forEach((t, i) => {
+    const zeit = nDate(t).getTime();
+    if (zeit < fenster.von.getTime() || zeit > fenster.bis.getTime()) return;
+    windKn = Math.max(windKn, hourly.wind_speed_10m[i]!);
+    boeKn = Math.max(boeKn, hourly.wind_gusts_10m[i]!);
+    n++;
+  });
+  return n < 2 ? null : { windKn, boeKn };
+}

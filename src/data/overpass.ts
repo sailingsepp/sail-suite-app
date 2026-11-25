@@ -551,13 +551,21 @@ export async function kuestenlinienUmGebiet(
   swLat: number, swLon: number, neLat: number, neLon: number, budget: Zeitbudget = BUDGET_HINTERGRUND,
 ): Promise<KuestenlinienGebiet | null> {
 
-  const kacheln = await kuesteAusKachelnMitBudget({ swLat, swLon, neLat, neLon }, MAX_STRECKEN_GEBIET);
-  if (kacheln) return { linien: kacheln.linien, rueckfall: false, vereinfachtM: kacheln.toleranzM };
+  const kacheln = await kuesteAusKachelnMitBudget({ swLat, swLon, neLat, neLon }, MAX_STRECKEN_GEBIET, true);
+  if (kacheln && !kacheln.fehlend) return { linien: kacheln.linien, rueckfall: false, vereinfachtM: kacheln.toleranzM };
   const linien = await fetchKuestenlinien(swLat, swLon, neLat, neLon, budget);
   const { kuestenlinienRueckfall } = await import('./kuestenlinienFallback');
   if (linien !== null && linien.length <= MAX_STRECKEN_GEBIET) return { linien, rueckfall: false };
 
   const rueckfall = await kuestenlinienRueckfall(swLat, swLon, neLat, neLon);
+
+  if (rueckfall !== null && kacheln?.fehlend) {
+    const inLuecke = (p: Punkt): boolean => kacheln.fehlend!.some((f) => p.lat >= f.swLat && p.lat <= f.neLat && p.lon >= f.swLon && p.lon <= f.neLon);
+    return {
+      linien: [...kacheln.linien, ...rueckfall.filter(([a, b]) => inLuecke(a) || inLuecke(b))],
+      rueckfall: true, vereinfachtM: kacheln.toleranzM,
+    };
+  }
   if (rueckfall !== null) return { linien: rueckfall, rueckfall: true };
   return linien !== null ? { linien, rueckfall: false } : null;
 }

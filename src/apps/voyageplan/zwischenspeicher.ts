@@ -1,7 +1,7 @@
 import type { StundenWind } from '@/core/types';
 import type { EtappenBewertung } from '@/core/wochenplan';
 
-export const BEWERTUNGSREGEL_VERSION = 5;
+export const BEWERTUNGSREGEL_VERSION = 6;
 
 const MAX_EINTRAEGE = 20_000;
 

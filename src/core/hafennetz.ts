@@ -3,6 +3,7 @@ import { distNM, bearingDeg } from './geo';
 import { HAFENAUSFAHRT_MAX_SM, HAFENBECKEN_MAX_SM2, boxUm, baueWassergitter, wegImGitter, umfahreLand, geradeUeberWasser, seeweg, liegtAnLand, anschlussZelle, wasserflaechen, naechsteZelleDerFlaeche, STUFEN, type AnschlussSpeicher, type Wassergitter } from './landumfahrung';
 import { referenzfahrtKn, type RevierRandbedingungen } from './referenzfahrt';
 import { reichweiteAmTag } from './rueckkehr';
+import { baueLandmaske, landStueckSm } from './landmaske';
 import { vtgInBox, wegOhneVtg } from './messinaVtg';
 import type { Wunschziel } from './wunschziele';
 
@@ -251,6 +252,8 @@ export const KETTE_LAND_MAX_SM = 5;
 
 export const KETTE_NACHT_LAND_MAX_SM = 15;
 
+const LAND_NACH_ABWECHSLUNG_AB_SM = 2;
+
 export function laengstesLandstueckSm(a: Punkt, b: Punkt, kueste: readonly [Punkt, Punkt][]): number {
   const sm = distNM(a.lat, a.lon, b.lat, b.lon);
   if (kueste.length === 0 || sm < 0.1) return 0;
@@ -267,12 +270,21 @@ export function laengstesLandstueckSm(a: Punkt, b: Punkt, kueste: readonly [Punk
     if (t > 0 && t < 1 && u >= 0 && u <= 1) schnitte.push(t);
   }
 
-  if (schnitte.length === 2) return 0;
+  if (schnitte.length === 2) {
+    const aLand = liegtAnLand(a, kueste), bLand = liegtAnLand(b, kueste);
+    return (aLand && bLand) || (sm >= LAND_NACH_ABWECHSLUNG_AB_SM && (aLand || bLand)) ? sm : 0;
+  }
   schnitte.sort((x, y) => x - y);
+
+  for (let i = schnitte.length - 2; i > 0; i--) if (schnitte[i + 1]! - schnitte[i]! < 1e-9) schnitte.splice(i, 1);
+
+  const anfangAnLand = liegtAnLand(a, kueste);
+  const zuverlaessig = liegtAnLand(b, kueste) === (((schnitte.length - 2) % 2 === 0) === anfangAnLand);
   let laengstes = 0;
   for (let i = 1; i < schnitte.length; i++) {
     const von = schnitte[i - 1]!, bis = schnitte[i]!, lang = (bis - von) * sm;
     if (lang <= laengstes) continue;
+    if (zuverlaessig && lang >= LAND_NACH_ABWECHSLUNG_AB_SM && ((i - 1) % 2 === 0) === anfangAnLand) { laengstes = lang; continue; }
 
     const mitte = (von + bis) / 2;
     const anLand = (t: number): boolean => liegtAnLand({ lat: a.lat + t * (b.lat - a.lat), lon: a.lon + t * (b.lon - a.lon) }, kueste);
@@ -281,6 +293,18 @@ export function laengstesLandstueckSm(a: Punkt, b: Punkt, kueste: readonly [Punk
     if (vorn && hinten) laengstes = lang;
   }
   return laengstes;
+}
+
+function maskenBox(orte: readonly Punkt[], kueste: readonly [Punkt, Punkt][]): { swLat: number; swLon: number; neLat: number; neLon: number } {
+  let s = Infinity, w = Infinity, n = -Infinity, o = -Infinity;
+  for (const [a, b] of kueste) {
+    s = Math.min(s, a.lat, b.lat); n = Math.max(n, a.lat, b.lat); w = Math.min(w, a.lon, b.lon); o = Math.max(o, a.lon, b.lon);
+  }
+  const lat = orte.map((p) => p.lat), lon = orte.map((p) => p.lon);
+  return {
+    swLat: Math.max(Math.min(...lat) - 0.3, s + 0.05), swLon: Math.max(Math.min(...lon) - 0.3, w + 0.05),
+    neLat: Math.min(Math.max(...lat) + 0.3, n - 0.05), neLon: Math.min(Math.max(...lon) + 0.3, o - 0.05),
+  };
 }
 
 const KETTE_VERSUCHE = 40;
@@ -300,7 +324,7 @@ export function etappenKetten(
   opt: {
     kueste?: readonly [Punkt, Punkt][];
 
-    pruefe?: (a: Punkt, b: Punkt, nacht: boolean) => boolean;
+    pruefe?: (a: Punkt, b: Punkt, nacht: boolean, kuesteNah: readonly [Punkt, Punkt][]) => boolean;
 
     fristMs?: number;
   } = {},
@@ -327,7 +351,7 @@ export function etappenKetten(
 
   const ZELLE = 0.5;
   const zellen = new Map<string, [Punkt, Punkt][]>();
-  if (K > 0) {
+  {
     for (const seg of kueste) {
       const y0 = Math.floor(Math.min(seg[0].lat, seg[1].lat) / ZELLE), y1 = Math.floor(Math.max(seg[0].lat, seg[1].lat) / ZELLE);
       const x0 = Math.floor(Math.min(seg[0].lon, seg[1].lon) / ZELLE), x1 = Math.floor(Math.max(seg[0].lon, seg[1].lon) / ZELLE);
@@ -339,6 +363,18 @@ export function etappenKetten(
       }
     }
   }
+
+  const kuesteUm = (a: Punkt, b: Punkt, rand: number): [Punkt, Punkt][] => {
+    const nah = new Set<[Punkt, Punkt]>();
+    for (let y = Math.floor(Math.min(a.lat, b.lat) / ZELLE) - rand; y <= Math.floor(Math.max(a.lat, b.lat) / ZELLE) + rand; y++) {
+      for (let x = Math.floor(Math.min(a.lon, b.lon) / ZELLE) - rand; x <= Math.floor(Math.max(a.lon, b.lon) / ZELLE) + rand; x++) {
+        for (const seg of zellen.get(`${y}|${x}`) ?? []) nah.add(seg);
+      }
+    }
+    return [...nah];
+  };
+
+  const maske = kueste.length > 0 ? baueLandmaske(maskenBox(knoten.map((k) => k.ort), kueste), kueste, 1) : null;
   const nachtUeberLand = new Map<string, boolean>();
   const nachtkanteUeberLand = (i: number, j: number): boolean => {
     if (zellen.size === 0) return false;
@@ -346,13 +382,8 @@ export function etappenKetten(
     let u = nachtUeberLand.get(schluessel);
     if (u == null) {
       const a = knoten[i]!.ort, b = knoten[j]!.ort;
-      const nah = new Set<[Punkt, Punkt]>();
-      for (let y = Math.floor(Math.min(a.lat, b.lat) / ZELLE); y <= Math.floor(Math.max(a.lat, b.lat) / ZELLE); y++) {
-        for (let x = Math.floor(Math.min(a.lon, b.lon) / ZELLE); x <= Math.floor(Math.max(a.lon, b.lon) / ZELLE); x++) {
-          for (const seg of zellen.get(`${y}|${x}`) ?? []) nah.add(seg);
-        }
-      }
-      u = laengstesLandstueckSm(a, b, [...nah]) > KETTE_NACHT_LAND_MAX_SM;
+      u = (maske != null && landStueckSm(maske, a, b) > KETTE_NACHT_LAND_MAX_SM)
+        || laengstesLandstueckSm(a, b, kuesteUm(a, b, 0)) > KETTE_NACHT_LAND_MAX_SM;
       nachtUeberLand.set(schluessel, u);
     }
     return u;
@@ -364,7 +395,7 @@ export function etappenKetten(
     let u = geprueft.get(schluessel);
     if (u == null) {
 
-      u = opt.pruefe != null ? !opt.pruefe(a, b, distNM(a.lat, a.lon, b.lat, b.lon) > tagSm)
+      u = opt.pruefe != null ? !opt.pruefe(a, b, distNM(a.lat, a.lon, b.lat, b.lon) > tagSm, kuesteUm(a, b, 1))
         : laengstesLandstueckSm(a, b, kueste) > KETTE_LAND_MAX_SM;
       geprueft.set(schluessel, u);
     }
@@ -390,7 +421,8 @@ export function etappenKetten(
         if (gesperrt.has(`${Math.min(n, j)}|${Math.max(n, j)}`)) continue;
         const k2 = k + (sm > tagSm ? 1 : 0);
         if (k2 > K) continue;
-        if (sm > tagSm && nachtkanteUeberLand(n, j)) continue;
+
+        if (nachtkanteUeberLand(n, j)) continue;
         const v = id(j, j === g ? g + 1 : g, k2);
         if (best + sm < dist[v]!) { dist[v] = best + sm; vor[v] = u; }
       }

@@ -6,8 +6,8 @@ use at sea without a connection.
 
 | App | Version | Purpose |
 |---|---|---|
-| **VoyagePlan** · Törnplanung | 5.2.2 | Plans the whole voyage: which harbour on which day |
-| **CourseCast** · Tagesplanung | 5.7.2 | Daily weather briefing for a fixed route: when to cast off, what to expect on the way |
+| **VoyagePlan** · Törnplanung | 5.3.0 | Plans the whole voyage: which harbour on which day |
+| **CourseCast** · Tagesplanung | 5.7.3 | Daily weather briefing for a fixed route: when to cast off, what to expect on the way |
 | **SailPilot** · TörnNavLog | 6.3.0 | Automatic logbook and backup navigation on the phone already on board |
 | **VoyageBook** · TörnBuch | 5.1.10 | Voyage, crew list, crew kitty, statistics and PDFs |
 
@@ -1008,8 +1008,22 @@ The formulas and methods behind the suite's figures, kept current with the code.
   on an extended network (night edges up to 36 h, long day edges up to 12 h
   with leaving in the dark allowed, mandatory targets always connected),
   stepping the daily hours up one hour at a time and the night budget up to
-  2, and the first setting that yields a plan is named; the plan found during
-  the probe is not shown.
+  2 (on a delivery with an open end up to 3 more than set, also together
+  with 12 h days), and the first setting that yields a plan is named; the plan
+  found during the probe is not shown. When a delivery has no chain of berths
+  with the set hours and nights, the chain is searched with 12 h days and 3
+  more nights; it gives the corridor, and its day legs and night legs are
+  named as what the distances between the berths require.
+- **Land along a line**: a land mask over the search area: the coastline is
+  rasterised into cells of 1 NM, the free cells split into connected areas
+  (4-neighbourhood), and every area votes by the side of the nearest coast
+  segment at each of its cells next to the coast (OSM: land to the left); the
+  majority decides. The mask is clipped to the extent of the coastline data.
+  A chain edge whose straight line runs more than 15 NM over land in the mask
+  or along the crossings with the coast is left out; along the crossings, a
+  stretch of 2 NM or more counts by alternation from the start when it agrees
+  with the shore test at both ends, and a line without crossing longer than
+  2 NM is land when one end is.
 - **Border crossing**: the state of each berth from Marine Regions, read
   from the *Nation*, *Territorial Sea* and *EEZ* records and
   mapped to one name per state; a leg crosses a border only when both ends
@@ -1018,10 +1032,20 @@ The formulas and methods behind the suite's figures, kept current with the code.
   over 24 axes such as time at sea, distance, beating and motoring hours,
   open nights, maximum wind, gusts and waves, crowding and model agreement:
   a plan that is worse on no axis and better on one removes the other.
-  Then a **lexicographic ranking** in a written-out order. A harbour day is
+  Then a **lexicographic ranking** in a written-out order; repeated berths,
+  crossings and harbour days beyond the rest days count together in one line
+  (one point each), harbour days before the first and after the last leg
+  never count as rest days. A harbour day is
   judged by the shelter of its own night: wind at the place from the regional
   wind grid between 0800 and 2000 LT, night wind 2000 to 0700 LT against the coastline,
-  and local knowledge against that day's wind situation. When no plan keeps
+  and local knowledge against that day's wind situation. **Shelter of a
+  night**: an anchorage at gale strength (mean wind from 34 kn or gusts from
+  41 kn, displayed value) is open; a named shelter from the local knowledge is
+  sheltered; otherwise the fetch, where an open fetch with a night wind of at
+  most 2 Bft counts as partly sheltered. A berth point up to 0.3 NM on the land
+  side of the nearest coast segment is moved 25 m to the water side first.
+  Sea state comes from a wave grid over the same points as the wind grid,
+  interpolated bilinearly, directions as vectors weighted by height. When no plan keeps
   every destination and some days exceed the limits, the plan without one
   destination (then without all) is shown instead of none.
 - **Rubber band** (convex hull): the length of the convex hull around the
