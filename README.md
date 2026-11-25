@@ -8,7 +8,7 @@ use at sea without a connection.
 |---|---|---|
 | **VoyagePlan** · Törnplanung | 5.3.0 | Plans the whole voyage: which harbour on which day |
 | **CourseCast** · Tagesplanung | 5.7.3 | Daily weather briefing for a fixed route: when to cast off, what to expect on the way |
-| **SailPilot** · TörnNavLog | 6.3.0 | Automatic logbook and backup navigation on the phone already on board |
+| **SailPilot** · TörnNavLog | 6.3.1 | Automatic logbook and backup navigation on the phone already on board |
 | **VoyageBook** · TörnBuch | 5.1.10 | Voyage, crew list, crew kitty, statistics and PDFs |
 
 A fifth page, `stream/`, lets people at home follow a shared voyage read-only.
