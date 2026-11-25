@@ -9,7 +9,8 @@ Third-party components keep their own licences:
 
 - Inter typeface (src/assets/fonts/): SIL Open Font License 1.1, see
   src/assets/fonts/OFL.txt.
-- npm dependencies listed in package.json: the licence stated in each package.
+- npm dependencies listed in package.json: the licence stated in each package;
+  their licence texts are in public/THIRD-PARTY-LICENSES.txt.
 - Data from third parties (OpenStreetMap, Open-Meteo, EMODnet, Marine Regions,
   TICON-4 and the other sources listed in README.md) stays under the licence of
   its provider.
