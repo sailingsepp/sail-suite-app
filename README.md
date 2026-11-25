@@ -6,7 +6,7 @@ use at sea without a connection.
 
 | App | Version | Purpose |
 |---|---|---|
-| **VoyagePlan** · Törnplanung | 5.2.0 | Plans the whole voyage: which harbour on which day |
+| **VoyagePlan** · Törnplanung | 5.2.1 | Plans the whole voyage: which harbour on which day |
 | **CourseCast** · Tagesplanung | 5.7.2 | Daily weather briefing for a fixed route: when to cast off, what to expect on the way |
 | **SailPilot** · TörnNavLog | 6.3.0 | Automatic logbook and backup navigation on the phone already on board |
 | **VoyageBook** · TörnBuch | 5.1.10 | Voyage, crew list, crew kitty, statistics and PDFs |
@@ -999,7 +999,9 @@ The formulas and methods behind the suite's figures, kept current with the code.
   built before the time budget. For the early arrival the plan search runs
   once per number of night legs from 0 to the allowed number, each also
   without open nights; a harbour day at a place whose night is open counts
-  as an open night there.
+  as an open night there. With an open end the candidate field keeps one
+  plan per sequence of harbours and day of arrival, and the first ranking
+  line counts a night of unknown shelter like an open one.
 - **"No plan" relaxation probe**: when no plan is found, the search is rerun
   on an extended network (night edges up to 36 h, long day edges up to 12 h
   with leaving in the dark allowed, mandatory targets always connected),

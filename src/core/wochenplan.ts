@@ -373,8 +373,14 @@ export function rechneVielfaeltigeWochenplaene(eingabe: WochenplanEingabe): Woch
   }
 
   const besteJeFolge = new Map<string, WochenplanErgebnis>();
+
+  const ankunft = (plan: WochenplanErgebnis): number => {
+    for (let i = plan.etappen.length - 1; i >= 0; i--) if (!plan.etappen[i]!.istHafentag) return plan.etappen[i]!.tag;
+    return 0;
+  };
   for (const plan of alle) {
-    const folge = plan.etappen.filter((e) => !e.istHafentag).map((e) => `${e.vonIndex}>${e.nachIndex}`).join(',');
+    const folge = plan.etappen.filter((e) => !e.istHafentag).map((e) => `${e.vonIndex}>${e.nachIndex}`).join(',')
+      + (eingabe.offenesEnde ? `|${ankunft(plan)}` : '');
     const bisher = besteJeFolge.get(folge);
     if (!bisher || plan.gesamtScore < bisher.gesamtScore) besteJeFolge.set(folge, plan);
   }

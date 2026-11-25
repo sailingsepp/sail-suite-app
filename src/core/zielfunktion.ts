@@ -401,7 +401,8 @@ export function reihenfolgeFuer(praeferenzen: ErklaertePraeferenzen): readonly R
 }
 
 const WERT_FUER: Record<ReihungsSchritt, (p: PlanKennzahlen) => number> = {
-  gedeckte_naechte: (p) => p.offeneNaechte,
+
+  gedeckte_naechte: (p) => p.offeneNaechte + (p.ankunftsTag != null ? p.ungeschuetzteNaechte : 0),
 
   buchten: (p) => p.naechteOhneBucht ?? 0,
 
