@@ -1,3 +1,17 @@
+@font-face {
+  font-family: "Ziffern MS33558C";
+  src: url('@/assets/fonts/MS33558C.otf') format('opentype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0030-0039, U+002C, U+002E, U+003A;
+}
+:root { --mono: "Ziffern MS33558C", 'SF Mono', 'Consolas', 'Menlo', monospace; }
+
+body.trackbook, .trackbook .leaflet-container, :where(.trackbook) :where(button, input, select, textarea) {
+  font-family: "Ziffern MS33558C", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
 body.trackbook {
 
   min-height: 100svh;
@@ -1162,7 +1176,7 @@ button.tb-nav-chip:disabled { opacity: .45; cursor: default; }
 .tb-voraus-marke { pointer-events: none; }
 .tb-voraus-marke span {
   position: absolute; left: 0; top: -9px; white-space: nowrap; padding: 1px 4px; border-radius: 4px;
-  font: 600 11px/1.3 system-ui, sans-serif; color: #fff; background: #3B7DD8;
+  font: 600 11px/1.3 "Ziffern MS33558C", system-ui, sans-serif; color: #fff; background: #3B7DD8;
 }
 .tb-voraus-marke.land span { background: var(--red); }
 .tb-schiff svg { display: block; margin: 0 auto; overflow: visible; }

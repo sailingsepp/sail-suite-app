@@ -1,0 +1,15 @@
+MS33558C, version 1.100
+Copyright (c) 2020 by Flanker (Leonardo Di Lena, Studio Di Lena, studiodilena.com).
+
+Licensed under the Creative Commons Attribution-NoDerivatives 4.0 International
+licence (CC BY-ND 4.0), as stated on the download page
+https://www.studiodilena.com/?p=2573 (read on 26 November 2026).
+Licence text: https://creativecommons.org/licenses/by-nd/4.0/legalcode
+
+The file MS33558C.otf in this folder is the unmodified file from
+https://www.studiodilena.com/wp-content/uploads/2020/10/MS33558C.zip
+(SHA-256 22c536f3c5f179b2f17384195aedce445dbcb741f5d44ca25bd11f2372b84cee).
+TörnNavLog uses it for the digits 0 to 9, comma, full stop and colon only,
+selected by the CSS unicode-range; the font file itself is not changed.
+
+No warranties are given (Section 5 of the licence).

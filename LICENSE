@@ -9,6 +9,9 @@ Third-party components keep their own licences:
 
 - Inter typeface (src/assets/fonts/): SIL Open Font License 1.1, see
   src/assets/fonts/OFL.txt.
+- MS33558C typeface by Studio Di Lena (src/assets/fonts/MS33558C.otf, digits in
+  TörnNavLog, unmodified): Creative Commons Attribution-NoDerivatives 4.0
+  International (CC BY-ND 4.0), see src/assets/fonts/MS33558C-LICENSE.txt.
 - npm dependencies listed in package.json: the licence stated in each package;
   their licence texts are in public/THIRD-PARTY-LICENSES.txt.
 - Data from third parties (OpenStreetMap, Open-Meteo, EMODnet, Marine Regions,
