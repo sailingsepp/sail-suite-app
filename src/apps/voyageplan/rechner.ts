@@ -77,7 +77,7 @@ function rechneEineOption(
   const freieRunde = regelmassSm != null && regelmassSm > 0 && option.wunschziele.length === 0 && !option.endziel;
   const eingabe: WochenplanEingabe = {
     ...eingabeBasis, wunschzielKnoten: [...wunschzielKnoten], sammler,
-    ...(freieRunde ? { freieRunde: { regelmassSm: regelmassSm! } } : {}),
+    ...(freieRunde ? { freieRunde: { regelmassSm: regelmassSm! } } : regelmassSm != null && regelmassSm > 0 ? { regelmassSm } : {}),
     ...(reihungsKontext.ankunftsTag != null ? { offenesEnde: true } : {}),
   };
 
@@ -328,7 +328,10 @@ export async function rechne(
   );
 
   const nurFreieRunde = optionEingaben.every((o) => o.wunschziele.length === 0 && !o.endziel);
-  let halbachseSm = nurFreieRunde
+
+  const weiteRunde = nurFreieRunde || (!anfrage.offenesEnde && planung.regelmassSm > 0
+    && (planung.regelmassSm * anfrage.gesamtFahrtage) / 3 > halbachseKetteSm);
+  let halbachseSm = weiteRunde
     ? Math.min(suchraumHalbachseSm(maxTagesetappeSm, anfrage.gesamtFahrtage),
       Math.max(halbachseKetteSm, (planung.regelmassSm * anfrage.gesamtFahrtage) / 3))
     : halbachseKetteSm;
@@ -426,9 +429,9 @@ export async function rechne(
   const korridor = ketten.length > 0 ? ketten.map((k) => k.knoten.map((x) => x.ort))
     : [...korridorWege(bezugspunkte, kueste ?? []), ...(seewegPunkte ? [seewegPunkte] : [])];
 
-  const zelleSm = nurFreieRunde ? Math.max(KANDIDATEN_ZELLE_SM, planung.regelmassSm / 3) : KANDIDATEN_ZELLE_SM;
+  const zelleSm = weiteRunde ? Math.max(KANDIDATEN_ZELLE_SM, planung.regelmassSm / 3) : KANDIDATEN_ZELLE_SM;
 
-  const maxKandidaten = nurFreieRunde ? FREIE_RUNDE_MAX_KANDIDATEN
+  const maxKandidaten = weiteRunde ? FREIE_RUNDE_MAX_KANDIDATEN
     : Math.min(FREIE_RUNDE_MAX_KANDIDATEN, Math.max(MAX_KANDIDATEN, Math.ceil(seewegSm / 15), Math.ceil(kettenSm / 10)));
 
   const saatRevier = revierVonPunkt(anfrage.start.ort.lat, anfrage.start.ort.lon);

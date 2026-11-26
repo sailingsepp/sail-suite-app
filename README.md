@@ -6,7 +6,7 @@ use at sea without a connection.
 
 | App | Version | Purpose |
 |---|---|---|
-| **VoyagePlan** · Törnplanung | 5.3.2 | Plans the whole voyage: which harbour on which day |
+| **VoyagePlan** · Törnplanung | 5.3.3 | Plans the whole voyage: which harbour on which day |
 | **CourseCast** · Tagesplanung | 5.7.4 | Daily weather briefing for a fixed route: when to cast off, what to expect on the way |
 | **SailPilot** · TörnNavLog | 6.4.2 | Automatic logbook and backup navigation on the phone already on board |
 | **VoyageBook** · TörnBuch | 5.1.11 | Voyage, crew list, crew kitty, statistics and PDFs |
@@ -978,7 +978,10 @@ The formulas and methods behind the suite's figures, kept current with the code.
   wind.
 - **Candidate network**: 40 to 60 berths depending on the route and the 12
   nearest neighbours per harbour, edges filtered by distance and coastline; a
-  hard time budget. When night passages are allowed, every harbour also gets up to 3 **night edges**
+  hard time budget. When the chain of wish targets reaches less far than a third
+  of the days times the standard day, the search area and the spread of the
+  berths are those of a round without targets, and the round without repeats and
+  with days near the standard day is searched as well. When night passages are allowed, every harbour also gets up to 3 **night edges**
   beyond the daily hours and at most 36 h long (one night at sea), spread
   over different courses; whether such a leg becomes a night passage on a
   given day is decided with that day's wind (longer than daylight). The

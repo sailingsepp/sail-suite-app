@@ -126,6 +126,8 @@ export interface WochenplanEingabe {
 
   freieRunde?: { regelmassSm: number };
 
+  regelmassSm?: number;
+
   liegeschutz?: ReadonlyMap<string, NachtSchutzFelder>;
 
   saatplaene?: readonly (readonly number[])[];
@@ -380,6 +382,10 @@ export function rechneVielfaeltigeWochenplaene(eingabe: WochenplanEingabe): Woch
   }
 
   if (eingabe.freieRunde) alle.push(...freieRundeKandidaten(ohneSammler, eingabe.freieRunde.regelmassSm));
+
+  else if (eingabe.regelmassSm && eingabe.regelmassSm > 0 && !eingabe.offenesEnde) {
+    alle.push(...freieRundeKandidaten(ohneSammler, eingabe.regelmassSm));
+  }
 
   if (eingabe.offenesEnde) alle.push(...ankunftsKandidaten(ohneSammler, hauptScore));
 
