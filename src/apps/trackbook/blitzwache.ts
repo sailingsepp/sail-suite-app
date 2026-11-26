@@ -6,7 +6,7 @@ import type { Punkt } from '@/core/types';
 import { richtungAusgeschrieben } from '@/map/wetterbild';
 import {
   BLITZ_RADIUS_VORGABE, BLITZ_RADIEN, BLITZ_SCHRITT_MIN, BLITZ_VORAUS_H, BLITZ_VORAUS_MIN_SM, BLITZ_WARN_MIN,
-  blitzLage, boxUm, routeVoraus, sollWarnen, type BlitzLage,
+  blitzLage, boxUm, naechsterBlitz, routeVoraus, sollWarnen, type Blitz, type BlitzBox, type BlitzLage,
 } from '@/core/blitze';
 import { holeBlitze } from '@/data/blitze';
 import type { LogEintrag } from '@/data/logdb';
@@ -18,6 +18,18 @@ const FEHLER_PAUSE_MS = 10 * 60_000;
 
 let naechstePruefung = 0;
 let laeuft = false;
+
+let letzte: { blitze: Blitz[]; box: BlitzBox; t: number } | null = null;
+const hoerer: (() => void)[] = [];
+
+export function beiBlitzen(f: () => void): void { hoerer.push(f); }
+
+export function beobachteterBlitz(p: Punkt, jetzt = Date.now()): { sm: number; peilung: number; t: number } | null {
+  if (!letzte || jetzt - letzte.t > 3 * PRUEF_MS) return null;
+  const b = letzte.box;
+  if (p.lat < b.s || p.lat > b.n || p.lon < b.w || p.lon > b.o) return null;
+  return naechsterBlitz(letzte.blitze.filter((x) => jetzt - x.t <= BLITZ_WARN_MIN * 60_000 + PRUEF_MS), p);
+}
 let modal: ModalHandle | null = null;
 const $ = (id: string) => document.getElementById(id);
 
@@ -85,6 +97,8 @@ export function pruefeBlitze(
   const box = boxUm([boot, ...(voraus ?? [])], radius + 2);
   if (!box) { laeuft = false; return; }
   void holeBlitze(box, BLITZ_WARN_MIN, jetzt).then(({ blitze }) => {
+    letzte = { blitze, box, t: jetzt };
+    for (const f of hoerer) f();
     const lage = blitzLage(blitze, boot, voraus, radius);
     if (!lage || !sollWarnen(lage, zuletzt(), jetzt)) return;
     merke(jetzt, lage.sm);
@@ -97,4 +111,4 @@ export function pruefeBlitze(
   }).catch(() => { naechstePruefung = jetzt + FEHLER_PAUSE_MS; }).finally(() => { laeuft = false; });
 }
 
-export function _vergessen(): void { naechstePruefung = 0; laeuft = false; }
+export function _vergessen(): void { naechstePruefung = 0; laeuft = false; letzte = null; }

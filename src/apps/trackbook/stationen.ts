@@ -42,6 +42,15 @@ let warnSee = false, warnSeeBei = 0, warnAlarm = false, warnAlarmBei = 0;
 
 let warnTreffer: WarnTreffer[] = [];
 
+let gewitterWarnung: { stufe: 2 | 3 | 4; bei: number } | null = null;
+const warnHoerer: (() => void)[] = [];
+
+export function beiWarnung(f: () => void): void { warnHoerer.push(f); }
+
+export function amtlicheGewitterwarnung(jetzt = Date.now()): { stufe: 2 | 3 | 4 } | null {
+  return gewitterWarnung && jetzt - gewitterWarnung.bei <= WARN_GILT_MS ? { stufe: gewitterWarnung.stufe } : null;
+}
+
 let warnBasis = false;
 let warnGeprueftBei: Lage | null = null;
 let letzteWarnPruefung = 0;
@@ -131,6 +140,9 @@ function pruefeWarnung(lage: Lage): void {
     if (w.seewetter !== null) { warnSee = w.seewetter; warnSeeBei = jetzt; }
     const vorher = wetterwarnungAktiv(jetzt);
     if (w.meteoalarm !== null) {
+      const gewitter = w.meteoalarm.filter((t) => t.typ === 'gewitter');
+      gewitterWarnung = gewitter.length ? { stufe: Math.max(...gewitter.map((t) => t.stufe)) as 2 | 3 | 4, bei: jetzt } : null;
+      for (const f of warnHoerer) f();
       warnTreffer = w.meteoalarm.filter((t) => t.stufe >= 3);
       warnAlarm = warnTreffer.length > 0;
       warnAlarmBei = jetzt;

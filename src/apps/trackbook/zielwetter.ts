@@ -1,6 +1,6 @@
 import { escapeHtml } from '@/core/html';
 import { beaufort } from '@/briefing/wind';
-import { druckTendenz, gewitterLage, ortszeit, schwuele, seegangAnzeige, sichtAnzeige, richtungKurz, stundenIndex, type DruckTendenz, type Stunde, type Stundenwetter, type WetterOrt } from '@/core/zielwetter';
+import { druckTendenz, gewitterLage, gewitterUrteil, ortszeit, schwuele, seegangAnzeige, sichtAnzeige, richtungKurz, stundenIndex, type DruckTendenz, type Stunde, type Stundenwetter, type WetterOrt } from '@/core/zielwetter';
 import { douglasTabelle } from '@/kompendium/daten';
 import { nf } from '@/core/time';
 import { gewitterStufe } from '@/core/wetterkarte';
@@ -13,6 +13,10 @@ import { aktuelleSprache } from '@/shell/sprache';
 import { STRINGS } from './strings';
 import { standOrt } from './standortName';
 import { beiZielname, zielname } from '@/shell/zielname';
+import { beiBlitzen, beobachteterBlitz } from './blitzwache';
+import { amtlicheGewitterwarnung, beiWarnung } from './stationen';
+import { uhrLtVon } from '@/core/time';
+import { richtungAusgeschrieben } from '@/map/wetterbild';
 
 const isoLt = (iso: string): string => `${iso.slice(11, 13)}${iso.slice(14, 16)} LT`;
 
@@ -103,7 +107,7 @@ function seegangZelle(s: Stunde, sprache: 'de' | 'en'): string {
   return zelle(wort('zw.seegang'), wert, zusatz, true);
 }
 
-function uebersicht(d: Stundenwetter, i: number, sprache: 'de' | 'en'): string {
+function uebersicht(d: Stundenwetter, i: number, sprache: 'de' | 'en', o: WetterOrt): string {
   const s = d.stunden[i]!;
   const strich = '–';
   const h = himmelAus(s.code);
@@ -131,16 +135,35 @@ function uebersicht(d: Stundenwetter, i: number, sprache: 'de' | 'en'): string {
   zellen.push(seegangZelle(s, sprache));
   const druck = druckZelle(druckTendenz(d, i), sprache);
   if (druck.zelle) zellen.push(druck.zelle);
+
   const g = gewitterLage(d, i, VERLAUF_STUNDEN);
+  const u = gewitterUrteil(g, beobachteterBlitz({ lat: o.lat, lon: o.lon }), o.art === 'position' ? amtlicheGewitterwarnung() : null);
   let gewitterFolge: string | null = null;
-  if (g) {
-    const uhr = g.ab ? isoLt(g.ab) : '';
-    const wert = g.stufe ? wort(`zw.gewitter.${g.stufe}`).replace('{uhr}', uhr)
-      : g.capeMax == null && s.code < 95 ? strich : wort('zw.gewitter.keine');
-    const nr = g.stufe === 'gewitter' ? 3 : g.stufe === 'neigung' ? 2 : null;
-    const cape = g.capeMax != null ? escapeHtml(`CAPE ${Math.round(g.capeMax)} J/kg`) : '';
-    zellen.push(zelle(wort('zw.gewitter'), farbig(wert, nr), cape, true));
-    if (g.stufe) gewitterFolge = wort(`zw.gewitterFolge.${g.stufe}`);
+  if (u && g) {
+    const cape = g.capeMax != null ? `CAPE ${Math.round(g.capeMax)} J/kg` : '';
+    let wert: string, nr: number | null, zusatz: string;
+    if (u.art === 'beobachtet') {
+      wert = wort('zw.gewitter.beobachtet').replace('{sm}', nf(u.sm, u.sm < 10 ? 1 : 0, sprache))
+        .replace('{richtung}', richtungAusgeschrieben(u.peilung, sprache));
+      nr = 3;
+      zusatz = [wort('zw.gewitter.quelleBlitze').replace('{uhr}', uhrLtVon(u.t)), cape].filter(Boolean).join(' · ');
+      gewitterFolge = wort('zw.gewitterFolge.gewitter');
+    } else if (u.art === 'amtlich') {
+      wert = wort('zw.gewitter.amtlich');
+      nr = u.stufe >= 3 ? 3 : 2;
+      zusatz = [wort(`zw.gewitter.amtlichStufe${u.stufe}`), cape].filter(Boolean).join(' · ');
+      gewitterFolge = wort('zw.gewitterFolge.gewitter');
+    } else if (u.art === 'modell') {
+      wert = wort(`zw.gewitter.${u.stufe}`).replace('{uhr}', u.ab ? isoLt(u.ab) : '');
+      nr = u.stufe === 'gewitter' ? 3 : 2;
+      zusatz = cape;
+      gewitterFolge = wort(`zw.gewitterFolge.${u.stufe}`);
+    } else {
+      wert = g.capeMax == null && s.code < 95 ? strich : wort('zw.gewitter.keine');
+      nr = null;
+      zusatz = cape;
+    }
+    zellen.push(zelle(wort('zw.gewitter'), farbig(wert, nr), escapeHtml(zusatz), true));
   }
   const folgen = [gewitterFolge, druck.folgerung].filter((x): x is string => !!x)
     .map((f) => `<p class="tb-zw-folge">${escapeHtml(f)}</p>`).join('');
@@ -148,6 +171,9 @@ function uebersicht(d: Stundenwetter, i: number, sprache: 'de' | 'en'): string {
 }
 
 beiZielname(() => { if (zuletzt) zeichneZielwetter(zuletzt); });
+
+beiBlitzen(() => { if (zuletzt) zeichneZielwetter(zuletzt); });
+beiWarnung(() => { if (zuletzt) zeichneZielwetter(zuletzt); });
 function ortsname(o: WetterOrt): string | null {
   if (o.art === 'position') return standOrt({ lat: o.lat, lon: o.lon })?.name ?? positionText(o.lat, o.lon, aktuelleSprache());
 
@@ -214,6 +240,6 @@ export function zeichneZielwetter(o: WetterOrt | null): void {
     + `<span>${boeBft != null ? `${boeBft} Bft` : ''}</span></div></div>`
     + `<div class="tb-zw-farbig">${bftBalken(bft)}</div>`
     + `<div class="tb-zw-verlauf" aria-hidden="true">${verlauf}</div>`
-    + uebersicht(daten, i, sprache)
+    + uebersicht(daten, i, sprache, o)
     + `<p class="tb-zw-quelle">${escapeHtml(wort('zw.quelle'))}: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>, ECMWF (CC BY 4.0)</p>`;
 }

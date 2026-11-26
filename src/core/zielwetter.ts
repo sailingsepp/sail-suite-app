@@ -172,3 +172,23 @@ export function seegangAnzeige(s: Stunde): SeegangAnzeige | null {
   if (ws != null && tp != null && tp > 0 && ws >= MIN_STEIL_HS) steil = steilStufe(ws / ((9.81 * tp * tp) / (2 * Math.PI)));
   return { hsM, stufe: seegangsStufe(hsM), steil };
 }
+
+export const GEWITTER_BEOBACHTET_SM = 20;
+
+export type GewitterUrteil =
+  | { art: 'beobachtet'; sm: number; peilung: number; t: number }
+  | { art: 'amtlich'; stufe: 2 | 3 | 4 }
+  | { art: 'modell'; stufe: GewitterStufe; ab: string | null }
+  | { art: 'modellKeine' };
+
+export function gewitterUrteil(
+  modell: GewitterLage | null,
+  blitz: { sm: number; peilung: number; t: number } | null,
+  amtlich: { stufe: 2 | 3 | 4 } | null,
+): GewitterUrteil | null {
+  if (blitz && blitz.sm <= GEWITTER_BEOBACHTET_SM) return { art: 'beobachtet', ...blitz };
+  if (amtlich) return { art: 'amtlich', stufe: amtlich.stufe };
+  if (!modell) return null;
+  if (modell.stufe) return { art: 'modell', stufe: modell.stufe, ab: modell.ab };
+  return { art: 'modellKeine' };
+}
