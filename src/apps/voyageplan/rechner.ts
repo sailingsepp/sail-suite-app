@@ -759,9 +759,15 @@ export async function rechne(
     ergebnis: WochenplanErgebnis, wunschzielKnoten: readonly number[],
   ): UmkehrpunktErgebnis | null => {
     if (anfrage.ohneUmkehrpunkt) return null;
+
+    let genommen = 0;
+    const reserveJeTag = [reserve, ...ergebnis.etappen.map((e) => {
+      if (e.istHafentag) genommen++;
+      return planung.reserveTage + Math.max(0, planung.freieRuhetage - genommen);
+    })];
     return umkehrpunkt(
       baueTrajektorie(ergebnis, netz, 0, wunschzielKnoten, wunschzielJeKnoten),
-      zielOrt, anfrage.gesamtFahrtage, revier, planung.maxStundenProTag, reserve, nachtTage,
+      zielOrt, anfrage.gesamtFahrtage, revier, planung.maxStundenProTag, reserveJeTag, nachtTage,
     );
   };
 

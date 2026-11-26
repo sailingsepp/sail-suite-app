@@ -80,12 +80,15 @@ export interface UmkehrpunktErgebnis {
 
 export function umkehrpunkt(
   trajektorie: readonly UmkehrpunktTag[], heimathafen: Punkt, gesamtFahrtage: number,
-  revier: RevierRandbedingungen, maxStundenProTag: number, reserve: number,
+  revier: RevierRandbedingungen, maxStundenProTag: number,
+
+  reserve: number | readonly number[],
 
   bonusTage = 0,
 ): UmkehrpunktErgebnis {
   const reichweiteJeTag = trajektorie.map((tag, t) =>
-    reichweiteAmTag(tag.ort, t, gesamtFahrtage, heimathafen, tag.offeneWunschziele, revier, maxStundenProTag, reserve) + bonusTage);
+    reichweiteAmTag(tag.ort, t, gesamtFahrtage, heimathafen, tag.offeneWunschziele, revier, maxStundenProTag,
+      typeof reserve === 'number' ? reserve : reserve[t] ?? reserve[reserve.length - 1] ?? 0) + bonusTage);
   let letzterHaltender: number | null = null;
   let gebrochen = false;
   let gueltig = true;
