@@ -1704,6 +1704,25 @@ html:not(.nav-an) #tb-karte .tb-voraus-marke { opacity: .6; }
 [data-theme="nacht"] .tb-luftbild-gross-flaeche .leaflet-image-layer { filter: brightness(.55); }
 [data-theme="nacht"] .tb-luftbild-gross-flaeche .leaflet-control-zoom a { background: var(--panel); color: var(--text); border-color: var(--line); }
 
+.tb-eb-webcams { margin: 8px 0; }
+.tb-eb-webcams-titel { margin: 0 0 6px !important; font-weight: 700; }
+.tb-eb-webcams-liste { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.tb-eb-webcam {
+  display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 0; border: 0; background: none; color: var(--text);
+  text-align: left; cursor: zoom-in; border-radius: 8px; font-family: inherit;
+}
+.tb-eb-webcam img { display: block; width: 100%; max-width: 400px; height: auto; border-radius: 8px; border: 1px solid var(--line); }
+.tb-eb-webcam-text { font-size: 12px; line-height: 1.3; color: var(--muted); overflow-wrap: anywhere; }
+.tb-eb-webcam:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+[data-theme="nacht"] .tb-eb-webcam img { filter: brightness(.55); }
+.tb-eb-webcams-quelle { margin: 6px 0 0 !important; }
+.tb-eb-webcams-quelle a, .tb-webcam-gross .tb-luftbild-gross-fuss a { color: var(--teal); }
+
+.tb-webcam-flaeche iframe { display: block; width: 100%; height: 100%; border: 0; }
+[data-theme="nacht"] .tb-webcam-flaeche iframe { filter: brightness(.55); }
+.tb-webcam-gross .tb-luftbild-gross-fuss { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; }
+.tb-webcam-gross .tb-luftbild-gross-fuss .tb-eb-webcams-quelle { margin: 0 !important; }
+
 .tb-objekt { pointer-events: none; }
 .tb-objekt svg { display: block; filter: drop-shadow(0 0 1px rgba(255, 255, 255, .9)); }
 

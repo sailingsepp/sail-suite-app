@@ -195,6 +195,8 @@ function zeigeObjekt(k: L.Map, o: KartenObjekt): void {
   const route = (o.art === 'hafen' || o.art === 'tankstelle') && !!boot;
 
   if (o.art === 'hafen') html += '<div class="tb-eb-luftbild"></div>';
+
+  if (o.art === 'hafen') html += '<div class="tb-eb-webcams" hidden></div>';
   if (route) {
     if (routeAktiv()) html += `<p class="tb-eb-leise">${esc(wort('nav.gehezuErsetzt'))}</p>`;
     html += `<button type="button" class="tb-nav-k primaer tb-eb-route">${esc(wort('eb.route'))}</button>`;
@@ -208,6 +210,119 @@ function zeigeObjekt(k: L.Map, o: KartenObjekt): void {
   });
   const lbBox = document.querySelector<HTMLElement>('#tb-eb-fenster .tb-eb-luftbild');
   if (lbBox) zeigeLuftbild(lbBox, o.lat, o.lon, b.titel);
+  const wcBox = document.querySelector<HTMLElement>('#tb-eb-fenster .tb-eb-webcams');
+  if (wcBox) void zeigeWebcams(wcBox, o.lat, o.lon, b.titel);
+}
+
+interface Webcam {
+  id: string; titel: string; abstandM: number; aktualisiert: string;
+  vorschau: string; breite: number; hoehe: number; player: string; seite: string;
+}
+
+const windyAdresse = (s: unknown, ursprung: string): s is string => typeof s === 'string' && s.startsWith(ursprung);
+
+async function zeigeWebcams(box: HTMLElement, lat: number, lon: number, hafen: string): Promise<void> {
+  if (!istOnline()) return;
+  let kameras: Webcam[];
+  try {
+    const r = await fetch(`${API_BASIS}/api/webcams?lat=${lat.toFixed(5)}&lon=${lon.toFixed(5)}`, { signal: AbortSignal.timeout(15_000) });
+    if (!r.ok) return;
+    const d = await r.json() as { kameras?: unknown };
+    kameras = (Array.isArray(d.kameras) ? d.kameras as Webcam[] : []).filter((k) => k && typeof k.titel === 'string'
+      && windyAdresse(k.vorschau, 'https://imgproxy.windy.com/') && windyAdresse(k.player, 'https://webcams.windy.com/')
+      && windyAdresse(k.seite, 'https://windy.com/webcams/'));
+  } catch {
+    return;
+  }
+  if (!kameras.length || !box.isConnected) return;
+  const sp = aktuelleSprache();
+  const jetzt = Date.now();
+  const alter = (iso: string): string => {
+    const min = Math.max(0, Math.round((jetzt - Date.parse(iso)) / 60_000));
+    return min < 90 ? wort('eb.webcamMin').replace('{n}', String(min)) : wort('eb.webcamH').replace('{n}', nf(min / 60, 0, sp));
+  };
+  const titel = document.createElement('p');
+  titel.className = 'tb-eb-webcams-titel';
+  titel.textContent = wort('eb.webcams');
+  const liste = document.createElement('div');
+  liste.className = 'tb-eb-webcams-liste';
+  for (const k of kameras) {
+    const knopf = document.createElement('button');
+    knopf.type = 'button';
+    knopf.className = 'tb-eb-webcam';
+    knopf.setAttribute('aria-label', `${wort('eb.webcamGross')}: ${k.titel}`);
+    const bild = document.createElement('img');
+    bild.alt = k.titel;
+    bild.decoding = 'async';
+    bild.loading = 'lazy';
+    bild.referrerPolicy = 'no-referrer';
+    bild.width = Math.min(400, Number(k.breite) || 400);
+    bild.height = Math.min(400, Number(k.hoehe) || 224);
+    bild.src = k.vorschau;
+    const unter = document.createElement('span');
+    unter.className = 'tb-eb-webcam-text';
+    unter.textContent = `${k.titel} · ${alter(k.aktualisiert)} · ${nf(Number(k.abstandM) || 0, 0, sp)} m`;
+    bild.addEventListener('error', () => { knopf.remove(); if (!liste.childElementCount) box.hidden = true; });
+    knopf.append(bild, unter);
+    knopf.addEventListener('click', () => { zeigeWebcamGross(k, hafen); });
+    liste.appendChild(knopf);
+  }
+  box.replaceChildren(titel, liste, windyNennung());
+  box.hidden = false;
+}
+
+function windyNennung(): HTMLElement {
+  const p = document.createElement('p');
+  p.className = 'tb-eb-leise tb-eb-webcams-quelle';
+  const a = document.createElement('a');
+  a.href = 'https://www.windy.com/';
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.textContent = wort('eb.webcamQuelle');
+  const b = document.createElement('a');
+  b.href = 'https://www.windy.com/webcams/add';
+  b.target = '_blank';
+  b.rel = 'noopener';
+  b.textContent = wort('eb.webcamHinzu');
+  p.append(a, ' · ', b);
+  return p;
+}
+
+function schliesseWebcamGross(): boolean {
+  const el = document.getElementById('tb-webcam-gross');
+  if (!el) return false;
+  el.remove();
+  return true;
+}
+function zeigeWebcamGross(k: Webcam, hafen: string): void {
+  schliesseWebcamGross();
+  const el = document.createElement('section');
+  el.id = 'tb-webcam-gross';
+  el.className = 'tb-luftbild-gross tb-webcam-gross';
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-modal', 'true');
+  el.setAttribute('aria-label', `${wort('eb.webcams')}: ${k.titel}`);
+  el.innerHTML = `<header class="tb-luftbild-gross-kopf"><h2>${esc(k.titel || hafen)}</h2>`
+    + `<button type="button" class="tb-eb-zu" aria-label="${esc(wort('eb.schliessen'))}">×</button></header>`
+    + '<div class="tb-luftbild-gross-flaeche tb-webcam-flaeche"></div><p class="tb-luftbild-gross-fuss"></p>';
+  const rahmen = document.createElement('iframe');
+  rahmen.src = k.player;
+  rahmen.title = k.titel;
+  rahmen.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups');
+  rahmen.setAttribute('allow', 'fullscreen');
+  rahmen.referrerPolicy = 'no-referrer';
+  rahmen.loading = 'eager';
+  el.querySelector('.tb-webcam-flaeche')!.appendChild(rahmen);
+  const fuss = el.querySelector<HTMLElement>('.tb-luftbild-gross-fuss')!;
+  const seite = document.createElement('a');
+  seite.href = k.seite;
+  seite.target = '_blank';
+  seite.rel = 'noopener';
+  seite.textContent = wort('eb.webcamSeite');
+  fuss.append(windyNennung(), seite);
+  document.body.appendChild(el);
+  el.querySelector('.tb-eb-zu')!.addEventListener('click', () => { schliesseWebcamGross(); });
+  (el.querySelector('.tb-eb-zu') as HTMLButtonElement).focus();
 }
 
 function zeigeLuftbild(box: HTMLElement, lat: number, lon: number, titel: string): void {
@@ -437,7 +552,7 @@ function bindeFenster(): void {
       })();
     }, 300);
   });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !schliesseLuftbildGross()) schliesseFenster(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !schliesseWebcamGross() && !schliesseLuftbildGross()) schliesseFenster(); });
 }
 
 const SCHMAL = '(max-width: 899px)';
