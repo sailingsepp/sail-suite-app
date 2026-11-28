@@ -62,7 +62,7 @@ function baueSchublade(): void {
   const s3 = s.querySelector<HTMLElement>('#tb-eb-stufe3')!;
   hole(s1, '#tb-nav-leiste');
 
-  for (const w of ['#tb-toern-zeile', '#tb-position', '#tb-sonne', '#tb-mond', '#tb-gz-streifen', '#tb-ankerwache-status', '#tb-foto-meldung', '#tb-ais-zustand']) hole(s2, w);
+  for (const w of ['#tb-toern-zeile', '#tb-position', '#tb-position-bezug', '#tb-sonne', '#tb-mond', '#tb-gz-streifen', '#tb-ankerwache-status', '#tb-foto-meldung', '#tb-ais-zustand']) hole(s2, w);
 
   for (const w of ['#tb-warnblock', '#tb-zielwetter', '#tb-wetterkopf', '#tb-genauigkeit', '.tb-log', '#tb-luecken', '#tb-pausen', '#tb-spurlegende', '.tb-speicher', 'main.tb > .tb-footer']) hole(s3, w);
   bindeGriff(s.querySelector<HTMLButtonElement>('#tb-eb-griff')!);

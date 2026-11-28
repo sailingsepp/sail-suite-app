@@ -52,6 +52,11 @@ body.trackbook {
 }
 
 .tb-position:has(+ .tb-sonne:not([hidden])) { margin-bottom: 2px; }
+
+.tb-position:has(+ .tb-position-bezug:not([hidden])) { margin-bottom: 2px; }
+.tb-position-bezug { margin: 0 0 10px; font-size: 13px; color: var(--text); text-align: center; }
+.tb-position-bezug[hidden] { display: none; }
+.tb-position-bezug:has(+ .tb-sonne:not([hidden])) { margin-bottom: 2px; }
 .tb-sonne[hidden] { display: none; }
 
 .tb-sonne:has(+ .tb-mond:not([hidden])) { margin-bottom: 2px; }

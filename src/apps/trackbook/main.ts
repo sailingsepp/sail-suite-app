@@ -95,7 +95,9 @@ import { initNavigation, navTakt, navStopp, merkeRegion, zielDerRoute } from './
 import { ladeNavDatenVor } from '@/data/navroute';
 import { ladeLandImGebiet } from '@/data/landKacheln';
 import { ladeHoehenImGebiet } from '@/data/hoehenKacheln';
-import { ladeSeekartenObjekte } from '@/data/seekartenObjekte';
+import { ladeSeekartenObjekte, namenJetzt } from '@/data/seekartenObjekte';
+import { positionInWorten } from '@/core/ortsbezug';
+import { boxUm } from '@/core/landumfahrung';
 import { holeEtappen } from '@/data/toernApi';
 import { initEinBildschirm } from './einbildschirm';
 import type { LogEintrag } from '@/data/logdb';
@@ -325,6 +327,7 @@ function zeichne(z: Zustand): void {
 
   const position = $('tb-position');
   if (position) position.textContent = z.position ? positionText(z.position.lat, z.position.lon, aktuelleSprache()) : '–';
+  zeigePositionInWorten(z);
   zeichneSonne();
   zeichneMond();
   zeichneZielwetter(wetterOrt(z, zielDerRoute(), bekanntePosition()));
@@ -948,6 +951,8 @@ function antriebFehler(text: string | null): void {
   if (!el) return;
   el.textContent = text ?? '';
   el.hidden = !text;
+
+  if (!text) wortSchluessel = '';
 }
 $('btn-antrieb')?.addEventListener('click', () => {
   antriebZiel = letzterZustand?.antrieb === 'motor' ? 'segel' : 'motor';
@@ -1275,3 +1280,25 @@ $('btn-vorladen')?.addEventListener('click', () => {
 });
 
 ladebildWeg();
+
+let wortSchluessel = '';
+function zeigePositionInWorten(z: Zustand): void {
+  const el = $('tb-position-bezug');
+  if (!el) return;
+  if (!z.position) { el.hidden = true; wortSchluessel = ''; return; }
+  const sp = aktuelleSprache();
+  const kurs = z.cog !== null && z.laeuft && !z.wartetAufFix ? z.cog : null;
+  const sog = z.laeuft && !z.wartetAufFix ? z.sog : null;
+  const schluessel = `${z.position.lat.toFixed(4)}|${z.position.lon.toFixed(4)}|${kurs === null ? '-' : Math.round(kurs / 5)}|${sog !== null && sog >= 1}|${sp}`;
+  if (schluessel === wortSchluessel) return;
+  wortSchluessel = schluessel;
+  const namen = namenJetzt(boxUm([z.position], 15)).map((x) => ({
+    lat: x[0], lon: x[1], art: x[2], name: x[3], km2: x[2] === 'insel' || x[2] === 'inselchen' ? x[4] : null,
+  }));
+  const text = positionInWorten(z.position, namen, sp, { kursGrad: kurs, sogKn: sog });
+  el.textContent = text ?? '';
+  el.hidden = !text;
+
+  if (!text) wortSchluessel = '';
+}
+
