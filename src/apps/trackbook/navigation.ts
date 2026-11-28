@@ -969,7 +969,9 @@ function panelGeheZu(): string {
   setzeKartenklick((p) => geheZuGetippt(p), 'punkt');
   zeigeHinweis(wort('nav.zielTippen'));
 
-  return nothafenHtml()
+  return `<h3 class="tb-nav-nothafen-titel">${esc(wort('nav.gehezuPunktTitel'))}</h3>`
+    + `<p class="tb-nav-gehezu-punkt">${icon('zielpunkt')}<span>${esc(wort('nav.zielTippen'))}</span></p>`
+    + nothafenHtml()
     + `<p class="tb-nav-leise">${esc(wort('nav.gehezuText'))}</p>${route ? `<p class="tb-nav-box orange">${esc(wort('nav.gehezuErsetzt'))}</p>` : ''}`;
 }
 
@@ -978,7 +980,7 @@ let nothafenGeladenFuer = '';
 function nothafenHtml(): string {
   const boot = an.position();
   const de = sprache();
-  let html = `<h3 class="tb-nav-nothafen-titel">${esc(wort('nav.nothafen'))}</h3>`;
+  let html = `<h3 class="tb-nav-nothafen-titel">${esc(wort('nav.nothafenOder'))}</h3>`;
   if (!boot) return `${html}<p class="tb-nav-leise">${esc(wort('nav.keinePos'))}</p>`;
   const box = boxUm([boot], NOTHAFEN_MAX_SM);
   nothaefen = naechsteHaefen(boot, namenJetzt(box).map((x) => ({ lat: x[0], lon: x[1], art: x[2], name: x[3] })));
