@@ -8,7 +8,7 @@ use at sea without a connection.
 |---|---|---|
 | **VoyagePlan** · Törnplanung | 5.3.3 | Plans the whole voyage: which harbour on which day |
 | **CourseCast** · Tagesplanung | 5.7.4 | Daily weather briefing for a fixed route: when to cast off, what to expect on the way |
-| **SailPilot** · TörnNavLog | 6.8.0 | Automatic logbook and backup navigation on the phone already on board |
+| **SailPilot** · TörnNavLog | 6.9.0 | Automatic logbook and backup navigation on the phone already on board |
 | **VoyageBook** · TörnBuch | 5.1.11 | Voyage, crew list, crew kitty, statistics and PDFs |
 
 A fifth page, `stream/`, lets people at home follow a shared voyage read-only.
@@ -1314,6 +1314,10 @@ The formulas and methods behind the suite's figures, kept current with the code.
   depth model (shallower than draught + 1 m), ignoring the first and last 0.3 NM. The
   depth profile of a route (here and in CourseCast) is fetched per straight
   piece (a new piece where the course turns by more than 1°).
+- **Nearest harbour** (SailPilot, Go to): the three nearest harbours and
+  marinas of the chart within 30 NM by great-circle distance, with true
+  bearing; the same name within 0.3 NM counts once. The way is then computed
+  as for Go to.
 - **Position in words** (SailPilot, below the coordinates): the reference
   is the chart name with the smallest weighted distance within 15 NM
   (distance divided by 1.5 for capes, 1.3 for islets and islands up to 1 km²,

@@ -981,6 +981,8 @@ html.nav-an[data-theme="nacht"] #tb-karte .leaflet-map-pane > .leaflet-tbSeezeic
   background: var(--bg); border: 1px solid var(--line); border-radius: 18px 18px 0 0;
   box-shadow: 0 -6px 24px rgba(0,0,0,.4); padding: 12px 14px 14px;
   display: flex; flex-direction: column; gap: 10px;
+
+  overflow-anchor: none;
 }
 
 .tb-nav-panel-kopf { display: flex; align-items: center; gap: 8px; padding: 0; border: 0; }
@@ -998,6 +1000,12 @@ html.nav-an[data-theme="nacht"] #tb-karte .leaflet-map-pane > .leaflet-tbSeezeic
 .tb-nav-k.primaer:disabled { opacity: .4; cursor: not-allowed; }
 .tb-nav-k.rot { border-color: var(--red); color: var(--red); }
 .tb-nav-k.zeile { display: flex; align-items: center; text-align: left; }
+
+.tb-nav-nothafen-titel { margin: 0; font-size: 14px; }
+.tb-nav-k.tb-nav-nothafen { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 10px; text-align: left; padding: 6px 12px; }
+.tb-nav-k.tb-nav-nothafen.primaer { background: var(--red); color: #fff; }
+.tb-nav-nothafen-name { min-width: 0; overflow-wrap: anywhere; }
+.tb-nav-nothafen-wert { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .tb-nav-k.zeile b { margin-left: auto; color: var(--muted); }
 .tb-nav-k.zeile b.an { color: var(--green); }
 .tb-nav-k:focus-visible, .tb-nav-chip:focus-visible, .tb-nav-pm:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }

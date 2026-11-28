@@ -6,7 +6,9 @@ import { leseZahl } from '@/core/kompendium';
 import { distNM } from '@/core/geo';
 import { vtgAnnaeherung, vtgFreigeben, type VtgGebiet } from '@/core/vtgNaehe';
 import { VTG_FLAECHEN, vtgInBox } from '@/core/messinaVtg';
-import { verkehrJetzt } from '@/data/seekartenObjekte';
+import { verkehrJetzt, namenJetzt, ladeSeekartenObjekte } from '@/data/seekartenObjekte';
+import { naechsteHaefen, NOTHAFEN_MAX_SM, type Nothafen } from '@/core/nothafen';
+import { boxUm } from '@/core/landumfahrung';
 import { liesNavUrl, ohneNavParameter } from '@/core/navUebergabe';
 import { positionText } from '@/core/koordinaten';
 import type { Punkt } from '@/core/types';
@@ -564,6 +566,21 @@ function zeichneLeisteWerkzeuge(): void {
   stoppuhrPlatzNeu();
 }
 let letzteLeiste = '';
+
+export const LEISTE_ZU_NACH_MS = 30_000;
+let leisteLeerSeit: number | null = null;
+function leisteVonSelbstZu(): void {
+  if (lies<boolean>(K.leisteZu) === true) { leisteLeerSeit = null; return; }
+  const aktiv = werkzeug !== null || chronoBaum || wetterBaum || kartenBaum || timerOffen() || stoppuhrOffen();
+  const jetzt = Date.now();
+  if (aktiv) { leisteLeerSeit = null; return; }
+  if (leisteLeerSeit === null) { leisteLeerSeit = jetzt; return; }
+  if (jetzt - leisteLeerSeit < LEISTE_ZU_NACH_MS) return;
+  leisteLeerSeit = null;
+  schreibe(K.leisteZu, true);
+  letzteLeiste = '';
+  zeichneLeisteWerkzeuge();
+}
 const letzterBaum = new Map<string, string>();
 
 let chronoBaum = false;
@@ -694,6 +711,8 @@ function oeffneWerkzeug(w: Werkzeug): void {
   if (w === 'route' && !route && !plan) neuerPlan(true);
   if (w === 'messen') { messPunkte = []; messVerlauf = []; messGps = null; if (messAbBoot) holeMessGps(); }
   zeichneAlles();
+
+  requestAnimationFrame(() => { const p = $('tb-nav-panel'); if (p) p.scrollTop = 0; });
 
   if (w === 'route' && route && !plan) {
     const boot = an.position();
@@ -947,9 +966,38 @@ function gefahrenBox(p: Plan): string {
 }
 
 function panelGeheZu(): string {
-  setzeKartenklick(geheZuGetippt, 'punkt');
+  setzeKartenklick((p) => geheZuGetippt(p), 'punkt');
   zeigeHinweis(wort('nav.zielTippen'));
-  return `<p class="tb-nav-leise">${esc(wort('nav.gehezuText'))}</p>${route ? `<p class="tb-nav-box orange">${esc(wort('nav.gehezuErsetzt'))}</p>` : ''}`;
+
+  return nothafenHtml()
+    + `<p class="tb-nav-leise">${esc(wort('nav.gehezuText'))}</p>${route ? `<p class="tb-nav-box orange">${esc(wort('nav.gehezuErsetzt'))}</p>` : ''}`;
+}
+
+let nothaefen: Nothafen[] = [];
+let nothafenGeladenFuer = '';
+function nothafenHtml(): string {
+  const boot = an.position();
+  const de = sprache();
+  let html = `<h3 class="tb-nav-nothafen-titel">${esc(wort('nav.nothafen'))}</h3>`;
+  if (!boot) return `${html}<p class="tb-nav-leise">${esc(wort('nav.keinePos'))}</p>`;
+  const box = boxUm([boot], NOTHAFEN_MAX_SM);
+  nothaefen = naechsteHaefen(boot, namenJetzt(box).map((x) => ({ lat: x[0], lon: x[1], art: x[2], name: x[3] })));
+  const schluessel = `${boot.lat.toFixed(2)},${boot.lon.toFixed(2)}`;
+  if (nothafenGeladenFuer !== schluessel) {
+    nothafenGeladenFuer = schluessel;
+    void ladeSeekartenObjekte(box, istOnline()).then((neu) => {
+      if (!neu || werkzeug !== 'gehezu') return;
+      zeichnePanel();
+
+      const p = $('tb-nav-panel');
+      if (p) p.scrollTop = 0;
+    }).catch(() => {});
+  }
+  if (!nothaefen.length) return `${html}<p class="tb-nav-leise">${esc(wort('nav.nothafenKeiner').replace('{sm}', String(NOTHAFEN_MAX_SM)))}</p>`;
+  html += nothaefen.map((h, i) => `<button type="button" class="tb-nav-k tb-nav-nothafen${i === 0 ? ' primaer' : ''}" data-aktion="nothafen:${i}">`
+    + `<span class="tb-nav-nothafen-name">${esc(h.name)}</span>`
+    + `<span class="tb-nav-nothafen-wert">${esc(`${nf(h.sm, h.sm < 10 ? 1 : 0, de)} ${smEinheit()} · ${kursRw(h.peilung, de)}`)}</span></button>`).join('');
+  return `${html}<p class="tb-nav-leise">${esc(wort('nav.nothafenLuftlinie'))}</p>`;
 }
 
 function panelMessen(): string {
@@ -1427,10 +1475,10 @@ export function routeHierher(p: Punkt): void {
   geheZuGetippt(p);
 }
 
-function geheZuGetippt(p: Punkt): void {
+function geheZuGetippt(p: Punkt, name?: string): void {
   const boot = an.position();
   if (!boot) { toast(wort('nav.keinePos')); return; }
-  const zielName = wort('nav.punkt');
+  const zielName = name ?? wort('nav.punkt');
   starteRoute([{ ...boot, name: wort('nav.eigenePos') }, { ...p, name: zielName }], 'gehezu');
   const lauf = route;
   void planeRoute(boot, p, planung.abstand, undefined, undefined, an.tiefgangM()).then((r) => {
@@ -1791,6 +1839,7 @@ export function initNavigation(anbindung: NavAnbindung): void {
   luftbildObjekt()?.beiWechsel(() => { letzteLeiste = ''; zeichneLeisteWerkzeuge(); });
 
   schreibe(K.leisteZu, true);
+  setInterval(leisteVonSelbstZu, 2000);
 
   initLeuchtfeuer(() => an.position(), () => istOnline());
 
@@ -1911,6 +1960,12 @@ export function initNavigation(anbindung: NavAnbindung): void {
 }
 
 function aktion(a: string): void {
+
+  if (a.startsWith('nothafen:')) {
+    const h = nothaefen[Number(a.slice('nothafen:'.length))];
+    if (h) geheZuGetippt({ lat: h.lat, lon: h.lon }, h.name);
+    return;
+  }
 
   if (a.startsWith('karte:')) {
     kartenBaum = false;
