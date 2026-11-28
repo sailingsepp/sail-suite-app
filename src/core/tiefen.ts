@@ -256,3 +256,36 @@ export function kurvenBefehle(xy: ArrayLike<number>, ring: boolean, fest: (i: nu
   aus.push(['Z']);
   return aus;
 }
+
+export const FLACH_FREI_SM = 0.5;
+
+export function flachAlsSperre(
+  flaechen: readonly { tiefeM: number; p: ArrayLike<number>; s: number; w: number; n: number; o: number }[],
+  stufe: number,
+  box: { swLat: number; swLon: number; neLat: number; neLon: number },
+  frei: readonly { lat: number; lon: number }[],
+  freiSm = FLACH_FREI_SM,
+): [{ lat: number; lon: number }, { lat: number; lon: number }][] {
+  const aus: [{ lat: number; lon: number }, { lat: number; lon: number }][] = [];
+  const nahFrei = (lat: number, lon: number): boolean => frei.some((f) => {
+    const dLat = (lat - f.lat) * 60;
+    const dLon = (lon - f.lon) * 60 * Math.cos((f.lat * Math.PI) / 180);
+    return dLat * dLat + dLon * dLon < freiSm * freiSm;
+  });
+  for (const f of flaechen) {
+    if (f.tiefeM > stufe + 1e-9) continue;
+    if (f.n < box.swLat || f.s > box.neLat || f.o < box.swLon || f.w > box.neLon) continue;
+    const p = f.p, n = Math.floor(p.length / 2);
+    if (n < 3) continue;
+    const geschlossen = p[0] === p[(n - 1) * 2] && p[1] === p[(n - 1) * 2 + 1];
+    const kanten = geschlossen ? n - 1 : n;
+    for (let k = 0; k < kanten; k++) {
+      const a = { lat: p[k * 2]!, lon: p[k * 2 + 1]! };
+      const m = (k + 1) % n;
+      const b = { lat: p[m * 2]!, lon: p[m * 2 + 1]! };
+      if (nahFrei(a.lat, a.lon) || nahFrei(b.lat, b.lon)) continue;
+      aus.push([a, b]);
+    }
+  }
+  return aus;
+}

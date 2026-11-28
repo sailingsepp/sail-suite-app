@@ -12,6 +12,9 @@ import { aktuellerToern, aendereToern } from '@/data/logdb';
 import type { Liegeart } from '@/core/logbuchText';
 import { aktuellerZustand, ergaenzeEintrag, type Zustand } from './aufzeichnung';
 import { STRINGS } from './strings';
+import { meldeKurz } from './navigation';
+import { sage } from './ansage';
+import { ANSAGE } from '@/core/ansagen';
 
 const $ = (id: string): HTMLElement | null => document.getElementById(id);
 
@@ -110,6 +113,9 @@ export function beobachteUnterwegs(z: Zustand, fixe: readonly Fix[]): void {
     if (s === undefined) { if (gesuchtFuer === still.seit) gesuchtFuer = null; wiederAb = Date.now() + WIEDER_NACH_MS; return; }
     if (s && aktuellerZustand().fahrt?.id === fahrt && !liesMerker()) {
       schreibeMerker({ fahrt, t: still.seit, lat: s.lat, lon: s.lon, name: s.name, abstandM: s.abstandM });
+
+      meldeKurz(wort('tank.erkannt').replace('{name}', s.name ? ` (${s.name})` : ''));
+      sage(ANSAGE.tankstelle);
     }
   }).catch(() => { if (gesuchtFuer === still.seit) gesuchtFuer = null; wiederAb = Date.now() + WIEDER_NACH_MS; });
 }

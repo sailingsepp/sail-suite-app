@@ -19,7 +19,7 @@ import {
 } from '@/core/navigation';
 import {
   planeRoute, pruefeRoute, ladeRoutenDaten, flachsteStelle, ABSTAENDE_SM,
-  type RoutenDaten, type RoutenPruefung,
+  type RoutenDaten, type RoutenPruefung, type RoutenPlan,
   startAusPosition, type PlanSchritt, type Untiefe,
 } from '@/data/navroute';
 import type { LogEintrag } from '@/data/logdb';
@@ -145,6 +145,8 @@ interface Plan {
   rechnet: boolean;
 
   flachste: Untiefe | null;
+
+  flach?: RoutenPlan['flach'];
   meldung: string | null;
 
   startFest?: boolean;
@@ -739,6 +741,8 @@ function zeigeHinweis(text: string | null): void {
 let toastUhr = 0;
 
 const toastSchlange: string[] = [];
+
+export function meldeKurz(text: string): void { toast(text); }
 function toast(text: string): void {
   const el = $('tb-nav-toast');
   if (!el) return;
@@ -927,6 +931,8 @@ function gefahrenBox(p: Plan): string {
   else if (p.daten?.kuesteVereinfacht) zeilen.push({ stufe: 'orange', text: wort('nav.kuesteGrob') });
   if (p.daten?.gefahrenUnvollstaendig) zeilen.push({ stufe: 'orange', text: wort('nav.gefUnvollst') });
   const tg = an.tiefgangM();
+
+  if (p.flach === 'kein-weg') zeilen.push({ stufe: 'orange', text: wort('nav.flachKeinWeg') });
   if (zuFlach(p)) {
     const u = p.flachste!;
 
@@ -1109,12 +1115,13 @@ function zielGetippt(p: Punkt): void {
     lauf.punkte = benenne(pk);
     zeichneAlles();
   };
-  void planeRoute(a, p, planung.abstand, melde, vorlaeufig).then((r) => {
+  void planeRoute(a, p, planung.abstand, melde, vorlaeufig, an.tiefgangM()).then((r) => {
     if (plan !== lauf) return;
     lauf.schritt = null;
     lauf.punkte = benenne(r.punkte);
     lauf.daten = r.daten;
     lauf.ohneWeg = r.ohneWeg;
+    lauf.flach = r.flach;
     lauf.rechnet = false;
     pruefePlan();
     zeigeUeberPanel(lauf.punkte);
@@ -1426,7 +1433,7 @@ function geheZuGetippt(p: Punkt): void {
   const zielName = wort('nav.punkt');
   starteRoute([{ ...boot, name: wort('nav.eigenePos') }, { ...p, name: zielName }], 'gehezu');
   const lauf = route;
-  void planeRoute(boot, p, planung.abstand).then((r) => {
+  void planeRoute(boot, p, planung.abstand, undefined, undefined, an.tiefgangM()).then((r) => {
     if (!route || route !== lauf) return;
     if (r.ohneWeg) {
       aktivPruefung = { daten: r.daten, pruefung: pruefeRoute(route.wegpunkte, r.daten), versatz: 0 };

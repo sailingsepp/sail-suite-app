@@ -8,7 +8,7 @@ use at sea without a connection.
 |---|---|---|
 | **VoyagePlan** · Törnplanung | 5.3.3 | Plans the whole voyage: which harbour on which day |
 | **CourseCast** · Tagesplanung | 5.7.4 | Daily weather briefing for a fixed route: when to cast off, what to expect on the way |
-| **SailPilot** · TörnNavLog | 6.6.1 | Automatic logbook and backup navigation on the phone already on board |
+| **SailPilot** · TörnNavLog | 6.7.0 | Automatic logbook and backup navigation on the phone already on board |
 | **VoyageBook** · TörnBuch | 5.1.11 | Voyage, crew list, crew kitty, statistics and PDFs |
 
 A fifth page, `stream/`, lets people at home follow a shared voyage read-only.
@@ -1288,7 +1288,11 @@ The formulas and methods behind the suite's figures, kept current with the code.
 - **Automatic route**: two passes. First around the coastline only; then the
   OpenSeaMap hazards are loaded in a corridor of 2 NM along that way (tiles of
   0.25°, route sampled every 1 NM) and the way is searched again with them. If
-  the hazards block every way, the first way stays. The land avoidance is the
+  the hazards block every way, the first way stays. With a draught set, a third
+  search adds the outlines of the depth-model areas shallower than draught +
+  1 m (rounded up to the next band of 2, 2.5, 3, 3.5, 4, 5 m) as further
+  barriers, except for edges with an end within 0.5 NM of start or destination;
+  if no way is found, the previous way stays. The land avoidance is the
   CourseCast one (A* on a water grid,
   smoothing, check against the real coastline) with every OpenSeaMap hazard
   added as a twelve-sided island at the chosen clearance (radius divided by
@@ -1306,8 +1310,8 @@ The formulas and methods behind the suite's figures, kept current with the code.
   Wherever the scheme is avoided, the convex hull of three circles of 0.1 NM
   around the tip of Capo Peloro is blocked as well.
 - **Hazard check**: smallest distance from every leg to every hazard; below
-  0.05 NM "passes through", below 0.6 NM "close". Depth model as a hint only
-  (shallower than draught + 1 m), ignoring the first and last 0.3 NM. The
+  0.05 NM "passes through", below 0.6 NM "close". Shallowest point of the
+  depth model (shallower than draught + 1 m), ignoring the first and last 0.3 NM. The
   depth profile of a route (here and in CourseCast) is fetched per straight
   piece (a new piece where the course turns by more than 1°).
 - **Return along the track**: the track reversed and simplified with

@@ -42,6 +42,8 @@ export const ANSAGE = {
   motor: 'Engine sound detected. Confirm, under engine?',
   segel: 'No engine sound. Confirm, under sail?',
   angelegt: 'Vessel stationary for thirty minutes. Confirm, alongside or at anchor?',
+
+  tankstelle: 'Fuel berth detected. Litres will be asked on departure.',
 } as const;
 
 export function routeGestartet(ziel: string, sm: number, gehezu: boolean): string {

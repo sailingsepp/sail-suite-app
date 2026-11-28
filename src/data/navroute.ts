@@ -9,6 +9,9 @@ import { fetchTiefenprofil } from './bathymetrie';
 import { liegtImWasser } from './landcheck';
 import { ladeHoheitImGebiet } from './hoheitKacheln';
 import { vtgInBox, vtgAlsKueste, quertVtg } from '@/core/messinaVtg';
+import { flachAlsSperre, tiefgangStufe } from '@/core/tiefen';
+import { landKachelnFuerBox } from '@/core/kartenKacheln';
+import { ladeTiefenImGebiet, tiefenJetzt } from './tiefenKacheln';
 
 const KACHEL_GRAD = 0.25;
 const DB = 'sail-suite-nav';
@@ -208,6 +211,8 @@ export interface RoutenPlan {
   gerade: boolean;
 
   ohneWeg: boolean;
+
+  flach: 'umfahren' | 'kein-weg' | 'ohne';
   daten: RoutenDaten;
 }
 
@@ -219,6 +224,8 @@ export async function planeRoute(
   a: Punkt, b: Punkt, abstandSm: number, melde?: (s: PlanSchritt) => void,
 
   vorlaeufig?: (punkte: Punkt[]) => void,
+
+  tiefgangM: number | null = null,
 ): Promise<RoutenPlan> {
   melde?.({ phase: 'kueste' });
   let box = routenBox([a, b]);
@@ -262,7 +269,17 @@ export async function planeRoute(
   const sperre: [Punkt, Punkt][] = [...(kueste ?? [])];
   for (const g of g0.gefahren) sperre.push(...gefahrAlsKueste(g, abstandSm));
 
-  const u = (g0.gefahren.length ? durchHafen(weg(sperre)) : null) ?? u0;
+  let u = (g0.gefahren.length ? durchHafen(weg(sperre)) : null) ?? u0;
+
+  let flach: RoutenPlan['flach'] = 'ohne';
+  const stufe = tiefgangStufe(tiefgangM);
+  if (u && stufe !== null) {
+    const flachSperre = await flachImGebiet(box, stufe, [a, b]);
+    if (flachSperre.length) {
+      const mitFlach = durchHafen(weg([...sperre, ...flachSperre]));
+      if (mitFlach) { u = mitFlach; flach = 'umfahren'; } else flach = 'kein-weg';
+    }
+  }
 
   const g1 = u ? await gefahrenEntlang(u.punkte) : g0;
   const gefahren = new Map<string, Gefahr>();
@@ -271,8 +288,14 @@ export async function planeRoute(
     kueste, kuesteVereinfacht: !!k?.rueckfall, gefahren: [...gefahren.values()],
     gefahrenUnvollstaendig: g0.unvollstaendig || g1.unvollstaendig, box,
   };
-  if (!u) return { punkte: [a, b], gerade: false, ohneWeg: true, daten };
-  return { punkte: ohneStummel(u.punkte, hafenSperre), gerade: !u.umfahren, ohneWeg: false, daten };
+  if (!u) return { punkte: [a, b], gerade: false, ohneWeg: true, flach, daten };
+  return { punkte: ohneStummel(u.punkte, hafenSperre), gerade: !u.umfahren, ohneWeg: false, flach, daten };
+}
+
+async function flachImGebiet(box: Box, stufe: number, frei: readonly Punkt[]): Promise<[Punkt, Punkt][]> {
+  await ladeTiefenImGebiet(box, navigator.onLine).catch(() => false);
+  const flaechen = landKachelnFuerBox(box).flatMap((k) => tiefenJetzt(k.name)?.flaechen ?? []);
+  return flachAlsSperre(flaechen, stufe, box, frei);
 }
 
 export interface RoutenPruefung {
