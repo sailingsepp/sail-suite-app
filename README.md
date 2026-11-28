@@ -6,9 +6,9 @@ use at sea without a connection.
 
 | App | Version | Purpose |
 |---|---|---|
-| **VoyagePlan** · Törnplanung | 5.3.3 | Plans the whole voyage: which harbour on which day |
-| **CourseCast** · Tagesplanung | 5.7.4 | Daily weather briefing for a fixed route: when to cast off, what to expect on the way |
-| **SailPilot** · TörnNavLog | 6.9.1 | Automatic logbook and backup navigation on the phone already on board |
+| **VoyagePlan** · Törnplanung | 5.3.4 | Plans the whole voyage: which harbour on which day |
+| **CourseCast** · Tagesplanung | 5.7.5 | Daily weather briefing for a fixed route: when to cast off, what to expect on the way |
+| **SailPilot** · TörnNavLog | 6.9.2 | Automatic logbook and backup navigation on the phone already on board |
 | **VoyageBook** · TörnBuch | 5.1.11 | Voyage, crew list, crew kitty, statistics and PDFs |
 
 A fifth page, `stream/`, lets people at home follow a shared voyage read-only.
@@ -536,7 +536,13 @@ The formulas and methods behind the suite's figures, kept current with the code.
 - **Automatic land avoidance**: water grid from the OpenStreetMap coastline
   with supercover rasterisation (every cell a coastline touches is
   blocked), **A\*** over 8 neighbours without corner cutting, path
-  smoothing, then a check of every leg against the coastline; a point
+  smoothing (from each point the farthest one in free line of sight), then
+  tightening: the way is densified to support points every 0.5 NM (at least
+  two cells, at most 300 points) and each inner point slides along its
+  adjacent legs (bisection, 14 steps) as far as the line of sight in the grid
+  stays free, taking the shorter position; a point whose neighbours see each
+  other is dropped; up to 40 passes while the way shortens by more than
+  0.01 NM; then a check of every leg against the coastline; a point
   ashore is connected by an odd number of coastline crossings; if the two
   ends land in different water areas of the grid, both are connected to the
   largest one with the same crossing rule; a straight

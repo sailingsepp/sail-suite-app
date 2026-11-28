@@ -315,6 +315,50 @@ export function glaette(g: Wassergitter, pfad: readonly number[]): Punkt[] {
   return aus;
 }
 
+const STRAFF_SCHRITTE = 14;
+const STRAFF_DURCHGAENGE = 40;
+const STRAFF_MIN_SM = 0.01;
+
+const STRAFF_DICHTE_SM = 0.5;
+const STRAFF_MAX_PUNKTE = 300;
+function verdichte(p: readonly Punkt[], zelleSm: number): Punkt[] {
+  const gesamt = weglaenge(p);
+  const schritt = Math.max(STRAFF_DICHTE_SM, 2 * zelleSm, gesamt / STRAFF_MAX_PUNKTE);
+  const aus: Punkt[] = [p[0]!];
+  for (let i = 1; i < p.length; i++) {
+    const a = p[i - 1]!, b = p[i]!;
+    const n = Math.max(1, Math.round(distNM(a.lat, a.lon, b.lat, b.lon) / schritt));
+    for (let k = 1; k <= n; k++) aus.push(zwischen(a, b, k / n));
+  }
+  return aus;
+}
+const zwischen = (p: Punkt, q: Punkt, t: number): Punkt => ({ lat: p.lat + (q.lat - p.lat) * t, lon: p.lon + (q.lon - p.lon) * t });
+export function straffe(g: Wassergitter, punkte: readonly Punkt[]): Punkt[] {
+  const p = verdichte(punkte, g.zelleSm);
+  for (let d = 0; d < STRAFF_DURCHGAENGE && p.length > 2; d++) {
+    const vorher = weglaenge(p);
+    for (let i = 1; i < p.length - 1; i++) {
+      const a = p[i - 1]!, m = p[i]!, b = p[i + 1]!;
+      if (sichtFrei(g, a, b)) { p.splice(i, 1); i--; continue; }
+
+      const rueck = (ziel: Punkt, von: Punkt): Punkt => {
+        let lo = 0, hi = 1;
+        for (let s = 0; s < STRAFF_SCHRITTE; s++) {
+          const t = (lo + hi) / 2;
+          if (sichtFrei(g, von, zwischen(m, ziel, t))) lo = t; else hi = t;
+        }
+        return zwischen(m, ziel, lo);
+      };
+      const zuB = rueck(b, a), zuA = rueck(a, b);
+      const lang = (q: Punkt) => distNM(a.lat, a.lon, q.lat, q.lon) + distNM(q.lat, q.lon, b.lat, b.lon);
+      const best = lang(zuB) <= lang(zuA) ? zuB : zuA;
+      if (lang(best) < lang(m) - 1e-6) p[i] = best;
+    }
+    if (vorher - weglaenge(p) < STRAFF_MIN_SM) break;
+  }
+  return p;
+}
+
 function weglaenge(punkte: readonly Punkt[]): number {
   let sm = 0;
   for (let i = 1; i < punkte.length; i++) sm += distNM(punkte[i - 1]!.lat, punkte[i - 1]!.lon, punkte[i]!.lat, punkte[i]!.lon);
@@ -609,7 +653,7 @@ function wegImGitterDirekt(
   }
   const pfad = suchePfad(g, sa, sb);
   if (!pfad) return null;
-  const mitte = glaette(g, pfad);
+  const mitte = straffe(g, glaette(g, pfad));
   const punkte = [a, ...mitte, b];
 
   for (let i = 2; i < punkte.length - 1; i++) {
