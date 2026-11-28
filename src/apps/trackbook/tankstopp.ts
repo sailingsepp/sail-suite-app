@@ -88,22 +88,30 @@ export function nachWeiterfahren(): void {
 
 let gesuchtFuer: number | null = null;
 
+let wiederAb = 0;
+const WIEDER_NACH_MS = 60_000;
+
 export function beobachteUnterwegs(z: Zustand, fixe: readonly Fix[]): void {
   if (z.betriebsart !== 'laeuft' || !z.fahrt) return;
-  const m = liesMerker();
-  if (m && m.fahrt === z.fahrt.id) {
+  const jetzt = Date.now();
+  let m = liesMerker();
+
+  if (m && !sollTankstoppFragen(m, z.fahrt.id, jetzt)) { schreibeMerker(null); m = null; }
+  if (m) {
     if (z.position && distNM(z.position.lat, z.position.lon, m.lat, m.lon) * 1852 > TANKSTOPP_WEG_M) nachWeiterfahren();
     return;
   }
-  const still = liegtStill(fixe, Date.now());
-  if (!still || gesuchtFuer === still.seit) return;
+  const still = liegtStill(fixe, jetzt);
+  if (!still || gesuchtFuer === still.seit || jetzt < wiederAb) return;
   gesuchtFuer = still.seit;
   const fahrt = z.fahrt.id;
   void tankstelleNeben({ lat: still.lat, lon: still.lon }).then((s) => {
+
+    if (s === undefined) { if (gesuchtFuer === still.seit) gesuchtFuer = null; wiederAb = Date.now() + WIEDER_NACH_MS; return; }
     if (s && aktuellerZustand().fahrt?.id === fahrt && !liesMerker()) {
       schreibeMerker({ fahrt, t: still.seit, lat: s.lat, lon: s.lon, name: s.name, abstandM: s.abstandM });
     }
-  }).catch(() => {});
+  }).catch(() => { if (gesuchtFuer === still.seit) gesuchtFuer = null; wiederAb = Date.now() + WIEDER_NACH_MS; });
 }
 
 function schliesse(): void {
